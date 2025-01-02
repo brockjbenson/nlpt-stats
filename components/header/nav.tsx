@@ -19,13 +19,18 @@ const styles = cva(
 function Nav() {
   const path = usePathname();
 
+  const isAdminPage = path.includes("admin");
+
   return (
     <nav>
       <ul className="flex gap-8">
         <li>
           <Link
             className={styles({
-              state: path.includes("members") ? "active" : "inactive",
+              state:
+                path.includes("members") && !isAdminPage
+                  ? "active"
+                  : "inactive",
             })}
             href="/members">
             Members
@@ -34,7 +39,8 @@ function Nav() {
         <li>
           <Link
             className={styles({
-              state: path.includes("stats") ? "active" : "inactive",
+              state:
+                path.includes("stats") && !isAdminPage ? "active" : "inactive",
             })}
             href="/stats">
             Stats
@@ -43,7 +49,10 @@ function Nav() {
         <li>
           <Link
             className={styles({
-              state: path.includes("records") ? "active" : "inactive",
+              state:
+                path.includes("records") && !isAdminPage
+                  ? "active"
+                  : "inactive",
             })}
             href="/records">
             Records
@@ -52,7 +61,8 @@ function Nav() {
         <li>
           <Link
             className={styles({
-              state: path.includes("nlpi") ? "active" : "inactive",
+              state:
+                path.includes("nlpi") && !isAdminPage ? "active" : "inactive",
             })}
             href="/nlpi">
             NLPI Rankings
@@ -61,10 +71,20 @@ function Nav() {
         <li>
           <Link
             className={styles({
-              state: path.includes("poy") ? "active" : "inactive",
+              state:
+                path.includes("poy") && !isAdminPage ? "active" : "inactive",
             })}
             href="/poy">
             POY Race
+          </Link>
+        </li>
+        <li>
+          <Link
+            className={styles({
+              state: path.includes("admin") ? "active" : "inactive",
+            })}
+            href="/admin">
+            Admin
           </Link>
         </li>
       </ul>
