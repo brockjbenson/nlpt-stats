@@ -34,12 +34,7 @@ export default async function Login(props: { searchParams: Promise<Message> }) {
           Sign in
         </SubmitButton>
         <p className="text-sm text-foreground">
-          Don't have an account?{" "}
-          <Link
-            className="text-foreground hover:text-primary font-medium underline"
-            href="/sign-up">
-            Sign up
-          </Link>
+          Don't have an account? Contact admin for account access
         </p>
         <FormMessage message={searchParams} />
       </div>

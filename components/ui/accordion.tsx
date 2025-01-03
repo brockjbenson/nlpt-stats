@@ -4,17 +4,13 @@ import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 
 const Accordion = React.forwardRef<
   React.ComponentRef<typeof AccordionPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>
 >(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Root
-    ref={ref}
-    className={cn("border border-border rounded-md", className)}
-    {...props}
-  />
+  <AccordionPrimitive.Root ref={ref} className={cn(className)} {...props} />
 ));
 Accordion.displayName = AccordionPrimitive.Root.displayName;
 
@@ -24,7 +20,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("border-b border-border", className)}
+    className={cn("m-0 p-0 flex flex-col items-end", className)}
     {...props}>
     {children}
   </AccordionPrimitive.Item>
@@ -58,9 +54,13 @@ const AccordionTrigger = React.forwardRef<
     )}
     {...props}>
     {children}
-    <ChevronDown
+    <Plus
       size="20"
-      className="transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180"
+      className="transition-transform group-data-[state=open]:hidden group-data-[state=closed]:block"
+    />
+    <Minus
+      size="20"
+      className="transition-transform group-data-[state=open]:block group-data-[state=closed]:hidden"
     />
   </AccordionPrimitive.Trigger>
 ));
@@ -73,7 +73,7 @@ const AccordionContent = React.forwardRef<
   <AccordionPrimitive.Content
     ref={ref}
     className={cn(
-      "p-4 data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown",
+      "overflow-hidden p-2 w-[95%] data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown",
       className
     )}
     {...props}

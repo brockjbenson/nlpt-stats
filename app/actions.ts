@@ -53,7 +53,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect("/");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -137,6 +137,69 @@ export const addMemberAction = async (formData: FormData) => {
   const supabase = await createClient();
   const firstName = formData.get("firstName") as string;
   const lastName = formData.get("lastName") as string;
-  const nickName = formData.get("nickName")?.toString();
+  const nickname = formData.get("nickname")?.toString();
   const portraitUrl = formData.get("portraitUrl")?.toString();
+
+  if (!firstName || !lastName) {
+    return encodedRedirect(
+      "error",
+      "/admin/members/add",
+      "First name and last name are required"
+    );
+  }
+
+  const { error } = await supabase.from("members").insert([
+    {
+      firstName,
+      lastName,
+      nickname,
+      portraitUrl,
+    },
+  ]);
+
+  if (error) {
+    return encodedRedirect("error", "/admin/members/add", error.message);
+  }
+
+  return redirect("/admin/members");
+};
+
+export const editMemberAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  const id = formData.get("id") as string;
+  const firstName = formData.get("firstName")
+    ? (formData.get("firstName") as string)
+    : (formData.get("filledFistName") as string);
+  const lastName = formData.get("lastName")
+    ? (formData.get("lastName") as string)
+    : (formData.get("filledLastName") as string);
+  const nickname = formData.get("nickname")
+    ? formData.get("nickname")?.toString()
+    : formData.get("filledNickname")?.toString();
+  const portraitUrl = formData.get("portraitUrl")
+    ? formData.get("portraitUrl")?.toString()
+    : formData.get("filledPortraitUrl")?.toString();
+
+  if (!firstName || !lastName) {
+    return encodedRedirect(
+      "error",
+      `/admin/members/edit/${id}`,
+      "First name and last name are required"
+    );
+  }
+
+  const { error } = await supabase
+    .from("members")
+    .update({ firstName, lastName, nickname, portraitUrl })
+    .eq("id", id);
+
+  if (error) {
+    return encodedRedirect("error", `/admin/members/edit/${id}`, error.message);
+  }
+
+  return encodedRedirect(
+    "success",
+    `/admin/members`,
+    "Member updated successfully"
+  );
 };

@@ -9,13 +9,11 @@ export default async function Layout({
   return (
     <>
       <Header />
-
-      <main className="min-h-screen flex flex-col items-center">
-        <div className="flex-1 w-full flex flex-col gap-20 items-center">
-          <div className="grid grid-cols-[15rem_1fr] gap-20 w-full max-w-screen-xl p-4">
-            <AdminNav />
-            {children}
-          </div>
+      <main className="flex flex-col mt-4 items-center">
+        <div className="flex flex-col gap-12 w-full max-w-screen-xl p-4">
+          <h1 className="w-full text-left">Admin Dashboard</h1>
+          <AdminNav />
+          <div className="w-full">{children}</div>
         </div>
       </main>
     </>

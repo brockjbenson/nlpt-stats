@@ -4,6 +4,7 @@ import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
 import { cva } from "class-variance-authority";
+import { User } from "@supabase/supabase-js";
 const styles = cva(
   "relative after:content-[''] after:absolute text-base font-medium after:transition-all after:duration-300 after:ease-in-out after:opacity-100 after:left-1/2 after:-translate-x-1/2 after:-bottom-2 after:h-[2px] after:bg-primary",
   {
@@ -16,7 +17,7 @@ const styles = cva(
   }
 );
 
-function Nav() {
+function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
   const path = usePathname();
 
   const isAdminPage = path.includes("admin");
@@ -78,15 +79,17 @@ function Nav() {
             POY Race
           </Link>
         </li>
-        <li>
-          <Link
-            className={styles({
-              state: path.includes("admin") ? "active" : "inactive",
-            })}
-            href="/admin">
-            Admin
-          </Link>
-        </li>
+        {!excludeAdmin && (
+          <li>
+            <Link
+              className={styles({
+                state: path.includes("admin") ? "active" : "inactive",
+              })}
+              href="/admin">
+              Admin
+            </Link>
+          </li>
+        )}
       </ul>
     </nav>
   );
