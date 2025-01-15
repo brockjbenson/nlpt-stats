@@ -5,3 +5,35 @@ export type Member = {
   nickname: string;
   portraitUrl: string;
 };
+
+export type CashSession = {
+  id: string;
+  buyIn: number;
+  cashOut: number;
+  netProfit: number;
+  rebuys: number;
+  weekId: string;
+  memberId: string;
+  seasonId: string;
+};
+
+export type CashSessionNoId = {
+  buyIn: number;
+  cashOut: number;
+  netProfit: number;
+  rebuys: number;
+  weekId: string;
+  memberId: string;
+  seasonId: string;
+};
+
+export type Season = {
+  id: string;
+  year: number;
+};
+
+export type Week = {
+  id: string;
+  weekNumber: number;
+  seasonId: string;
+};
