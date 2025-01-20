@@ -15,6 +15,8 @@ export type CashSession = {
   weekId: string;
   memberId: string;
   seasonId: string;
+  nlpiPoints: number;
+  poyPoints: number;
 };
 
 export type CashSessionNoId = {
@@ -25,6 +27,18 @@ export type CashSessionNoId = {
   weekId: string;
   memberId: string;
   seasonId: string;
+  nlpiPoints: number;
+  poyPoints: number;
+};
+
+export type CashSessionWithMember = CashSession & {
+  member: {
+    firstName: string;
+  };
+};
+
+export type CashSessionWithFullMember = CashSession & {
+  member: Member;
 };
 
 export type Season = {

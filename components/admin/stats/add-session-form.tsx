@@ -29,6 +29,8 @@ interface Props {
   weeks: Week[] | null;
   seasons: Season[] | null;
   addSessionToList: () => void;
+  setSelectWeeks: (value: Week[]) => void;
+  selectWeeks: Week[];
 }
 
 function AddSessionForm({
@@ -41,7 +43,6 @@ function AddSessionForm({
   rebuys,
   setRebuys,
   setMemberId,
-  weekId,
   setWeekId,
   seasonId,
   setSeasonId,
@@ -49,7 +50,16 @@ function AddSessionForm({
   weeks,
   seasons,
   addSessionToList,
+  setSelectWeeks,
+  selectWeeks,
 }: Props) {
+  const getSeasonWeeks = async (seasonId: string) => {
+    const seasonWeeks = weeks?.filter((week) => week.seasonId === seasonId);
+
+    if (seasonWeeks) {
+      setSelectWeeks(seasonWeeks);
+    }
+  };
   return (
     <div className="grid grid-cols-4 gap-4 items-center">
       <fieldset className="flex flex-col gap-4 grow">
@@ -121,25 +131,13 @@ function AddSessionForm({
         </Select>
       </fieldset>
       <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="week">Week</Label>
-        <Select onValueChange={(value) => setWeekId(value)}>
-          <SelectTrigger id="week">
-            <SelectValue placeholder="Select a week" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {weeks?.map((week) => (
-                <SelectItem key={week.id} value={week.id}>
-                  {week.weekNumber}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="season">Season</Label>
-        <Select value={seasonId} onValueChange={(value) => setSeasonId(value)}>
+        <Select
+          value={seasonId}
+          onValueChange={(value) => {
+            setSeasonId(value);
+            getSeasonWeeks(value);
+          }}>
           <SelectTrigger id="season">
             <SelectValue placeholder="Select a season" />
           </SelectTrigger>
@@ -148,6 +146,23 @@ function AddSessionForm({
               {seasons?.map((season) => (
                 <SelectItem key={season.id} value={season.id}>
                   {season.year}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </fieldset>
+      <fieldset className="flex flex-col gap-4 grow">
+        <Label htmlFor="week">Week</Label>
+        <Select onValueChange={(value) => setWeekId(value)}>
+          <SelectTrigger disabled={selectWeeks.length === 0} id="week">
+            <SelectValue placeholder="Select a week" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {selectWeeks.map((week) => (
+                <SelectItem key={week.id} value={week.id}>
+                  {week.weekNumber}
                 </SelectItem>
               ))}
             </SelectGroup>

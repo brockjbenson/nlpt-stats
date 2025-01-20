@@ -7,6 +7,7 @@ const config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    "./utils/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -18,6 +19,9 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        xs: "475px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

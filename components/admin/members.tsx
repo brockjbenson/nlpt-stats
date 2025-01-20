@@ -93,7 +93,7 @@ function MembersList({ members }: Props) {
           autoComplete="off"
         />
       </fieldset>
-      <ul className="grid grid-cols-3 gap-x-12">
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12">
         {membersList.map((member) => (
           <li key={member.id}>
             <MemberCard

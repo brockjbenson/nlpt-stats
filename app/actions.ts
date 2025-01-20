@@ -203,3 +203,54 @@ export const editMemberAction = async (formData: FormData) => {
     "Member updated successfully"
   );
 };
+
+export const addWeeksAction = async (formData: FormData) => {
+  const supabase = await createClient();
+  const year = formData.get("year") as string;
+  const seasonId = formData.get("seasonId") as string;
+  const weeksNumber = formData.get("weeks") as string;
+
+  if (!seasonId || !weeksNumber) {
+    return encodedRedirect(
+      "error",
+      `/admin/seasons?year=${year}&newweek=${seasonId}`,
+      "Season ID and number of weeks are required"
+    );
+  }
+
+  const { data: existingWeeks, error: fetchError } = await supabase
+    .from("week")
+    .select("weekNumber")
+    .eq("seasonId", seasonId)
+    .order("weekNumber", { ascending: false })
+    .limit(1);
+
+  if (fetchError) {
+    return encodedRedirect(
+      "error",
+      `/admin/seasons?year=${year}&newweek=${seasonId}`,
+      `Failed to fetch existing weeks: ${fetchError.message}`
+    );
+  }
+
+  const lastWeekNumber = existingWeeks?.[0]?.weekNumber || 0;
+
+  const newWeeks = Array.from({ length: Number(weeksNumber) }, (_, i) => ({
+    seasonId,
+    weekNumber: lastWeekNumber + i + 1,
+  }));
+
+  console.log(newWeeks);
+
+  const { error: insertError } = await supabase.from("week").insert(newWeeks);
+
+  if (insertError) {
+    return encodedRedirect(
+      "error",
+      `/admin/seasons?year=${year}&newweek=${seasonId}`,
+      insertError.message
+    );
+  }
+
+  return redirect(`/admin/seasons?year=${year}`);
+};

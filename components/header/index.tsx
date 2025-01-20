@@ -4,6 +4,7 @@ import { ThemeSwitcher } from "../theme-switcher";
 import HeaderAuth from "@/components/header-auth";
 import Logo from "../logo";
 import { createClient } from "@/utils/supabase/server";
+import MobileNav from "./mobile-nav";
 
 async function Header() {
   const db = await createClient();
@@ -17,9 +18,12 @@ async function Header() {
       <div className=" max-w-screen-xl flex px-4 justify-between items-center mx-auto">
         <Logo />
         <Nav excludeAdmin={!user} />
-        <div className="flex gap-2">
+        <div className="gap-2 hidden lg:flex">
           <ThemeSwitcher />
           <HeaderAuth />
+        </div>
+        <div className="lg:hidden">
+          <MobileNav excludeAdmin={!user} />
         </div>
       </div>
     </header>

@@ -11,8 +11,7 @@ export default async function Layout({
       <Header />
       <main className="flex flex-col mt-4 items-center">
         <div className="flex flex-col gap-12 w-full max-w-screen-xl p-4">
-          <h1 className="w-full text-left">Admin Dashboard</h1>
-          <AdminNav />
+          <h1>Admin</h1>
           <div className="w-full">{children}</div>
         </div>
       </main>

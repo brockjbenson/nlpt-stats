@@ -2,13 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* width */
+
 @layer base {
   :root {
-    --background: 210 60% 97%;
+    --background: 210 60% 98%;
     --foreground: 210 60% 6.5%;
-    --card: 210 60% 97%;
+    --card: 180 36% 93%;
     --card-foreground: 0 0% 3.9%;
-    --popover: 210 60% 97%;
+    --popover: 210 60% 98%;
     --popover-foreground: 0 0% 3.9%;
     --primary: 161 74% 45%;
     --primary-foreground: 0 0% 98%;
@@ -33,23 +35,23 @@
   }
 
   .dark {
-    --background: 210 60% 6.5%;
-    --foreground: 210 60% 97%;
-    --card: 210 60% 6%;
-    --card-foreground: 210 60% 97%;
-    --popover: 210 60% 6%;
-    --popover-foreground: 210 60% 97%;
+    --background: 210 60% 4.5%;
+    --foreground: 210 60% 98%;
+    --card: 200 30% 7%;
+    --card-foreground: 210 60% 98%;
+    --popover: 210 60% 4.5%;
+    --popover-foreground: 210 60% 98%;
     --primary: 161 74% 45%;
     --primary-hover: 161 74% 55%;
     --primary-foreground: 0 0% 9%;
     --secondary: 210 60% 27%;
-    --secondary-foreground: 210 60% 97%;
+    --secondary-foreground: 210 60% 98%;
     --muted: 0 0% 50%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 14.9%;
-    --accent-foreground: 210 60% 97%;
+    --accent-foreground: 210 60% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 60% 97%;
+    --destructive-foreground: 210 60% 98%;
     --border: 161 74% 45%;
     --input: 0 0% 14.9%;
     --ring: 161 74% 45%;
@@ -59,9 +61,22 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: rgb(111, 111, 111);
+    border-radius: 100vw;
+  }
+
   * {
     @apply border-border;
   }
@@ -69,12 +84,20 @@
     @apply bg-background text-foreground;
   }
   h1 {
-    @apply text-3xl font-bold;
+    @apply text-3xl font-bold text-center mx-auto;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold;
   }
 
   @media (max-width: 640px) {
     h1 {
       @apply text-xl;
+    }
+
+    h2 {
+      @apply text-lg;
     }
   }
 }
