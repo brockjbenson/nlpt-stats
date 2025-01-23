@@ -19,6 +19,30 @@ export type CashSession = {
   poyPoints: number;
 };
 
+export type CashSessionWithWeek = CashSession & {
+  week: {
+    weekNumber: number;
+  };
+};
+
+export type CumulativeCashStats = {
+  member: Member;
+  netProfit: number;
+  grossProfit: number;
+  grossLoss: number;
+  sessionsPlayed: number;
+  totalRebuys: number;
+  averageWin: number;
+  averageLoss: number;
+  averageBuyIn: number;
+  wins: number;
+  losses: number;
+  winPercentage: string;
+  winStreak: number;
+  losingStreak: number;
+  poyPoints: number;
+};
+
 export type CashSessionNoId = {
   buyIn: number;
   cashOut: number;

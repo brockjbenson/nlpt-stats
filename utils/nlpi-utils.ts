@@ -13,9 +13,28 @@ const NLPIPointsMap: Record<number, number> = {
   12: 1,
   13: 1,
   14: 1,
+  15: 1,
+  16: 1,
+  17: 1,
 };
 
-export const calculateNLPIPoints = (index: number, netProfit: number) => {
-  const pointsOffPlacement = NLPIPointsMap[index + 1];
+type NLPISession = {
+  memberId: string;
+  nlpiPoints: number;
+  week: {
+    weekNumber: number;
+    id: string;
+  }[];
+  season: {
+    year: number;
+    id: string;
+  }[];
+};
+
+export const calculateNLPIPoints = (rank: number, netProfit: number) => {
+  if (rank === 0) {
+    return 0;
+  }
+  const pointsOffPlacement = NLPIPointsMap[rank];
   return (netProfit / 5) * 0.6 + pointsOffPlacement;
 };

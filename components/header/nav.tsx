@@ -29,57 +29,121 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="w-screen">
             <div className="w-screen flex justify-center">
-              <ul className="flex gap-12 w-fit">
+              <ul className="grid gap-12 w-full max-w-screen-md grid-cols-5">
                 <li className="flex flex-col">
                   <Link
-                    className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
-                    href="/stats/cash">
-                    Cash
+                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
+                    href="/stats/2025">
+                    2025
                   </Link>
-                  <ul>
+                  <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
-                        className="whitespace-nowrap p-1"
-                        href="/stats/cash?season=2025">
-                        2025
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2025/cash">
+                        Cash
                       </Link>
                     </li>
                     <li>
                       <Link
-                        className="whitespace-nowrap p-1"
-                        href="/stats/cash?season=2024">
-                        2024
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="whitespace-nowrap p-1"
-                        href="/stats/cash?season=2023">
-                        2023
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="whitespace-nowrap p-1"
-                        href="/stats/cash?season=2022">
-                        2022
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2025/tournaments">
+                        Tournaments
                       </Link>
                     </li>
                   </ul>
                 </li>
-                <li>
+                <li className="flex flex-col">
                   <Link
-                    className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
-                    href="/stats/cash">
-                    Tournaments
+                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
+                    href="/stats/2024">
+                    2024
                   </Link>
+                  <ul className="w-full m-0 pt-1">
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2024/cash">
+                        Cash
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2024/tournaments">
+                        Tournaments
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
-                <li>
+                <li className="flex flex-col">
                   <Link
-                    className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
-                    href="/stats/career">
-                    Lifetime
+                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
+                    href="/stats/2023">
+                    2023
                   </Link>
+                  <ul className="w-full m-0 pt-1">
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2023/cash">
+                        Cash
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2023/tournaments">
+                        Tournaments
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+                <li className="flex flex-col">
+                  <Link
+                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
+                    href="/stats/2022">
+                    2022
+                  </Link>
+                  <ul className="w-full m-0 pt-1">
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2022/cash">
+                        Cash
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/2022/tournaments">
+                        Tournaments
+                      </Link>
+                    </li>
+                  </ul>
+                </li>
+                <li className="flex flex-col">
+                  <Link
+                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
+                    href="/stats/career">
+                    Career
+                  </Link>
+                  <ul className="w-full m-0 pt-1">
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/career/cash">
+                        Cash
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-foreground/90 hover:text-primary"
+                        href="/stats/career/tournaments">
+                        Tournaments
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </div>

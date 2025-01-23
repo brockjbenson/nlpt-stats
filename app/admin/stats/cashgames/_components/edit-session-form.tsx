@@ -1,54 +1,48 @@
+"use client";
+
+import { BackButton } from "@/components/ui/back-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
-  SelectTrigger,
-  SelectValue,
   SelectContent,
   SelectGroup,
-  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { Member, Season, Week } from "@/utils/types";
-import React from "react";
-
-interface FormState {
-  buyIn: number;
-  cashOut: number;
-  netProfit: number;
-  rebuys: number;
-  memberId: string;
-  weekId: string;
-  seasonId: string;
-}
-
-interface DataBaseState {
-  members: Member[];
-  seasons: Season[];
-  weeks: Week[];
-}
+import { CashSession, Member, Season, Week } from "@/utils/types";
+import { SelectItem } from "@radix-ui/react-select";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 interface Props {
-  formState: FormState;
-  handleFormChange: (field: string, value: string | number) => void;
-  databaseState: DataBaseState;
-  addSessionToList: () => void;
-  setSelectWeeks: (value: Week[]) => void;
-  selectWeeks: Week[];
-  buyInRef: React.RefObject<HTMLInputElement | null>;
-  formRef: React.RefObject<HTMLDivElement | null>;
+  session: CashSession & {
+    week: Week;
+    member: Member;
+    season: Season;
+  };
+  weeks: Week[];
+  members: Member[];
+  seasons: Season[];
 }
 
-function AddSessionForm({
-  formState,
-  handleFormChange,
-  databaseState,
-  addSessionToList,
-  setSelectWeeks,
-  selectWeeks,
-  buyInRef,
-  formRef,
-}: Props) {
-  const { members, seasons, weeks } = databaseState;
+function EditSessionForm({ session, weeks, members, seasons }: Props) {
+  const router = useRouter();
+  const [id, setId] = useState(session.id);
+  const [seasonId, setSeasonId] = useState(session.seasonId);
+  const [weekId, setWeekId] = useState(session.weekId);
+  const [memberId, setMemberId] = useState(session.memberId);
+  const [buyIn, setBuyIn] = useState(session.buyIn);
+  const [cashOut, setCashOut] = useState(session.cashOut);
+  const [netProfit, setNetProfit] = useState(session.netProfit);
+  const [rebuys, setRebuys] = useState(session.rebuys);
+  const [selectWeeks, setSelectWeeks] = useState<Week[]>(
+    weeks.filter((week) => week.seasonId === seasonId)
+  );
+
+  console.log(router);
+
   const getSeasonWeeks = async (seasonId: string) => {
     const seasonWeeks = weeks?.filter((week) => week.seasonId === seasonId);
 
@@ -56,20 +50,35 @@ function AddSessionForm({
       setSelectWeeks(seasonWeeks);
     }
   };
+
+  const getSeasonYear = (seasonId: string) => {
+    const season = seasons.find((season) => season.id === seasonId);
+    return season?.year;
+  };
+
+  const getWeekNumber = (weekId: string) => {
+    const week = selectWeeks.find((week) => week.id === weekId);
+    return week?.weekNumber;
+  };
+
+  const getMemberName = (memberId: string) => {
+    const member = members.find((member) => member.id === memberId);
+    return member?.firstName;
+  };
+
   return (
-    <div ref={formRef} className="grid grid-cols-4 gap-4 mb-12 items-center">
+    <div className="grid grid-cols-2 w-full px-4 max-w-2xl mx-auto gap-4 items-center">
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="buyIn">Buy In</Label>
         <span className="relative flex items-center">
           <span className="absolute left-2">$</span>
           <Input
-            ref={buyInRef}
             className="pl-6"
             type="number"
             id="buyIn"
             step={0.05}
-            value={formState.buyIn}
-            onChange={(e) => handleFormChange("buyIn", Number(e.target.value))}
+            value={buyIn}
+            onChange={(e) => setBuyIn(Number(e.target.value))}
           />
         </span>
       </fieldset>
@@ -82,10 +91,8 @@ function AddSessionForm({
             type="number"
             id="cashOut"
             step={0.05}
-            value={formState.cashOut}
-            onChange={(e) =>
-              handleFormChange("cashOut", Number(e.target.value))
-            }
+            value={cashOut}
+            onChange={(e) => setCashOut(Number(e.target.value))}
           />
         </span>
       </fieldset>
@@ -97,11 +104,9 @@ function AddSessionForm({
             className="pl-6"
             type="number"
             id="netProfit"
-            value={formState.netProfit.toFixed(2)}
+            value={netProfit.toFixed(2)}
             readOnly
-            onChange={(e) =>
-              handleFormChange("netProfit", Number(e.target.value))
-            }
+            onChange={(e) => setNetProfit(Number(e.target.value))}
           />
         </span>
       </fieldset>
@@ -110,19 +115,19 @@ function AddSessionForm({
         <Input
           type="number"
           id="rebuys"
-          value={formState.rebuys}
-          onChange={(e) => handleFormChange("rebuys", Number(e.target.value))}
+          value={rebuys}
+          onChange={(e) => setRebuys(Number(e.target.value))}
         />
       </fieldset>
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="member">Member</Label>
-        <Select onValueChange={(value) => handleFormChange("memberId", value)}>
+        <Select value={memberId} onValueChange={(value) => setMemberId(value)}>
           <SelectTrigger id="member">
-            <SelectValue placeholder="Select member" />
+            <SelectValue>{getMemberName(memberId)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {members?.map((member) => (
+              {members.map((member) => (
                 <SelectItem key={member.id} value={member.id}>
                   {member.firstName}
                 </SelectItem>
@@ -134,13 +139,13 @@ function AddSessionForm({
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="season">Season</Label>
         <Select
-          value={formState.seasonId}
+          value={seasonId}
           onValueChange={(value) => {
-            handleFormChange("seasonId", value);
+            setSeasonId(value);
             getSeasonWeeks(value);
           }}>
           <SelectTrigger id="season">
-            <SelectValue placeholder="Select a season" />
+            <SelectValue>{getSeasonYear(seasonId)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -155,9 +160,9 @@ function AddSessionForm({
       </fieldset>
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="week">Week</Label>
-        <Select onValueChange={(value) => handleFormChange("weekId", value)}>
-          <SelectTrigger disabled={selectWeeks.length === 0} id="week">
-            <SelectValue placeholder="Select a week" />
+        <Select value={weekId} onValueChange={(value) => setWeekId(value)}>
+          <SelectTrigger id="week">
+            <SelectValue>{getWeekNumber(weekId)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -170,13 +175,12 @@ function AddSessionForm({
           </SelectContent>
         </Select>
       </fieldset>
-      <button
-        onClick={addSessionToList}
-        className="h-12 w-full rounded bg-primary text-sm self-end text-white border border-primary">
-        Add
-      </button>
+      <Button className="h-12 col-start-1 row-start-5">Update</Button>
+      <BackButton variant={"neutral"} className="h-12 col-start-2 row-start-5">
+        Cancel
+      </BackButton>
     </div>
   );
 }
 
-export default AddSessionForm;
+export default EditSessionForm;

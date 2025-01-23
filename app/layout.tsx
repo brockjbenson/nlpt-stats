@@ -10,7 +10,7 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Northern Lights Poker Tour Stats",
+  title: "NLPT - Stats",
   description: "Northern Lights Poker Tour Stats",
 };
 

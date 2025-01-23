@@ -35,7 +35,7 @@ async function Season({ year }: Props) {
           {season[0].year} Season
         </h2>
         <Link
-          className="bg-primary text-white font-medium px-4 py-2 rounded-md hover:bg-primary-dark"
+          className="bg-primary text-white font-medium px-4 py-2 rounded hover:bg-primary-dark"
           href={`/admin/seasons?year=${season[0].year}&newweek=${season[0].id}`}>
           Add Weeks
         </Link>

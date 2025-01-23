@@ -40,7 +40,7 @@ async function SessionsOverview({ sessions }: Props) {
 
   return (
     <div className="grid my-12 grid-cols-2 w-full md:grid-cols-4 gap-8">
-      <div className="border bg-card border-primary rounded-md p-4">
+      <div className="border bg-card border-primary rounded p-4">
         <h3 className="mx-auto mb-4 text-center font-semibold text-base md:text-lg">
           Sessions Played
         </h3>
@@ -48,7 +48,7 @@ async function SessionsOverview({ sessions }: Props) {
           {sessionsPlayed}
         </p>
       </div>
-      <div className="border bg-card border-primary rounded-md p-4">
+      <div className="border bg-card border-primary rounded p-4">
         <h3 className="mx-auto mb-4 text-center font-semibold text-base md:text-lg">
           Total Buy-Ins
         </h3>
@@ -56,7 +56,7 @@ async function SessionsOverview({ sessions }: Props) {
           {formatMoney(totalBuyIns)}
         </p>
       </div>
-      <div className="border bg-card max-md:col-span-2 border-primary rounded-md p-4">
+      <div className="border bg-card max-md:col-span-2 border-primary rounded p-4">
         <h3 className="mx-auto mb-4 text-center font-semibold text-base md:text-lg">
           Avg Winning Session
         </h3>
@@ -67,7 +67,7 @@ async function SessionsOverview({ sessions }: Props) {
           {formatMoney(avgWin)}
         </p>
       </div>
-      <div className="border bg-card max-md:col-span-2 border-primary rounded-md p-4">
+      <div className="border bg-card max-md:col-span-2 border-primary rounded p-4">
         <h3 className="mx-auto mb-4 text-center font-semibold text-base md:text-lg">
           Avg Losing Session
         </h3>
@@ -78,7 +78,7 @@ async function SessionsOverview({ sessions }: Props) {
           {formatMoney(avgLoss)}
         </p>
       </div>
-      <div className="border bg-card col-span-2 md:col-span-4 border-primary rounded-md p-4">
+      <div className="border bg-card col-span-2 md:col-span-4 border-primary rounded p-4">
         <h3 className="mx-auto mb-4 text-center font-semibold text-base md:text-lg">
           Sessions Leader
         </h3>

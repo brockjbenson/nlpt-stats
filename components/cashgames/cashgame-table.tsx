@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
+import { Pencil } from "lucide-react";
 
 interface Props {
   members: Member[];
@@ -24,54 +25,83 @@ async function CashGameTable({ members, seasonId }: Props) {
   // Fetch weeks for the season
   const { data: weeks, error: weeksError } = await db
     .from("week")
-    .select("*")
+    .select("id, weekNumber")
     .eq("seasonId", seasonId);
 
   if (weeksError) {
     return <p>Error fetching Weeks: {weeksError.message}</p>;
   }
 
+  if (!weeks?.length) {
+    return <p>No weeks found for this season.</p>;
+  }
+
   // Fetch all cash sessions for the season
   const { data: sessions, error: sessionsError } = await db
     .from("cashSession")
-    .select("*")
+    .select("id, memberId, weekId, netProfit, rebuys")
     .in(
       "weekId",
-      weeks.map((week) => week.id) // Only include weeks for this season
+      weeks.map((week) => week.id)
     );
 
   if (sessionsError) {
     return <p>Error fetching Sessions: {sessionsError.message}</p>;
   }
 
-  // Create a lookup map for quick access
-  const sessionLookup: Record<string, CashSession[]> = {};
-  sessions?.forEach((session) => {
-    const key = `${session.memberId}-${session.weekId}`;
-    if (!sessionLookup[key]) {
-      sessionLookup[key] = [];
-    }
-    sessionLookup[key].push(session);
-  });
+  // Precompute session lookup map
+  const sessionLookup = sessions?.reduce<Record<string, CashSession>>(
+    (acc, session) => {
+      const key = `${session.memberId}-${session.weekId}`;
+      acc[key] = session;
+      return acc;
+    },
+    {}
+  );
 
-  // Helper function to get session data from the lookup map
+  // Helper functions
   const getSessionData = (memberId: string, weekId: string) => {
-    const key = `${memberId}-${weekId}`;
-    return sessionLookup[key] || [];
+    return sessionLookup?.[`${memberId}-${weekId}`] || null;
+  };
+
+  const hasAtLeastOneSession = (memberId: string) => {
+    return sessions?.some(
+      (session) => session.memberId === memberId && session.rebuys > 0
+    );
+  };
+
+  const renderTableCell = (sessionData: CashSession | null, weekId: string) => {
+    if (!sessionData) {
+      return <TableCell key={weekId}>-</TableCell>;
+    }
+
+    const { id, netProfit, rebuys } = sessionData;
+    return (
+      <TableCell className={cn("font-medium text-center group")} key={weekId}>
+        <span className="flex items-center gap-1">
+          <span className={cn(getProfitTextColor(netProfit))}>
+            {rebuys === 0 ? "DNP" : formatMoney(netProfit)}
+          </span>
+          <Link
+            className="hover:text-primary"
+            href={`/admin/stats/cashgames/edit?id=${id}`}>
+            <Pencil className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100" />
+          </Link>
+        </span>
+      </TableCell>
+    );
   };
 
   return (
-    <div className="mt-12">
+    <div className="mt-12 w-full max-w-screen-xl mx-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="whitespace-nowrap sticky bg-card left-0 z-10 text-foreground">
+            <TableHead className="whitespace-nowrap sticky left-0 z-10">
               Member
             </TableHead>
             {weeks.map((week) => (
-              <TableHead
-                className="whitespace-nowrap text-foreground"
-                key={week.id}>
+              <TableHead className="whitespace-nowrap" key={week.id}>
                 <Link href={`/admin/seasons/week?id=${week.id}`}>
                   Week {week.weekNumber}
                 </Link>
@@ -80,32 +110,20 @@ async function CashGameTable({ members, seasonId }: Props) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {members.map((member) => (
-            <TableRow key={member.id}>
-              <TableCell className="sticky font-semibold bg-card left-0 z-10">
-                {member.firstName}
-              </TableCell>
-              {weeks.map((week) => {
-                const sessionData = getSessionData(member.id, week.id);
-                return (
-                  <TableCell
-                    className={cn(
-                      getProfitTextColor(
-                        sessionData.length && sessionData[0].netProfit
-                      ),
-                      "font-medium text-center"
-                    )}
-                    key={week.id}>
-                    {sessionData.length > 0
-                      ? sessionData[0].rebuys === 0
-                        ? "DNP"
-                        : formatMoney(sessionData[0].netProfit)
-                      : "-"}
+          {members.map(
+            (member) =>
+              hasAtLeastOneSession(member.id) && (
+                <TableRow key={member.id}>
+                  <TableCell className="sticky font-semibold left-0 z-10">
+                    {member.firstName}
                   </TableCell>
-                );
-              })}
-            </TableRow>
-          ))}
+                  {weeks.map((week) => {
+                    const sessionData = getSessionData(member.id, week.id);
+                    return renderTableCell(sessionData, week.id);
+                  })}
+                </TableRow>
+              )
+          )}
         </TableBody>
       </Table>
     </div>

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { Medal } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 async function Page(props: { searchParams: Promise<{ id: string }> }) {
@@ -65,7 +66,8 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
   return (
     <>
       <h2>
-        {week[0].season.year} : Week {week[0].weekNumber}
+        {week[0].season.year} : Week {week[0].weekNumber}{" "}
+        <Link href={`/admin/seasons/week/edit?id=${week[0].id}`}>Edit</Link>
       </h2>
       {sessions.length === 0 ? (
         <p className="text-muted mt-12 text-center mx-auto">
@@ -74,7 +76,7 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
       ) : (
         <>
           <div className="grid my-12 grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="border bg-card border-primary rounded-md p-4">
+            <div className="border bg-card border-primary rounded p-4">
               <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
                 Session Info
               </h3>
@@ -104,7 +106,7 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                 </li>
               </ul>
             </div>
-            <div className="border bg-card border-primary rounded-md p-4">
+            <div className="border bg-card border-primary rounded p-4">
               <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
                 Top Earners
               </h3>
@@ -126,7 +128,7 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                 })}
               </ul>
             </div>
-            <div className="border bg-card border-primary rounded-md p-4">
+            <div className="border bg-card border-primary rounded p-4">
               <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
                 Biggest Losers
               </h3>

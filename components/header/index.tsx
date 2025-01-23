@@ -19,7 +19,6 @@ async function Header() {
         <Logo />
         <Nav excludeAdmin={!user} />
         <div className="gap-2 hidden lg:flex">
-          <ThemeSwitcher />
           <HeaderAuth />
         </div>
         <div className="lg:hidden">

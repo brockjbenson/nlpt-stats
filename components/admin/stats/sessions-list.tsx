@@ -6,19 +6,22 @@ import React from "react";
 
 interface Props {
   sessionsToAdd: CashSessionNoId[];
-  members: Member[] | null;
-  seasons: Season[] | null;
-  weeks: Week[] | null;
   removeSessionFromList: (index: number) => void;
+  databaseState: DataBaseState;
+}
+
+interface DataBaseState {
+  members: Member[];
+  seasons: Season[];
+  weeks: Week[];
 }
 
 function SessionsList({
   sessionsToAdd,
-  members,
-  weeks,
-  seasons,
+  databaseState,
   removeSessionFromList,
 }: Props) {
+  const { members, seasons, weeks } = databaseState;
   const getMemberInfo = (id: string) => {
     return members?.find((member) => member.id === id);
   };

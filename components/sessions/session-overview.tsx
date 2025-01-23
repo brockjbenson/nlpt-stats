@@ -17,7 +17,7 @@ function SessionOverview({ sessions }: Props) {
   const biggestLosers = getBottomThree(sessions);
   return (
     <div className="grid my-12 grid-cols-1 w-full md:grid-cols-3 gap-8">
-      <div className="border bg-card border-primary rounded-md p-4">
+      <div className="border bg-card border-primary rounded p-4">
         <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
           Session Info
         </h3>
@@ -44,7 +44,7 @@ function SessionOverview({ sessions }: Props) {
           </li>
         </ul>
       </div>
-      <div className="border bg-card border-primary rounded-md p-4">
+      <div className="border bg-card border-primary rounded p-4">
         <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
           Top Earners
         </h3>
@@ -61,7 +61,7 @@ function SessionOverview({ sessions }: Props) {
           ))}
         </ul>
       </div>
-      <div className="border bg-card border-primary rounded-md p-4">
+      <div className="border bg-card border-primary rounded p-4">
         <h3 className="mx-auto mb-8 text-center font-semibold text-base md:text-lg">
           Biggest Losers
         </h3>
