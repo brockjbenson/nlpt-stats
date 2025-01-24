@@ -53,7 +53,7 @@ async function CashGameTable({ members, seasonId }: Props) {
   const sessionLookup = sessions?.reduce<Record<string, CashSession>>(
     (acc, session) => {
       const key = `${session.memberId}-${session.weekId}`;
-      acc[key] = session;
+      acc[key] = session as any;
       return acc;
     },
     {}
@@ -82,11 +82,6 @@ async function CashGameTable({ members, seasonId }: Props) {
           <span className={cn(getProfitTextColor(netProfit))}>
             {rebuys === 0 ? "DNP" : formatMoney(netProfit)}
           </span>
-          <Link
-            className="hover:text-primary"
-            href={`/admin/stats/cashgames/edit?id=${id}`}>
-            <Pencil className="h-4 w-4 ml-1 opacity-0 group-hover:opacity-100" />
-          </Link>
         </span>
       </TableCell>
     );

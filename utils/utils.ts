@@ -200,14 +200,17 @@ export const calculateLosingStreak = (sessions: CashSessionWithMember[]) => {
 };
 
 export const calculateWinPercentage = (wins: number, losses: number) => {
+  if (wins === 0 && losses === 0) {
+    return 0;
+  }
   if (losses === 0) {
-    return "100%";
+    return 100;
   }
   if (wins === 0) {
-    return "0%";
+    return 0;
   }
 
-  return ((wins / (wins + losses)) * 100).toFixed(0) + "%";
+  return (wins / (wins + losses)) * 100;
 };
 
 export const rankSessions = (sessions: CashSessionNoId[]) => {
@@ -283,7 +286,8 @@ export const getPOYPointsLeaders = (
 
     return {
       id: member.id,
-      name: member.firstName,
+      name: `${member.firstName} ${member.lastName}`,
+      image: member.portraitUrl,
       totalPOYPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)), // Convert to a number for accurate sorting
     };
   });
@@ -320,7 +324,8 @@ export const getNetProfitLeaders = (
 
     return {
       id: member.id,
-      name: member.firstName,
+      name: `${member.firstName} ${member.lastName}`,
+      image: member.portraitUrl,
       totalNetProfit,
     };
   });
@@ -335,6 +340,42 @@ export const getNetProfitLeaders = (
       ...member,
       currentRank: index + 1,
     }));
+};
+
+export const getBestAverageWins = (
+  sessions: CashSessionWithWeek[],
+  memberIds: any[],
+  members: Member[]
+) => {
+  // Create a lookup for member names by ID for easier access
+  const memberLookup = members.reduce(
+    (acc, member) => {
+      acc[member.id] = member.firstName;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
+
+  // Map each session to include member details and calculate the largest wins per session
+  const sessionWins = sessions.map((session) => ({
+    memberId: session.memberId,
+    name: `${members.find((member) => member.id === session.memberId)?.firstName} ${members.find((member) => member.id === session.memberId)?.lastName}`,
+    netProfit: session.netProfit,
+    image: members.find((member) => member.id === session.memberId)
+      ?.portraitUrl,
+    weekNumber: session.week?.weekNumber || null, // Handle null/undefined week
+  }));
+
+  // Sort all sessions by netProfit in descending order
+  const sortedSessionWins = [...sessionWins].sort(
+    (a, b) => b.netProfit - a.netProfit
+  );
+
+  // Add ranking to each session
+  return sortedSessionWins.map((session, index) => ({
+    ...session,
+    currentRank: index + 1,
+  }));
 };
 
 export const getLargestWins = (
@@ -354,8 +395,10 @@ export const getLargestWins = (
   // Map each session to include member details and calculate the largest wins per session
   const sessionWins = sessions.map((session) => ({
     memberId: session.memberId,
-    name: memberLookup[session.memberId] || "Unknown",
+    name: `${members.find((member) => member.id === session.memberId)?.firstName} ${members.find((member) => member.id === session.memberId)?.lastName}`,
     netProfit: session.netProfit,
+    image: members.find((member) => member.id === session.memberId)
+      ?.portraitUrl,
     weekNumber: session.week?.weekNumber || null, // Handle null/undefined week
   }));
 

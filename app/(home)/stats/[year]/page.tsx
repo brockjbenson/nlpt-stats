@@ -8,10 +8,11 @@ import {
   getNetProfitLeaders,
   getPOYPointsLeaders,
 } from "@/utils/utils";
-import { Medal } from "lucide-react";
+import { Medal, User2 } from "lucide-react";
 import React from "react";
 import StatsTable from "./_components/stats-table";
 import CashGameTable from "@/components/cashgames/cashgame-table";
+import Image from "next/image";
 
 interface Params {
   params: Promise<{ year: number }>;
@@ -73,65 +74,90 @@ async function Page({ params }: Params) {
   return (
     <>
       <h1>{season[0].year} Stats</h1>
-      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 my-12 gap-8">
+      <h2 className="w-full text-lg text-left mb-4">Stats Leaders</h2>
+      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-12 gap-4">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-center">POY Points Leaders</CardTitle>
+            <CardTitle className="text-left text-base">POY Points</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="w-full">
-              {rankedPOYMembers.map((member, index) => {
-                if (index < 3) {
-                  return (
-                    <li
-                      className="flex items-center justify-between"
-                      key={member.id}>
-                      <span className="flex font-semibold text-lg items-center gap-2">
-                        {index === 0 ? (
-                          <Medal className="text-yellow-500" size={16} />
-                        ) : index === 1 ? (
-                          <Medal className="text-neutral-400" size={16} />
-                        ) : (
-                          <Medal className="text-orange-700" size={16} />
-                        )}
+            {rankedPOYMembers.map((member, index) => {
+              if (index === 0) {
+                return (
+                  <div
+                    className="grid grid-cols-[50px,1fr] gap-4"
+                    key={member.id}>
+                    <figure>
+                      {member.image ? (
+                        <Image
+                          src={member.image}
+                          alt={`${member.name}`}
+                          width={100}
+                          height={100}
+                          className="rounded-full"
+                        />
+                      ) : (
+                        <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
+                          <User2
+                            className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
+                            stroke="neutral-500"
+                          />
+                        </div>
+                      )}
+                    </figure>
+                    <div>
+                      <span className="flex text-base items-center gap-2">
                         {member.name}
                       </span>
                       <span className="font-semibold text-xl">
-                        {member.totalPOYPoints}
+                        {member.totalPOYPoints} points
                       </span>
-                    </li>
-                  );
-                }
-              })}
-            </ul>
+                    </div>
+                  </div>
+                );
+              }
+            })}
           </CardContent>
         </Card>
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-center">Profit Leaders</CardTitle>
+            <CardTitle className="text-left text-base">Net Profit</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="w-full">
               {rankedNetProfitLeaders.map((member, index) => {
-                if (index < 3) {
+                if (index === 0) {
                   return (
-                    <li
-                      className="flex items-center justify-between"
+                    <div
+                      className="grid grid-cols-[50px,1fr] gap-4"
                       key={member.id}>
-                      <span className="flex font-semibold text-lg items-center gap-2">
-                        {index === 0 ? (
-                          <Medal className="text-yellow-500" size={16} />
-                        ) : index === 1 ? (
-                          <Medal className="text-neutral-400" size={16} />
+                      <figure>
+                        {member.image ? (
+                          <Image
+                            src={member.image}
+                            alt={`${member.name}`}
+                            width={100}
+                            height={100}
+                            className="rounded-full"
+                          />
                         ) : (
-                          <Medal className="text-orange-700" size={16} />
+                          <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
+                            <User2
+                              className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
+                              stroke="neutral-500"
+                            />
+                          </div>
                         )}
-                        {member.name}
-                      </span>
-                      <span className="font-semibold text-green-500 text-xl">
-                        {formatMoney(member.totalNetProfit)}
-                      </span>
-                    </li>
+                      </figure>
+                      <div>
+                        <span className="flex text-base items-center gap-2">
+                          {member.name}
+                        </span>
+                        <span className="font-semibold text-green-500 text-xl">
+                          {formatMoney(member.totalNetProfit)}
+                        </span>
+                      </div>
+                    </div>
                   );
                 }
               })}
@@ -140,38 +166,201 @@ async function Page({ params }: Params) {
         </Card>
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-center">Largest Wins</CardTitle>
+            <CardTitle className="text-left text-base">Largest Win</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="w-full">
               {largestWinsLeaders.map((member, index) => {
-                if (index < 3) {
+                if (index === 0) {
                   return (
-                    <li
-                      className="flex items-center justify-between"
-                      key={member.memberId + member.weekNumber}>
-                      <span className="flex font-semibold text-lg items-center gap-2">
-                        {index === 0 ? (
-                          <Medal className="text-yellow-500" size={16} />
-                        ) : index === 1 ? (
-                          <Medal className="text-neutral-400" size={16} />
+                    <div
+                      className="grid grid-cols-[50px,1fr] gap-4"
+                      key={member.memberId}>
+                      <figure>
+                        {member.image ? (
+                          <Image
+                            src={member.image}
+                            alt={`${member.name}`}
+                            width={100}
+                            height={100}
+                            className="rounded-full"
+                          />
                         ) : (
-                          <Medal className="text-orange-700" size={16} />
+                          <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
+                            <User2
+                              className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
+                              stroke="neutral-500"
+                            />
+                          </div>
                         )}
-                        {member.name}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-green-500 text-xl">
-                          {formatMoney(member.netProfit)}
+                      </figure>
+                      <div>
+                        <span className="flex text-base items-center gap-2">
+                          {member.name}
                         </span>
-                        <span className="text-sm text-muted">
-                          (W{member.weekNumber})
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-green-500 text-xl">
+                            {formatMoney(member.netProfit)}
+                          </span>
+                          <span className="text-sm text-muted">
+                            (W{member.weekNumber})
+                          </span>
+                        </div>
                       </div>
-                    </li>
+                    </div>
                   );
                 }
               })}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-left text-base">Avg Win</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="w-full">
+              {[...cumulativeCashStats]
+                .sort((a, b) => b.averageWin - a.averageWin)
+                .map((data, index) => {
+                  if (index === 0) {
+                    return (
+                      <div
+                        className="grid grid-cols-[50px,1fr] gap-4"
+                        key={data.averageWin}>
+                        <figure>
+                          {data.member.portraitUrl ? (
+                            <Image
+                              src={data.member.portraitUrl}
+                              alt={
+                                data.member.firstName +
+                                " " +
+                                data.member.lastName
+                              }
+                              width={50}
+                              height={50}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
+                              <User2
+                                className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
+                                stroke="neutral-500"
+                              />
+                            </div>
+                          )}
+                        </figure>
+                        <div>
+                          <span className="flex text-base items-center gap-2">
+                            {data.member.firstName} {data.member.lastName}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-green-500 text-xl">
+                              {formatMoney(data.averageWin)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-left text-base">Wins</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="w-full">
+              {[...cumulativeCashStats]
+                .sort((a, b) => b.wins - a.wins)
+                .map((data, index) => {
+                  if (index === 0) {
+                    return (
+                      <div
+                        className="grid grid-cols-[50px,1fr] gap-4"
+                        key={data.averageWin}>
+                        <figure>
+                          {data.member.portraitUrl ? (
+                            <Image
+                              src={data.member.portraitUrl}
+                              alt={
+                                data.member.firstName +
+                                " " +
+                                data.member.lastName
+                              }
+                              width={50}
+                              height={50}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
+                              <User2
+                                className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
+                                stroke="neutral-500"
+                              />
+                            </div>
+                          )}
+                        </figure>
+                        <div>
+                          <span className="flex text-base items-center gap-2">
+                            {data.member.firstName} {data.member.lastName}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-xl">
+                              {data.wins}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
+            </ul>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="text-left text-base">
+              Best Win Streak
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="w-full">
+              {[...cumulativeCashStats]
+                .sort((a, b) => b.winStreak - a.winStreak)
+                .map((data, index) => {
+                  if (index === 0) {
+                    return (
+                      <div
+                        className="grid grid-cols-[50px,1fr] gap-4"
+                        key={data.averageWin}>
+                        <figure>
+                          <Image
+                            src={data.member.portraitUrl || ""}
+                            alt={
+                              data.member.firstName + " " + data.member.lastName
+                            }
+                            width={50}
+                            height={50}
+                            className="rounded-full"
+                          />
+                        </figure>
+                        <div>
+                          <span className="flex text-base items-center gap-2">
+                            {data.member.firstName} {data.member.lastName}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-xl">
+                              {data.winStreak}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                })}
             </ul>
           </CardContent>
         </Card>

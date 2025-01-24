@@ -81,7 +81,16 @@ function StatsTable({ cumulativeCashStats }: Props) {
                 <TableCell>{stats.sessionsPlayed}</TableCell>
                 <TableCell>{stats.wins}</TableCell>
                 <TableCell>{stats.losses}</TableCell>
-                <TableCell>{stats.winPercentage}</TableCell>
+                <TableCell>
+                  <span
+                    className={cn(
+                      stats.winPercentage < 50
+                        ? "text-red-500"
+                        : "text-green-500"
+                    )}>
+                    {stats.winPercentage.toFixed(2)}%
+                  </span>
+                </TableCell>
                 <TableCell>{stats.winStreak}</TableCell>
                 <TableCell>{stats.losingStreak}</TableCell>
               </TableRow>

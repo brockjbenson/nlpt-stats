@@ -37,7 +37,7 @@ export type CumulativeCashStats = {
   averageBuyIn: number;
   wins: number;
   losses: number;
-  winPercentage: string;
+  winPercentage: number;
   winStreak: number;
   losingStreak: number;
   poyPoints: number;
