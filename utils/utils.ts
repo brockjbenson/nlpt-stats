@@ -52,38 +52,50 @@ export function getProfitTextColor(profit: number) {
 
 export function formatMoney(amount: number) {
   return amount >= 0
-    ? `$${amount.toFixed(2)}`
-    : `$(${(amount * -1).toFixed(2)})`;
+    ? `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `$(${Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
 }
 
 export function getBottomThree(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
-  return sessionsCopy.sort((a, b) => a.netProfit - b.netProfit).slice(0, 3);
+  return sessionsCopy.sort((a, b) => a.net_profit - b.net_profit).slice(0, 3);
+}
+
+export function getBiggestLoser(sessions: CashSessionWithMember[]) {
+  const sessionsCopy = [...sessions];
+  return sessionsCopy.sort((a, b) => a.net_profit - b.net_profit).slice(0, 1);
 }
 
 export function getTopThree(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
-  return sessionsCopy.sort((a, b) => b.netProfit - a.netProfit).slice(0, 3);
+  return sessionsCopy.sort((a, b) => b.net_profit - a.net_profit).slice(0, 3);
+}
+
+export function getTopPerformer(sessions: CashSessionWithMember[]) {
+  const sessionsCopy = [...sessions];
+  return sessionsCopy.sort((a, b) => b.net_profit - a.net_profit).slice(0, 1);
 }
 
 export function getTotalSessionsPlayed(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
-  const uniqueSessions = new Set(sessionsCopy.map((session) => session.weekId));
+  const uniqueSessions = new Set(
+    sessionsCopy.map((session) => session.week_id)
+  );
   return uniqueSessions.size;
 }
 
 export function getTotalBuyIns(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
-  return sessionsCopy.reduce((acc, session) => acc + session.buyIn, 0);
+  return sessionsCopy.reduce((acc, session) => acc + session.buy_in, 0);
 }
 
 export function calculateAverageWin(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
   const positiveSessions = sessionsCopy.filter(
-    (session) => session.netProfit > 0
+    (session) => session.net_profit > 0
   );
   const totalProfit = positiveSessions.reduce(
-    (acc, session) => acc + session.netProfit,
+    (acc, session) => acc + session.net_profit,
     0
   );
   if (totalProfit === 0) {
@@ -95,10 +107,10 @@ export function calculateAverageWin(sessions: CashSessionWithMember[]) {
 export function calculateAverageLoss(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
   const negativeSessions = sessionsCopy.filter(
-    (session) => session.netProfit < 0
+    (session) => session.net_profit < 0
   );
   const totalProfit = negativeSessions.reduce(
-    (acc, session) => acc + session.netProfit,
+    (acc, session) => acc + session.net_profit,
     0
   );
   if (totalProfit === 0) {
@@ -111,10 +123,10 @@ export function getSessionLeader(sessions: CashSessionWithMember[]) {
   const sessionsCopy = [...sessions];
   const sessionLeaders = sessionsCopy.reduce(
     (acc, session) => {
-      if (!acc[session.memberId]) {
-        acc[session.memberId] = 0;
+      if (!acc[session.member_id]) {
+        acc[session.member_id] = 0;
       }
-      acc[session.memberId] += session.netProfit;
+      acc[session.member_id] += session.net_profit;
       return acc;
     },
     {} as Record<string, number>
@@ -131,16 +143,20 @@ export function combineLeaderStats(sessions: CashSessionWithFullMember[]) {
   const sessionsCopy = [...sessions];
   const combinedStats = sessionsCopy.reduce(
     (acc, session) => {
-      acc.buyIn += session.buyIn;
-      acc.cashOut += session.cashOut;
-      acc.netProfit += session.netProfit;
+      acc.buyIn += session.buy_in;
+      acc.cashOut += session.cash_out;
+      acc.netProfit += session.net_profit;
       acc.rebuys += session.rebuys;
-      acc.member = session.member;
+      acc.member = {
+        firstName: session.member.first_name,
+        lastName: session.member.last_name,
+        portraitUrl: session.member.portrait_url,
+      };
       acc.sessionsPlayed = sessions.length;
-      acc.wins += session.netProfit > 0 ? 1 : 0;
-      acc.losses += session.netProfit < 0 ? 1 : 0;
-      acc.grossProfit += session.netProfit > 0 ? session.netProfit : 0;
-      acc.grossLoss += session.netProfit < 0 ? session.netProfit : 0;
+      acc.wins += session.net_profit > 0 ? 1 : 0;
+      acc.losses += session.net_profit < 0 ? 1 : 0;
+      acc.grossProfit += session.net_profit > 0 ? session.net_profit : 0;
+      acc.grossLoss += session.net_profit < 0 ? session.net_profit : 0;
 
       return acc;
     },
@@ -171,7 +187,7 @@ export const calculateWinSteak = (sessions: CashSessionWithMember[]) => {
   const sessionsCopy = [...sessions];
 
   sessionsCopy.forEach((session) => {
-    if (session.netProfit > 0) {
+    if (session.net_profit > 0) {
       currentWinStreak += 1;
     } else {
       longestWinStreak = Math.max(longestWinStreak, currentWinStreak);
@@ -188,7 +204,7 @@ export const calculateLosingStreak = (sessions: CashSessionWithMember[]) => {
   const sessionsCopy = [...sessions];
 
   sessionsCopy.forEach((session) => {
-    if (session.netProfit < 0) {
+    if (session.net_profit < 0) {
       currentLosingStreak += 1;
     } else {
       longestLosingStreak = Math.max(longestLosingStreak, currentLosingStreak);
@@ -214,31 +230,27 @@ export const calculateWinPercentage = (wins: number, losses: number) => {
 };
 
 export const rankSessions = (sessions: CashSessionNoId[]) => {
-  // Group sessions by weekId
   const sessionsByWeek = sessions.reduce<Record<string, CashSessionNoId[]>>(
     (acc, session) => {
-      const { weekId } = session;
-      if (!acc[weekId]) {
-        acc[weekId] = [];
+      const { week_id } = session;
+      if (!acc[week_id]) {
+        acc[week_id] = [];
       }
-      acc[weekId].push(session);
+      acc[week_id].push(session);
       return acc;
     },
     {}
   );
 
-  // Rank sessions within each weekId group
   const rankedSessions = Object.values(sessionsByWeek).flatMap(
     (weekSessions) => {
-      // Sort sessions by netProfit in descending order
       const sortedSessions = [...weekSessions].sort(
-        (a, b) => b.netProfit - a.netProfit
+        (a, b) => b.net_profit - a.net_profit
       );
 
-      // Add rank to each session
       return sortedSessions.map((session, index) => ({
         ...session,
-        rank: session.rebuys === 0 ? 0 : index + 1, // Rank 0 for sessions with rebuys = 0
+        rank: session.rebuys === 0 ? 0 : index + 1,
       }));
     }
   );
@@ -251,51 +263,52 @@ export const calculatePOYPoints = (rank: number, netProfit: number) => {
 };
 
 export const getPOYPointsLeaders = (
-  sessions: CashSessionWithMember[],
+  sessions: CashSession[],
   memberIds: any[],
   members: Member[]
 ) => {
-  // Create a copy of sessions to ensure no external mutation
   const sessionsCopy = [...sessions];
 
-  // Group sessions by memberId
-  const sessionsByMember = memberIds.reduce<
-    Record<string, CashSessionWithMember[]>
-  >((acc, memberId) => {
-    acc[memberId] = sessionsCopy.filter(
-      (session) => session.memberId === memberId
-    );
-    return acc;
-  }, {});
+  const sessionsByMember = memberIds.reduce<Record<string, CashSession[]>>(
+    (acc, memberId) => {
+      acc[memberId] = sessionsCopy.filter(
+        (session) => session.member_id === memberId
+      );
+      return acc;
+    },
+    {}
+  );
 
-  // Calculate POY points for each member
   const memberPOYPoints = members.map((member) => {
     const allSessions = sessionsByMember[member.id] || [];
 
     const totalPOYPoints = allSessions.reduce(
-      (sum, session) => sum + session.poyPoints,
+      (sum, session) => sum + session.poy_points,
       0
     );
 
+    console.log("totalPOYPoints", totalPOYPoints);
+
     const netProfit = allSessions.reduce(
-      (sum, session) => sum + session.netProfit,
+      (sum, session) => sum + session.net_profit,
       0
     );
 
     const bonusPoints = netProfit > 0 ? netProfit / 2 : 0;
 
+    console.log("bonusPoints", bonusPoints);
+
     return {
       id: member.id,
-      name: `${member.firstName} ${member.lastName}`,
-      image: member.portraitUrl,
-      totalPOYPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)), // Convert to a number for accurate sorting
+      name: `${member.first_name} ${member.last_name}`,
+      image: member.portrait_url,
+      totalPOYPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)),
     };
   });
 
-  // Filter and rank members by total POY points
   return memberPOYPoints
-    .filter((member) => member.totalPOYPoints > 0) // Filter members with no points
-    .sort((a, b) => b.totalPOYPoints - a.totalPOYPoints) // Sort descending
+    .filter((member) => member.totalPOYPoints > 0)
+    .sort((a, b) => b.totalPOYPoints - a.totalPOYPoints)
     .map((member, index) => ({
       ...member,
       currentRank: index + 1, // Add rank
@@ -310,7 +323,7 @@ export const getNetProfitLeaders = (
   const sessionsCopy = [...sessions];
   const sessionsByMember = memberIds.reduce((acc, memberId) => {
     acc[memberId] = sessionsCopy.filter(
-      (session) => session.memberId === memberId
+      (session) => session.member_id === memberId
     );
     return acc;
   }, {});
@@ -318,14 +331,14 @@ export const getNetProfitLeaders = (
   const memberNetProfit = members.map((member) => {
     const allSessions = sessionsByMember[member.id] || [];
     const totalNetProfit = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.netProfit,
+      (sum: number, session: CashSession) => sum + session.net_profit,
       0
     );
 
     return {
       id: member.id,
-      name: `${member.firstName} ${member.lastName}`,
-      image: member.portraitUrl,
+      name: `${member.first_name} ${member.last_name}`,
+      image: member.portrait_url,
       totalNetProfit,
     };
   });
@@ -344,34 +357,21 @@ export const getNetProfitLeaders = (
 
 export const getBestAverageWins = (
   sessions: CashSessionWithWeek[],
-  memberIds: any[],
   members: Member[]
 ) => {
-  // Create a lookup for member names by ID for easier access
-  const memberLookup = members.reduce(
-    (acc, member) => {
-      acc[member.id] = member.firstName;
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  // Map each session to include member details and calculate the largest wins per session
   const sessionWins = sessions.map((session) => ({
-    memberId: session.memberId,
-    name: `${members.find((member) => member.id === session.memberId)?.firstName} ${members.find((member) => member.id === session.memberId)?.lastName}`,
-    netProfit: session.netProfit,
-    image: members.find((member) => member.id === session.memberId)
-      ?.portraitUrl,
-    weekNumber: session.week?.weekNumber || null, // Handle null/undefined week
+    memberId: session.member_id,
+    name: `${members.find((member) => member.id === session.member_id)?.first_name} ${members.find((member) => member.id === session.member_id)?.last_name}`,
+    netProfit: session.net_profit,
+    image: members.find((member) => member.id === session.member_id)
+      ?.portrait_url,
+    weekNumber: session.week?.week_number || null,
   }));
 
-  // Sort all sessions by netProfit in descending order
   const sortedSessionWins = [...sessionWins].sort(
     (a, b) => b.netProfit - a.netProfit
   );
 
-  // Add ranking to each session
   return sortedSessionWins.map((session, index) => ({
     ...session,
     currentRank: index + 1,
@@ -380,34 +380,21 @@ export const getBestAverageWins = (
 
 export const getLargestWins = (
   sessions: CashSessionWithWeek[],
-  memberIds: any[],
   members: Member[]
 ) => {
-  // Create a lookup for member names by ID for easier access
-  const memberLookup = members.reduce(
-    (acc, member) => {
-      acc[member.id] = member.firstName;
-      return acc;
-    },
-    {} as Record<string, string>
-  );
-
-  // Map each session to include member details and calculate the largest wins per session
   const sessionWins = sessions.map((session) => ({
-    memberId: session.memberId,
-    name: `${members.find((member) => member.id === session.memberId)?.firstName} ${members.find((member) => member.id === session.memberId)?.lastName}`,
-    netProfit: session.netProfit,
-    image: members.find((member) => member.id === session.memberId)
-      ?.portraitUrl,
-    weekNumber: session.week?.weekNumber || null, // Handle null/undefined week
+    memberId: session.member_id,
+    name: `${members.find((member) => member.id === session.member_id)?.first_name} ${members.find((member) => member.id === session.member_id)?.last_name}`,
+    netProfit: session.net_profit,
+    image: members.find((member) => member.id === session.member_id)
+      ?.portrait_url,
+    weekNumber: session.week?.week_number || null,
   }));
 
-  // Sort all sessions by netProfit in descending order
   const sortedSessionWins = [...sessionWins].sort(
     (a, b) => b.netProfit - a.netProfit
   );
 
-  // Add ranking to each session
   return sortedSessionWins.map((session, index) => ({
     ...session,
     currentRank: index + 1,
@@ -422,7 +409,7 @@ export const getCumulativeCashStats = (
   const sessionsCopy = [...sessions];
   const sessionsByMember = memberIds.reduce((acc, memberId) => {
     acc[memberId] = sessionsCopy.filter(
-      (session) => session.memberId === memberId
+      (session) => session.member_id === memberId
     );
 
     return acc;
@@ -431,17 +418,17 @@ export const getCumulativeCashStats = (
   const memberStats = members.map((member) => {
     const allSessions = sessionsByMember[member.id] || [];
     const totalNetProfit = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.netProfit,
+      (sum: number, session: CashSession) => sum + session.net_profit,
       0
     );
     const totalGrossProfit = allSessions.reduce(
       (sum: number, session: CashSession) =>
-        sum + (session.netProfit > 0 ? session.netProfit : 0),
+        sum + (session.net_profit > 0 ? session.net_profit : 0),
       0
     );
     const totalGrossLoss = allSessions.reduce(
       (sum: number, session: CashSession) =>
-        sum + (session.netProfit < 0 ? session.netProfit : 0),
+        sum + (session.net_profit < 0 ? session.net_profit : 0),
       0
     );
     const totalRebuys = allSessions.reduce(
@@ -449,22 +436,22 @@ export const getCumulativeCashStats = (
       0
     );
     const wins = allSessions.filter(
-      (session: CashSession) => session.netProfit > 0
+      (session: CashSession) => session.net_profit > 0
     ).length;
     const losses = allSessions.filter(
-      (session: CashSession) => session.netProfit < 0
+      (session: CashSession) => session.net_profit < 0
     ).length;
     const poyPoints = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.poyPoints,
+      (sum: number, session: CashSession) => sum + session.poy_points,
       0
     );
     const avgBuyIn = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.buyIn,
+      (sum: number, session: CashSession) => sum + session.buy_in,
       0
     );
     const sessionsPlayed = allSessions.reduce(
       (sum: number, session: CashSession) =>
-        session.buyIn === 0 ? sum : sum + 1,
+        session.buy_in === 0 ? sum : sum + 1,
       0
     );
     const avgWin = calculateAverageWin(allSessions);

@@ -6,7 +6,7 @@ import React, { useEffect } from "react";
 
 interface Sessions extends CashSession {
   week: {
-    weekNumber: number;
+    week_number: number;
   };
 }
 
@@ -50,17 +50,14 @@ function Admin() {
   }, []);
 
   const sessionsOrderedByWeek = sessions.sort((a, b) => {
-    return a.week.weekNumber - b.week.weekNumber;
+    return a.week.week_number - b.week.week_number;
   });
 
   const missingWeeks = weeks.filter((week) => {
     return !sessionsOrderedByWeek.find(
-      (session) => session.week.weekNumber === week.weekNumber
+      (session) => session.week.week_number === week.week_number
     );
   });
-
-  console.log("Missing weeks", missingWeeks);
-  console.log("Sessions", sessionsOrderedByWeek);
 
   const insertDataForMissingWeeks = async () => {
     console.log("Inserting data for missing weeks", missingWeeks);

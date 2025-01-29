@@ -38,7 +38,7 @@ function SessionOverview({ sessions }: Props) {
             <span>Money In Play</span>
             <span>
               {formatMoney(
-                sessions.reduce((total, session) => total + session.buyIn, 0)
+                sessions.reduce((total, session) => total + session.buy_in, 0)
               )}
             </span>
           </li>
@@ -53,9 +53,9 @@ function SessionOverview({ sessions }: Props) {
             <li
               className="flex items-center justify-between w-full pb-2"
               key={session.id}>
-              <span>{session.member.firstName}</span>
-              <span className={cn(getProfitTextColor(session.netProfit))}>
-                {formatMoney(session.netProfit)}
+              <span>{session.member.first_name}</span>
+              <span className={cn(getProfitTextColor(session.net_profit))}>
+                {formatMoney(session.net_profit)}
               </span>
             </li>
           ))}
@@ -70,9 +70,9 @@ function SessionOverview({ sessions }: Props) {
             <li
               className="flex items-center justify-between w-full pb-2"
               key={session.id}>
-              <span>{session.member.firstName}</span>
-              <span className={cn(getProfitTextColor(session.netProfit))}>
-                {formatMoney(session.netProfit)}
+              <span>{session.member.first_name}</span>
+              <span className={cn(getProfitTextColor(session.net_profit))}>
+                {formatMoney(session.net_profit)}
               </span>
             </li>
           ))}

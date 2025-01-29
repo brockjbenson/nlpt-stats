@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
-import { CashSession } from "@/utils/types";
+import { CashSession, CashSessionNLPI } from "@/utils/types";
 import {
   ArrowDown,
   ArrowUp,
@@ -20,6 +20,8 @@ import React from "react";
 
 async function NLPI() {
   const db = await createClient();
+  const currentYear = new Date().getFullYear();
+  const previousYear = currentYear - 1;
 
   // Fetch all members
   const { data: members, error: memberError } = await db
@@ -30,47 +32,67 @@ async function NLPI() {
     return <p>Error fetching Member data: {memberError.message}</p>;
   }
 
-  // Fetch all sessions for members in one query
   const memberIds = members.map((member) => member.id);
-  const { data: sessions, error: sessionError } = await db
-    .from("cashSession")
-    .select(`memberId, nlpiPoints, createdAt`)
-    .in("memberId", memberIds)
-    .order("createdAt", { ascending: false });
+
+  const { data: sessions, error: sessionError } =
+    await db.rpc("get_nlpi_sessions");
+
   if (sessionError) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
   }
 
-  // Group sessions by memberId
+  const previousYearSessions = [...sessions].filter(
+    (session: CashSessionNLPI) => {
+      return session.year === previousYear;
+    }
+  );
+
   const sessionsByMember = memberIds.reduce((acc, memberId) => {
-    acc[memberId] = sessions
-      .filter((session) => session.memberId === memberId)
-      .slice(0, 20); // Take the last 20 sessions
+    acc[memberId] = [...sessions]
+      .filter((session: CashSessionNLPI) => session.member_id === memberId)
+      .slice(0, 20);
     return acc;
   }, {});
 
-  console.log(sessionsByMember);
+  const previousSessionsByMember = memberIds.reduce((acc, memberId) => {
+    acc[memberId] = [...previousYearSessions]
+      .filter((session: CashSessionNLPI) => session.member_id === memberId)
+      .slice(0, 20);
+    return acc;
+  }, {});
 
-  // Calculate current rank and last week's rank
   const memberRanks = members.map((member) => {
     const allSessions = sessionsByMember[member.id] || [];
     const totalPoints = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.nlpiPoints,
+      (sum: number, session: CashSession) => sum + session.nlpi_points,
       0
     );
 
-    // Exclude the most recent session to calculate last week's rank
-    const lastWeekSessions = allSessions.slice(1); // Exclude the first (most recent) session
+    const lastWeekSessions = allSessions.slice(1);
     const lastWeekPoints = lastWeekSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.nlpiPoints,
+      (sum: number, session: CashSession) => sum + session.nlpi_points,
       0
     );
 
     return {
       id: member.id,
-      name: member.firstName,
+      name: member.first_name,
       totalPoints,
       lastWeekPoints,
+    };
+  });
+
+  const previousYearMemberRanks = members.map((member) => {
+    const allSessions = previousSessionsByMember[member.id] || [];
+    const totalPoints = allSessions.reduce(
+      (sum: number, session: CashSession) => sum + session.nlpi_points,
+      0
+    );
+
+    return {
+      id: member.id,
+      name: member.first_name,
+      totalPoints,
     };
   });
 
@@ -118,28 +140,36 @@ async function NLPI() {
     (member) => member.totalPoints === 0
   );
 
-  // Rank members by totalPoints
-  const rankedMembers = [...filteredMembers]
+  const currentYearRankedMembers = [...filteredMembers]
     .sort((a, b) => b.totalPoints - a.totalPoints)
     .map((member, index) => ({
       ...member,
       currentRank: index + 1,
     }));
 
-  // Rank members by lastWeekPoints
-  const rankedLastWeek = [...filteredMembers]
+  const currentYearRankedLastWeek = [...filteredMembers]
     .sort((a, b) => b.lastWeekPoints - a.lastWeekPoints)
     .map((member, index) => ({
       ...member,
       lastWeekRank: index + 1,
     }));
 
-  // Merge the ranks into one array
-  const finalRanks = rankedMembers.map((member) => {
-    const lastWeek = rankedLastWeek.find((m) => m.id === member.id);
+  const previousYearRankedMembers = [...previousYearMemberRanks]
+    .sort((a, b) => b.totalPoints - a.totalPoints)
+    .map((member, index) => ({
+      ...member,
+      previousYearRank: member.totalPoints === 0 ? "-" : index + 1,
+    }));
+
+  const finalRanks = currentYearRankedMembers.map((member) => {
+    const lastWeek = currentYearRankedLastWeek.find((m) => m.id === member.id);
+    const previousYear = previousYearRankedMembers.find(
+      (m) => m.id === member.id
+    );
     return {
       ...member,
       lastWeekRank: lastWeek ? lastWeek.lastWeekRank : null,
+      previousYearRank: previousYear ? previousYear.previousYearRank : null,
     };
   });
 
@@ -170,6 +200,7 @@ async function NLPI() {
           <TableRow>
             <TableHead>Ranking</TableHead>
             <TableHead>Last Week</TableHead>
+            <TableHead>End {previousYear}</TableHead>
             <TableHead>Member</TableHead>
             <TableHead>Total Points</TableHead>
             <TableHead>Avg Points</TableHead>
@@ -197,6 +228,7 @@ async function NLPI() {
                   </span>
                 </TableCell>
                 <TableCell>{member.lastWeekRank || "-"}</TableCell>
+                <TableCell>{member.previousYearRank || "-"}</TableCell>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
                 <TableCell>

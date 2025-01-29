@@ -12,7 +12,7 @@ import { Medal, User2 } from "lucide-react";
 import React from "react";
 import StatsTable from "./_components/stats-table";
 import CashGameTable from "@/components/cashgames/cashgame-table";
-import Image from "next/image";
+import MemberImage from "@/components/members/member-image";
 
 interface Params {
   params: Promise<{ year: number }>;
@@ -33,7 +33,7 @@ async function Page({ params }: Params) {
   const { data: members, error: memberError } = await db
     .from("members")
     .select("*")
-    .order("firstName", { ascending: true });
+    .order("first_name", { ascending: true });
 
   if (memberError) {
     return <p>Error fetching Member data: {memberError.message}</p>;
@@ -41,17 +41,12 @@ async function Page({ params }: Params) {
 
   const memberIds = members.map((member) => member.id);
 
-  const { data: sessions, error: sessionError } = await db
-    .from("cashSession")
-    .select(
-      `
-    *,
-    week:weekId(weekNumber)
-  `
-    )
-    .in("memberId", memberIds)
-    .order("createdAt", { ascending: false })
-    .eq("seasonId", season[0].id);
+  const { data: sessions, error: sessionError } = await db.rpc(
+    "get_cash_sessions_by_season",
+    {
+      target_season_id: season[0].id,
+    }
+  );
 
   if (sessionError) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
@@ -63,7 +58,7 @@ async function Page({ params }: Params) {
     memberIds,
     members
   );
-  const largestWinsLeaders = getLargestWins(sessions, memberIds, members);
+  const largestWinsLeaders = getLargestWins(sessions, members);
 
   const cumulativeCashStats = getCumulativeCashStats(
     sessions,
@@ -87,24 +82,7 @@ async function Page({ params }: Params) {
                   <div
                     className="grid grid-cols-[50px,1fr] gap-4"
                     key={member.id}>
-                    <figure>
-                      {member.image ? (
-                        <Image
-                          src={member.image}
-                          alt={`${member.name}`}
-                          width={100}
-                          height={100}
-                          className="rounded-full"
-                        />
-                      ) : (
-                        <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
-                          <User2
-                            className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
-                            stroke="neutral-500"
-                          />
-                        </div>
-                      )}
-                    </figure>
+                    <MemberImage src={member.image} alt={member.name} />
                     <div>
                       <span className="flex text-base items-center gap-2">
                         {member.name}
@@ -131,24 +109,7 @@ async function Page({ params }: Params) {
                     <div
                       className="grid grid-cols-[50px,1fr] gap-4"
                       key={member.id}>
-                      <figure>
-                        {member.image ? (
-                          <Image
-                            src={member.image}
-                            alt={`${member.name}`}
-                            width={100}
-                            height={100}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
-                            <User2
-                              className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
-                              stroke="neutral-500"
-                            />
-                          </div>
-                        )}
-                      </figure>
+                      <MemberImage src={member.image} alt={member.name} />
                       <div>
                         <span className="flex text-base items-center gap-2">
                           {member.name}
@@ -176,24 +137,7 @@ async function Page({ params }: Params) {
                     <div
                       className="grid grid-cols-[50px,1fr] gap-4"
                       key={member.memberId}>
-                      <figure>
-                        {member.image ? (
-                          <Image
-                            src={member.image}
-                            alt={`${member.name}`}
-                            width={100}
-                            height={100}
-                            className="rounded-full"
-                          />
-                        ) : (
-                          <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
-                            <User2
-                              className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
-                              stroke="neutral-500"
-                            />
-                          </div>
-                        )}
-                      </figure>
+                      <MemberImage src={member.image || ""} alt={member.name} />
                       <div>
                         <span className="flex text-base items-center gap-2">
                           {member.name}
@@ -228,31 +172,13 @@ async function Page({ params }: Params) {
                       <div
                         className="grid grid-cols-[50px,1fr] gap-4"
                         key={data.averageWin}>
-                        <figure>
-                          {data.member.portraitUrl ? (
-                            <Image
-                              src={data.member.portraitUrl}
-                              alt={
-                                data.member.firstName +
-                                " " +
-                                data.member.lastName
-                              }
-                              width={50}
-                              height={50}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
-                              <User2
-                                className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
-                                stroke="neutral-500"
-                              />
-                            </div>
-                          )}
-                        </figure>
+                        <MemberImage
+                          src={data.member.portrait_url}
+                          alt={data.member.first_name}
+                        />
                         <div>
                           <span className="flex text-base items-center gap-2">
-                            {data.member.firstName} {data.member.lastName}
+                            {data.member.first_name} {data.member.last_name}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-green-500 text-xl">
@@ -281,31 +207,13 @@ async function Page({ params }: Params) {
                       <div
                         className="grid grid-cols-[50px,1fr] gap-4"
                         key={data.averageWin}>
-                        <figure>
-                          {data.member.portraitUrl ? (
-                            <Image
-                              src={data.member.portraitUrl}
-                              alt={
-                                data.member.firstName +
-                                " " +
-                                data.member.lastName
-                              }
-                              width={50}
-                              height={50}
-                              className="rounded-full"
-                            />
-                          ) : (
-                            <div className="rounded-full bg-neutral-800 flex items-center justify-center w-full aspect-square overflow-hidden">
-                              <User2
-                                className="fill-muted-foreground relative top-2 w-[90%] h-[90%]"
-                                stroke="neutral-500"
-                              />
-                            </div>
-                          )}
-                        </figure>
+                        <MemberImage
+                          src={data.member.portrait_url}
+                          alt={data.member.first_name}
+                        />
                         <div>
                           <span className="flex text-base items-center gap-2">
-                            {data.member.firstName} {data.member.lastName}
+                            {data.member.first_name} {data.member.last_name}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-xl">
@@ -336,20 +244,13 @@ async function Page({ params }: Params) {
                       <div
                         className="grid grid-cols-[50px,1fr] gap-4"
                         key={data.averageWin}>
-                        <figure>
-                          <Image
-                            src={data.member.portraitUrl || ""}
-                            alt={
-                              data.member.firstName + " " + data.member.lastName
-                            }
-                            width={50}
-                            height={50}
-                            className="rounded-full"
-                          />
-                        </figure>
+                        <MemberImage
+                          src={data.member.portrait_url}
+                          alt={data.member.first_name}
+                        />
                         <div>
                           <span className="flex text-base items-center gap-2">
-                            {data.member.firstName} {data.member.lastName}
+                            {data.member.first_name} {data.member.last_name}
                           </span>
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-xl">
@@ -367,7 +268,11 @@ async function Page({ params }: Params) {
       </div>
       <h2 className="mb-8 font-semibold text-lg">Cash Stats</h2>
       <StatsTable cumulativeCashStats={cumulativeCashStats} />
-      <CashGameTable members={members} seasonId={season[0].id} />
+      <CashGameTable
+        members={members}
+        year={season[0].year}
+        seasonId={season[0].id}
+      />
     </>
   );
 }

@@ -35,15 +35,15 @@ function SessionTable({ sessions }: Props) {
       </TableHeader>
       <TableBody>
         {sessions.reverse().map((session, index) => {
-          const NLPIPoints = calculateNLPIPoints(index, session.netProfit);
-          const POYPoints = calculatePOYPoints(index, session.netProfit);
+          const NLPIPoints = calculateNLPIPoints(index, session.net_profit);
+          const POYPoints = calculatePOYPoints(index, session.net_profit);
           return (
             <TableRow key={session.id}>
-              <TableCell>{session.member.firstName}</TableCell>
-              <TableCell>{formatMoney(session.buyIn)}</TableCell>
-              <TableCell>{formatMoney(session.cashOut)}</TableCell>
-              <TableCell className={getProfitTextColor(session.netProfit)}>
-                {formatMoney(session.netProfit)}
+              <TableCell>{session.member.first_name}</TableCell>
+              <TableCell>{formatMoney(session.buy_in)}</TableCell>
+              <TableCell>{formatMoney(session.cash_out)}</TableCell>
+              <TableCell className={getProfitTextColor(session.net_profit)}>
+                {formatMoney(session.net_profit)}
               </TableCell>
               <TableCell>{session.rebuys}</TableCell>
               <TableCell>{NLPIPoints.toFixed(3)}</TableCell>

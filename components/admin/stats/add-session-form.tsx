@@ -12,13 +12,13 @@ import { Member, Season, Week } from "@/utils/types";
 import React from "react";
 
 interface FormState {
-  buyIn: number;
-  cashOut: number;
-  netProfit: number;
+  buy_in: number;
+  cash_out: number;
+  net_profit: number;
   rebuys: number;
-  memberId: string;
-  weekId: string;
-  seasonId: string;
+  member_id: string;
+  week_id: string;
+  season_id: string;
 }
 
 interface DataBaseState {
@@ -50,7 +50,7 @@ function AddSessionForm({
 }: Props) {
   const { members, seasons, weeks } = databaseState;
   const getSeasonWeeks = async (seasonId: string) => {
-    const seasonWeeks = weeks?.filter((week) => week.seasonId === seasonId);
+    const seasonWeeks = weeks?.filter((week) => week.season_id === seasonId);
 
     if (seasonWeeks) {
       setSelectWeeks(seasonWeeks);
@@ -68,8 +68,8 @@ function AddSessionForm({
             type="number"
             id="buyIn"
             step={0.05}
-            value={formState.buyIn}
-            onChange={(e) => handleFormChange("buyIn", Number(e.target.value))}
+            value={formState.buy_in}
+            onChange={(e) => handleFormChange("buy_in", Number(e.target.value))}
           />
         </span>
       </fieldset>
@@ -82,9 +82,9 @@ function AddSessionForm({
             type="number"
             id="cashOut"
             step={0.05}
-            value={formState.cashOut}
+            value={formState.cash_out}
             onChange={(e) =>
-              handleFormChange("cashOut", Number(e.target.value))
+              handleFormChange("cash_out", Number(e.target.value))
             }
           />
         </span>
@@ -97,10 +97,10 @@ function AddSessionForm({
             className="pl-6"
             type="number"
             id="netProfit"
-            value={formState.netProfit.toFixed(2)}
+            value={formState.net_profit.toFixed(2)}
             readOnly
             onChange={(e) =>
-              handleFormChange("netProfit", Number(e.target.value))
+              handleFormChange("net_profit", Number(e.target.value))
             }
           />
         </span>
@@ -116,7 +116,7 @@ function AddSessionForm({
       </fieldset>
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="member">Member</Label>
-        <Select onValueChange={(value) => handleFormChange("memberId", value)}>
+        <Select onValueChange={(value) => handleFormChange("member_id", value)}>
           <SelectTrigger id="member">
             <SelectValue placeholder="Select member" />
           </SelectTrigger>
@@ -124,7 +124,7 @@ function AddSessionForm({
             <SelectGroup>
               {members?.map((member) => (
                 <SelectItem key={member.id} value={member.id}>
-                  {member.firstName}
+                  {member.first_name}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -134,9 +134,9 @@ function AddSessionForm({
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="season">Season</Label>
         <Select
-          value={formState.seasonId}
+          value={formState.season_id}
           onValueChange={(value) => {
-            handleFormChange("seasonId", value);
+            handleFormChange("season_id", value);
             getSeasonWeeks(value);
           }}>
           <SelectTrigger id="season">
@@ -155,7 +155,7 @@ function AddSessionForm({
       </fieldset>
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="week">Week</Label>
-        <Select onValueChange={(value) => handleFormChange("weekId", value)}>
+        <Select onValueChange={(value) => handleFormChange("week_id", value)}>
           <SelectTrigger disabled={selectWeeks.length === 0} id="week">
             <SelectValue placeholder="Select a week" />
           </SelectTrigger>
@@ -163,7 +163,7 @@ function AddSessionForm({
             <SelectGroup>
               {selectWeeks.map((week) => (
                 <SelectItem key={week.id} value={week.id}>
-                  {week.weekNumber}
+                  {week.week_number}
                 </SelectItem>
               ))}
             </SelectGroup>

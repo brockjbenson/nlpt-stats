@@ -1,14 +1,32 @@
 import React from "react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/server";
 
-function AdminNav() {
+async function AdminNav() {
+  const db = await createClient();
+  const { data: seasons, error: seasonsError } = await db
+    .from("season")
+    .select("*");
+
+  if (seasonsError) {
+    return <p>Error fetching Seasons: {seasonsError.message}</p>;
+  }
   return (
     <div className="w-screen flex justify-center">
       <ul className="flex gap-12">
         <li className="flex flex-col">
-          <Link className="whitespace-nowrap p-1" href="/admin/stats/cashgames">
+          <Link className="whitespace-nowrap p-1" href="/admin/stats/cash">
             Cash
           </Link>
+          <ul>
+            {seasons.map((season) => (
+              <li key={season.id}>
+                <Link href={`/admin/stats/cash/${season.id}/sessions`}>
+                  {season.year}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <ul>
             <li>
               <Link

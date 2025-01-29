@@ -18,26 +18,22 @@ function MobileNav({ excludeAdmin, className }: Props) {
         <nav className={className}>
           <ul>
             <li>
-              <a href="/stats">Stats</a>
-            </li>
-            <li>
-              <a href="/seasons">Seasons</a>
-            </li>
-            <li>
               <a href="/members">Members</a>
             </li>
             <li>
-              <a href="/cash">Cash</a>
+              <a href="/stats">Stats</a>
             </li>
             <li>
-              <a href="/tournaments">Tournaments</a>
+              <a href="/nlpi">NLPI Rankings</a>
             </li>
             <li>
-              <a href="/games">Games</a>
+              <a href="/poy">POY Standings</a>
             </li>
-            <li>
-              <a href="/settings">Settings</a>
-            </li>
+            {!excludeAdmin && (
+              <li>
+                <a href="/admin">Admin</a>
+              </li>
+            )}
           </ul>
         </nav>
       </SheetContent>

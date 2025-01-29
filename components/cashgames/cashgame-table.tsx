@@ -12,21 +12,27 @@ import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
-import { Pencil } from "lucide-react";
 
 interface Props {
   members: Member[];
   seasonId: string;
+  isAdmin?: boolean;
+  year: number;
 }
 
-async function CashGameTable({ members, seasonId }: Props) {
+async function CashGameTable({
+  members,
+  seasonId,
+  year,
+  isAdmin = false,
+}: Props) {
   const db = await createClient();
 
   // Fetch weeks for the season
   const { data: weeks, error: weeksError } = await db
     .from("week")
-    .select("id, weekNumber")
-    .eq("seasonId", seasonId);
+    .select("id, week_number")
+    .eq("season_id", seasonId);
 
   if (weeksError) {
     return <p>Error fetching Weeks: {weeksError.message}</p>;
@@ -38,10 +44,10 @@ async function CashGameTable({ members, seasonId }: Props) {
 
   // Fetch all cash sessions for the season
   const { data: sessions, error: sessionsError } = await db
-    .from("cashSession")
-    .select("id, memberId, weekId, netProfit, rebuys")
+    .from("cash_session")
+    .select("id, member_id, week_id, net_profit, rebuys")
     .in(
-      "weekId",
+      "week_id",
       weeks.map((week) => week.id)
     );
 
@@ -52,7 +58,7 @@ async function CashGameTable({ members, seasonId }: Props) {
   // Precompute session lookup map
   const sessionLookup = sessions?.reduce<Record<string, CashSession>>(
     (acc, session) => {
-      const key = `${session.memberId}-${session.weekId}`;
+      const key = `${session.member_id}-${session.week_id}`;
       acc[key] = session as any;
       return acc;
     },
@@ -66,7 +72,7 @@ async function CashGameTable({ members, seasonId }: Props) {
 
   const hasAtLeastOneSession = (memberId: string) => {
     return sessions?.some(
-      (session) => session.memberId === memberId && session.rebuys > 0
+      (session) => session.member_id === memberId && session.rebuys > 0
     );
   };
 
@@ -75,12 +81,12 @@ async function CashGameTable({ members, seasonId }: Props) {
       return <TableCell key={weekId}>-</TableCell>;
     }
 
-    const { id, netProfit, rebuys } = sessionData;
+    const { id, net_profit, rebuys } = sessionData;
     return (
       <TableCell className={cn("font-medium text-center group")} key={weekId}>
         <span className="flex items-center gap-1">
-          <span className={cn(getProfitTextColor(netProfit))}>
-            {rebuys === 0 ? "DNP" : formatMoney(netProfit)}
+          <span className={cn(getProfitTextColor(net_profit))}>
+            {rebuys === 0 ? "DNP" : formatMoney(net_profit)}
           </span>
         </span>
       </TableCell>
@@ -97,8 +103,13 @@ async function CashGameTable({ members, seasonId }: Props) {
             </TableHead>
             {weeks.map((week) => (
               <TableHead className="whitespace-nowrap" key={week.id}>
-                <Link href={`/admin/seasons/week?id=${week.id}`}>
-                  Week {week.weekNumber}
+                <Link
+                  href={
+                    isAdmin
+                      ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
+                      : `/stats/${year}/cash/sessions/${week.week_number}`
+                  }>
+                  Week {week.week_number}
                 </Link>
               </TableHead>
             ))}
@@ -110,7 +121,7 @@ async function CashGameTable({ members, seasonId }: Props) {
               hasAtLeastOneSession(member.id) && (
                 <TableRow key={member.id}>
                   <TableCell className="sticky font-semibold left-0 z-10">
-                    {member.firstName}
+                    {member.first_name}
                   </TableCell>
                   {weeks.map((week) => {
                     const sessionData = getSessionData(member.id, week.id);

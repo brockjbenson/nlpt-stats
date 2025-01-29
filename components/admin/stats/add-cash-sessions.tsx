@@ -38,13 +38,13 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
     weeks,
   };
   const [formState, setFormState] = React.useState({
-    buyIn: 25,
-    cashOut: 0,
-    netProfit: 0,
+    buy_in: 25,
+    cash_out: 0,
+    net_profit: 0,
     rebuys: 1,
-    weekId: "",
-    memberId: "",
-    seasonId: "",
+    week_id: "",
+    member_id: "",
+    season_id: "",
   });
   const [selectWeeks, setSelectWeeks] = React.useState<Week[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -55,10 +55,10 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
   );
 
   useEffect(() => {
-    if (formState.buyIn !== 0) {
+    if (formState.buy_in !== 0) {
       calculateNetProfit();
     }
-  }, [formState.cashOut, formState.buyIn]);
+  }, [formState.cash_out, formState.buy_in]);
 
   useEffect(() => {
     window.onbeforeunload = () => true;
@@ -77,17 +77,17 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   const calculateNetProfit = () => {
     const calculatedNetProfit = parseFloat(
-      (formState.cashOut - formState.buyIn).toFixed(2)
+      (formState.cash_out - formState.buy_in).toFixed(2)
     );
 
-    handleFormChange("netProfit", calculatedNetProfit);
+    handleFormChange("net_profit", calculatedNetProfit);
   };
 
   const addSessionToList = () => {
     if (
-      !formState.memberId ||
-      !formState.seasonId ||
-      !formState.buyIn ||
+      !formState.member_id ||
+      !formState.season_id ||
+      !formState.buy_in ||
       !formState.rebuys
     ) {
       return;
@@ -95,17 +95,17 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
     const newSession: CashSessionNoId = {
       ...formState,
-      nlpiPoints: 0,
-      poyPoints: 0,
+      nlpi_points: 0,
+      poy_points: 0,
     };
 
     setSessionsToAdd([...sessionsToAdd, newSession]);
     setFormState({
       ...formState,
-      memberId: "",
-      buyIn: 25,
-      cashOut: 0,
-      netProfit: 0,
+      member_id: "",
+      buy_in: 25,
+      cash_out: 0,
+      net_profit: 0,
       rebuys: 1,
     });
 
@@ -125,9 +125,9 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
     setFinalSessions((prev) =>
       prev.filter(
         (session) =>
-          session.weekId !== sessionToRemove.weekId ||
-          session.memberId !== sessionToRemove.memberId ||
-          session.seasonId !== sessionToRemove.seasonId
+          session.week_id !== sessionToRemove.week_id ||
+          session.member_id !== sessionToRemove.member_id ||
+          session.season_id !== sessionToRemove.season_id
       )
     );
   };
@@ -137,7 +137,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
     const groupedSessions = sessionsToAdd.reduce<
       Record<string, CashSessionNoId[]>
     >((acc, session) => {
-      const key = `${session.weekId}_${session.seasonId}`; // Combine full UUIDs as-is
+      const key = `${session.week_id}_${session.season_id}`; // Combine full UUIDs as-is
       if (!acc[key]) acc[key] = [];
       acc[key].push(session);
       return acc;
@@ -148,41 +148,41 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
     // Iterate over each group of sessions
     Object.entries(groupedSessions).forEach(([key, currentSessions]) => {
       // Extract full UUIDs for weekId and seasonId from the key
-      const [weekId, seasonId] = key.split("_"); // This keeps the UUIDs intact
+      const [week_id, season_id] = key.split("_"); // This keeps the UUIDs intact
 
       // Get member IDs that already have sessions for this week and season
       const memberIdsWithSessions = new Set(
-        currentSessions.map((session) => session.memberId)
+        currentSessions.map((session) => session.member_id)
       );
 
       // Add missing sessions for members without entries in the current week and season
       const missingSessions = members
         .filter((member) => !memberIdsWithSessions.has(member.id))
         .map((member) => ({
-          buyIn: 0,
-          cashOut: 0,
-          netProfit: 0,
+          buy_in: 0,
+          cash_out: 0,
+          net_profit: 0,
           rebuys: 0,
-          weekId, // Current weekId
-          seasonId, // Current seasonId
-          memberId: member.id,
-          nlpiPoints: 0,
-          poyPoints: 0,
+          week_id, // Current weekId
+          season_id, // Current seasonId
+          member_id: member.id,
+          nlpi_points: 0,
+          poy_points: 0,
         }));
 
       // Rank and calculate points for existing sessions
       const sortedSessions = rankSessions(currentSessions);
 
       const sessionsWithPoints = sortedSessions.map((session) => ({
-        buyIn: session.buyIn,
-        cashOut: session.cashOut,
-        netProfit: session.netProfit,
+        buy_in: session.buy_in,
+        cash_out: session.cash_out,
+        net_profit: session.net_profit,
         rebuys: session.rebuys,
-        weekId: session.weekId,
-        seasonId: session.seasonId,
-        memberId: session.memberId,
-        nlpiPoints: calculateNLPIPoints(session.rank!, session.netProfit),
-        poyPoints: calculatePOYPoints(session.rank!, session.netProfit),
+        week_id: session.week_id,
+        season_id: session.season_id,
+        member_id: session.member_id,
+        nlpi_points: calculateNLPIPoints(session.rank!, session.net_profit),
+        poy_points: calculatePOYPoints(session.rank!, session.net_profit),
       }));
 
       // Combine the sessions with points and missing sessions
@@ -213,12 +213,12 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         setSessionsToAdd([]);
         setFormState({
           ...formState,
-          memberId: "",
-          seasonId: "",
-          weekId: "",
-          buyIn: 25,
-          cashOut: 0,
-          netProfit: 0,
+          member_id: "",
+          season_id: "",
+          week_id: "",
+          buy_in: 25,
+          cash_out: 0,
+          net_profit: 0,
           rebuys: 1,
         });
         setFinalSessions([]);

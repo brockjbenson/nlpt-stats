@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
+import { CashSessionWithFullMember } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { Medal } from "lucide-react";
 import Link from "next/link";
@@ -22,21 +23,21 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
     .select(
       `
       *,
-      season:seasonId (year)
+      season:season_id (year)
       `
     )
     .eq("id", searchParams.id);
   const { data: sessions, error: sessionsError } = await db
-    .from("cashSession")
+    .from("cash_session")
     .select(
       `
       *,
-      member:memberId (firstName)
+      member:member_id(*)
     `
     )
-    .eq("weekId", searchParams.id)
+    .eq("week_id", searchParams.id)
     .gt("rebuys", 0)
-    .order("netProfit", { ascending: false });
+    .order("net_profit", { ascending: false });
 
   if (weekError) {
     return <p>Error fetching Week: {weekError.message}</p>;
@@ -66,7 +67,7 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
   return (
     <>
       <h2>
-        {week[0].season.year} : Week {week[0].weekNumber}{" "}
+        {week[0].season.year} : Week {week[0].week_number}{" "}
         <Link href={`/admin/seasons/week/edit?id=${week[0].id}`}>Edit</Link>
       </h2>
       {sessions.length === 0 ? (
@@ -88,9 +89,12 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                 <li className="flex items-center justify-between w-full pb-2">
                   <span>Total Buy-Ins</span>
                   <span>
-                    {sessions.reduce((total, session) => {
-                      return total + session.rebuys;
-                    }, 0)}
+                    {sessions.reduce(
+                      (total, session: CashSessionWithFullMember) => {
+                        return total + session.rebuys;
+                      },
+                      0
+                    )}
                   </span>
                 </li>
                 <li className="flex items-center justify-between w-full pb-2">
@@ -98,7 +102,8 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                   <span>
                     {formatMoney(
                       sessions.reduce(
-                        (total, session) => total + session.buyIn,
+                        (total, session: CashSessionWithFullMember) =>
+                          total + session.buy_in,
                         0
                       )
                     )}
@@ -111,16 +116,18 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                 Top Earners
               </h3>
               <ul className="w-full">
-                {sessions.map((session, index) => {
+                {sessions.map((session: CashSessionWithFullMember, index) => {
                   if (index < 3) {
                     return (
                       <li
                         className="flex items-center justify-between w-full pb-2"
                         key={session.id}>
-                        <span>{session.member.firstName}</span>
+                        <span>{session.member.first_name}</span>
                         <span
-                          className={cn(getProfitTextColor(session.netProfit))}>
-                          {formatMoney(session.netProfit)}
+                          className={cn(
+                            getProfitTextColor(session.net_profit)
+                          )}>
+                          {formatMoney(session.net_profit)}
                         </span>
                       </li>
                     );
@@ -133,21 +140,25 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
                 Biggest Losers
               </h3>
               <ul>
-                {sessions.reverse().map((session, index) => {
-                  if (index < 3) {
-                    return (
-                      <li
-                        className="flex items-center justify-between w-full pb-2"
-                        key={session.id}>
-                        <span>{session.member.firstName}</span>
-                        <span
-                          className={cn(getProfitTextColor(session.netProfit))}>
-                          {formatMoney(session.netProfit)}
-                        </span>
-                      </li>
-                    );
-                  }
-                })}
+                {sessions
+                  .reverse()
+                  .map((session: CashSessionWithFullMember, index) => {
+                    if (index < 3) {
+                      return (
+                        <li
+                          className="flex items-center justify-between w-full pb-2"
+                          key={session.id}>
+                          <span>{session.member.first_name}</span>
+                          <span
+                            className={cn(
+                              getProfitTextColor(session.net_profit)
+                            )}>
+                            {formatMoney(session.net_profit)}
+                          </span>
+                        </li>
+                      );
+                    }
+                  })}
               </ul>
             </div>
           </div>
@@ -164,21 +175,24 @@ async function Page(props: { searchParams: Promise<{ id: string }> }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sessions.reverse().map((session, index) => (
-                <TableRow key={session.id}>
-                  <TableCell className="flex items-center gap-4">
-                    {session.member.firstName} {getRankIcon(index)}
-                  </TableCell>
-                  <TableCell>{formatMoney(session.buyIn)}</TableCell>
-                  <TableCell>{formatMoney(session.cashOut)}</TableCell>
-                  <TableCell className={getProfitTextColor(session.netProfit)}>
-                    {formatMoney(session.netProfit)}
-                  </TableCell>
-                  <TableCell>{session.rebuys}</TableCell>
-                  <TableCell>{session.nlpiPoints.toFixed(3)}</TableCell>
-                  <TableCell>{session.poyPoints.toFixed(2)}</TableCell>
-                </TableRow>
-              ))}
+              {sessions
+                .reverse()
+                .map((session: CashSessionWithFullMember, index) => (
+                  <TableRow key={session.id}>
+                    <TableCell className="flex items-center gap-4">
+                      {session.member.first_name} {getRankIcon(index)}
+                    </TableCell>
+                    <TableCell>{formatMoney(session.buy_in)}</TableCell>
+                    <TableCell>{formatMoney(session.cash_out)}</TableCell>
+                    <TableCell
+                      className={getProfitTextColor(session.net_profit)}>
+                      {formatMoney(session.net_profit)}
+                    </TableCell>
+                    <TableCell>{session.rebuys}</TableCell>
+                    <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
+                    <TableCell>{session.poy_points.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </>

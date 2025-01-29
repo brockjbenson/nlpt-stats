@@ -36,18 +36,18 @@ function SessionsList({
   return (
     <div className="mb-8">
       {sessionsToAdd.map((session, index) => {
-        const member = getMemberInfo(session.memberId);
-        const week = getWeekInfo(session.weekId);
-        const season = getSeasonInfo(session.seasonId);
+        const member = getMemberInfo(session.member_id);
+        const week = getWeekInfo(session.week_id);
+        const season = getSeasonInfo(session.season_id);
         return (
           <div
             className="grid py-8 border-b first:border-t border-neutral-500 grid-cols-[60px_1fr_min-content] gap-4"
-            key={`${session.memberId}_${index}`}>
-            {member?.portraitUrl ? (
+            key={`${session.member_id}_${index}`}>
+            {member?.portrait_url ? (
               <div className="rounded-full overflow-hidden w-full aspect-square flex items-center justify-center">
                 <Image
-                  src={member.portraitUrl}
-                  alt={`${member.firstName}_${member.lastName}`}
+                  src={member.portrait_url}
+                  alt={`${member.first_name}_${member.last_name}`}
                   width={100}
                   height={100}
                 />
@@ -62,19 +62,19 @@ function SessionsList({
             )}
             <div className="flex items-center justify-between gap-12">
               <h3 className="w-fit whitespace-nowrap font-bold text-2xl">
-                {member?.firstName} {member?.lastName}
+                {member?.first_name} {member?.last_name}
               </h3>
               <ul className="flex w-fit justify-start gap-8">
                 <li className="flex flex-col gap-2 items-center">
                   <span className="text-neutral-400">Buy-In</span>
                   <span className="font-medium">
-                    ${session.buyIn.toFixed(2)}
+                    ${session.buy_in.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
                   <span className="text-neutral-400">Cash Out</span>
                   <span className="font-medium">
-                    ${session.cashOut.toFixed(2)}
+                    ${session.cash_out.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
@@ -82,9 +82,9 @@ function SessionsList({
                   <span
                     className={cn(
                       "font-medium",
-                      session.netProfit > 0 ? "text-green-600" : "text-red-500"
+                      session.net_profit > 0 ? "text-green-600" : "text-red-500"
                     )}>
-                    ${session.netProfit.toFixed(2)}
+                    ${session.net_profit.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
@@ -97,7 +97,7 @@ function SessionsList({
                 </li>
                 <li className="flex flex-col gap-2 items-center">
                   <span className="text-neutral-400">Week</span>
-                  <span className="font-medium">{week?.weekNumber}</span>
+                  <span className="font-medium">{week?.week_number}</span>
                 </li>
               </ul>
             </div>

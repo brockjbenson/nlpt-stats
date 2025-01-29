@@ -5,15 +5,10 @@ import { Input } from "../ui/input";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import MemberCard from "../members/member-card";
+import { Member } from "@/utils/types";
 
 interface Props {
-  members: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    nickname: string;
-    portraitUrl: string;
-  }[];
+  members: Member[];
 }
 
 function MembersList({ members }: Props) {
@@ -44,10 +39,10 @@ function MembersList({ members }: Props) {
     }
 
     if (data) {
-      setFirstName(data[0].firstName);
-      setLastName(data[0].lastName);
+      setFirstName(data[0].first_name);
+      setLastName(data[0].last_name);
       setNickname(data[0].nickname);
-      setPortraitUrl(data[0].portraitUrl);
+      setPortraitUrl(data[0].portrait_url);
       setEditId(id);
     }
     setLoading(false);
@@ -60,8 +55,8 @@ function MembersList({ members }: Props) {
     } else {
       const filteredMembers = members.filter(
         (member) =>
-          member.firstName.toLowerCase().includes(value.toLowerCase()) ||
-          member.lastName.toLowerCase().includes(value.toLowerCase()) ||
+          member.first_name.toLowerCase().includes(value.toLowerCase()) ||
+          member.last_name.toLowerCase().includes(value.toLowerCase()) ||
           member.nickname.toLowerCase().includes(value.toLowerCase())
       );
       setMembersList(filteredMembers);
@@ -71,7 +66,12 @@ function MembersList({ members }: Props) {
   const updateMember = async () => {
     const { error } = await db
       .from("members")
-      .update({ firstName, lastName, nickname, portraitUrl })
+      .update({
+        first_name: firstName,
+        last_name: lastName,
+        nickname,
+        portrait_url: portraitUrl,
+      })
       .eq("id", editId);
 
     if (error) {

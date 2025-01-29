@@ -6,7 +6,7 @@ async function NewCashGame() {
   const { data: members, error: membersError } = await db
     .from("members")
     .select("*")
-    .order("firstName", { ascending: true });
+    .order("first_name", { ascending: true });
   if (membersError) {
     return <p>Error fetching Members data: {membersError.message}</p>;
   }

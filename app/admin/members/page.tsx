@@ -9,7 +9,7 @@ async function MembersAdmin() {
   const { data, error } = await db
     .from("members")
     .select("*")
-    .order("lastName", { ascending: true });
+    .order("last_name", { ascending: true });
 
   if (error) {
     return <p>Error fetching members: {error.message}</p>;

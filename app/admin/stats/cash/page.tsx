@@ -13,7 +13,7 @@ async function CashGames(props: { searchParams: Promise<Params | null> }) {
   const { data: members, error: membersError } = await db
     .from("members")
     .select("*")
-    .order("firstName", { ascending: true });
+    .order("first_name", { ascending: true });
 
   const { data: season, error: seasonError } = await db
     .from("season")
@@ -40,7 +40,12 @@ async function CashGames(props: { searchParams: Promise<Params | null> }) {
           </Link>
         </div>
       </div>
-      <CashGameTable seasonId={season[0].id} members={members} />
+      <CashGameTable
+        isAdmin={true}
+        seasonId={season[0].id}
+        year={season[0].year}
+        members={members}
+      />
     </>
   );
 }

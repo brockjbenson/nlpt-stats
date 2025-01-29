@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { CashSession, CumulativeCashStats, Member } from "@/utils/types";
+import { CumulativeCashStats } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
 import React from "react";
@@ -48,7 +48,7 @@ function StatsTable({ cumulativeCashStats }: Props) {
                   <Link
                     className="hover:text-primary underline"
                     href={`/members/${stats.member.id}`}>
-                    {stats.member.firstName}
+                    {stats.member.first_name}
                   </Link>
                 </TableCell>
                 <TableCell className={cn(getProfitTextColor(stats.netProfit))}>

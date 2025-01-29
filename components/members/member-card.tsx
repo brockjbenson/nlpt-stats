@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
+import MemberImage from "./member-image";
 
 interface Props {
   member: Member;
@@ -53,28 +54,15 @@ function MemberCard({
         "border-b border-neutral-400 grid gap-8 py-8 w-full",
         allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
       )}>
-      {member.portraitUrl ? (
-        <div className="rounded-full overflow-hidden w-20 h-20 flex items-center justify-center">
-          <Image
-            src={member.portraitUrl}
-            alt={`${member.firstName}_${member.lastName}`}
-            width={100}
-            height={100}
-          />
-        </div>
-      ) : (
-        <div className="rounded-full bg-muted overflow-hidden w-20 h-20 flex items-center justify-center">
-          <User2
-            className="fill-muted-foreground relative top-3 w-28 h-28"
-            stroke="neutral-500"
-          />
-        </div>
-      )}
+      <MemberImage
+        src={member.portrait_url}
+        alt={member.first_name + member.last_name}
+      />
       <ul className="flex flex-col w-full justify-center gap-2">
         <li className="flex gap-2">
           <span className="text-muted">Name:</span>
           <span>
-            {member.firstName} {member.lastName}
+            {member.first_name} {member.last_name}
           </span>
         </li>
         <li className="flex gap-2">

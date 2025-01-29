@@ -1,27 +1,35 @@
 export type Member = {
   id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   nickname: string;
-  portraitUrl: string;
+  portrait_url: string;
 };
 
 export type CashSession = {
   id: string;
-  buyIn: number;
-  cashOut: number;
-  netProfit: number;
+  buy_in: number;
+  cash_out: number;
+  net_profit: number;
   rebuys: number;
-  weekId: string;
-  memberId: string;
-  seasonId: string;
-  nlpiPoints: number;
-  poyPoints: number;
+  week_id: string;
+  member_id: string;
+  season_id: string;
+  nlpi_points: number;
+  poy_points: number;
+};
+
+export type CashSessionNLPI = {
+  created_at: string;
+  member_id: string;
+  nlpi_points: number;
+  week_number: number;
+  year: number;
 };
 
 export type CashSessionWithWeek = CashSession & {
   week: {
-    weekNumber: number;
+    week_number: number;
   };
 };
 
@@ -44,20 +52,20 @@ export type CumulativeCashStats = {
 };
 
 export type CashSessionNoId = {
-  buyIn: number;
-  cashOut: number;
-  netProfit: number;
+  buy_in: number;
+  cash_out: number;
+  net_profit: number;
   rebuys: number;
-  weekId: string;
-  memberId: string;
-  seasonId: string;
-  nlpiPoints: number;
-  poyPoints: number;
+  week_id: string;
+  member_id: string;
+  season_id: string;
+  nlpi_points: number;
+  poy_points: number;
 };
 
 export type CashSessionWithMember = CashSession & {
   member: {
-    firstName: string;
+    first_name: string;
   };
 };
 
@@ -72,6 +80,6 @@ export type Season = {
 
 export type Week = {
   id: string;
-  weekNumber: number;
-  seasonId: string;
+  week_number: number;
+  season_id: string;
 };
