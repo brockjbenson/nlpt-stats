@@ -1,3 +1,4 @@
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,13 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { CashSession, CashSessionNLPI } from "@/utils/types";
-import {
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  ChevronUpIcon,
-  Minus,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
 async function NLPI() {
@@ -105,7 +100,7 @@ async function NLPI() {
         positive: false,
         change: 0,
         color: "text-green-500",
-        icon: <ChevronUpIcon size={16} />,
+        icon: <ArrowUp size={16} />,
       };
     }
     if (currentRank === lastWeekRank) {
@@ -120,14 +115,14 @@ async function NLPI() {
         positive: true,
         change: lastWeekRank - currentRank,
         color: "text-green-500",
-        icon: <ChevronUpIcon className="text-green-500" size={16} />,
+        icon: <ArrowUp className="text-green-500" size={16} />,
       };
     } else {
       return {
         positive: false,
         change: currentRank - lastWeekRank,
         color: "text-red-500",
-        icon: <ChevronDown className="text-red-500" size={16} />,
+        icon: <ArrowDown className="text-red-500" size={16} />,
       };
     }
   };
@@ -195,53 +190,59 @@ async function NLPI() {
   return (
     <>
       <h1 className="mb-12">NLPI Rankings</h1>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Ranking</TableHead>
-            <TableHead>Last Week</TableHead>
-            <TableHead>End {previousYear}</TableHead>
-            <TableHead>Member</TableHead>
-            <TableHead>Total Points</TableHead>
-            <TableHead>Avg Points</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {finalRanks.map((member) => {
-            const changeData = getRankChangeInfo(
-              member.currentRank,
-              member.lastWeekRank
-            );
-            return (
-              <TableRow key={member.id}>
-                <TableCell className="flex items-center gap-2">
-                  {member.currentRank}
-                  <span
-                    className={cn(changeData.color, "flex items-center gap-1")}>
-                    {changeData.icon}
-                    <span className="text-xs">
-                      {displayRankChange(
-                        member.lastWeekRank,
-                        member.currentRank
+      <Card className="w-full mb-8">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Rank</TableHead>
+              <TableHead>Last Week</TableHead>
+              <TableHead>End {previousYear}</TableHead>
+              <TableHead>Member</TableHead>
+              <TableHead>Avg Points</TableHead>
+              <TableHead>Total Points</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {finalRanks.map((member) => {
+              const changeData = getRankChangeInfo(
+                member.currentRank,
+                member.lastWeekRank
+              );
+              return (
+                <TableRow key={member.id}>
+                  <TableCell className="flex items-center gap-2">
+                    {member.currentRank}
+                    <span
+                      className={cn(
+                        changeData.color,
+                        "flex items-center gap-1"
                       )}
+                    >
+                      {changeData.icon}
+                      <span className="text-base md:text-xl">
+                        {displayRankChange(
+                          member.lastWeekRank,
+                          member.currentRank
+                        )}
+                      </span>
                     </span>
-                  </span>
-                </TableCell>
-                <TableCell>{member.lastWeekRank || "-"}</TableCell>
-                <TableCell>{member.previousYearRank || "-"}</TableCell>
-                <TableCell>{member.name}</TableCell>
-                <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
-                <TableCell>
-                  {(
-                    member.totalPoints /
-                    (sessionsByMember[member.id]?.length || 1)
-                  ).toFixed(3)}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                  <TableCell>{member.lastWeekRank || "-"}</TableCell>
+                  <TableCell>{member.previousYearRank || "-"}</TableCell>
+                  <TableCell>{member.name}</TableCell>
+                  <TableCell>
+                    {(
+                      member.totalPoints /
+                      (sessionsByMember[member.id]?.length || 1)
+                    ).toFixed(3)}
+                  </TableCell>
+                  <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
       <h2 className="mt-12 w-full text-base pb-2 border-b border-muted mr-auto">
         Ineligible Members{" "}
         <span className="text-sm text-muted">

@@ -14,45 +14,49 @@ import {
   getProfitTextColor,
 } from "@/utils/utils";
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
+import { cn } from "@/lib/utils";
+import { Card, CardTitle } from "../ui/card";
 
 interface Props {
   sessions: CashSessionWithMember[];
+  className?: string;
 }
 
-function SessionTable({ sessions }: Props) {
+function SessionTable({ sessions, className }: Props) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Member</TableHead>
-          <TableHead>Buy-In</TableHead>
-          <TableHead>Cash-Out</TableHead>
-          <TableHead>Net Profit</TableHead>
-          <TableHead>Rebuys</TableHead>
-          <TableHead>NLPI Points</TableHead>
-          <TableHead>POY Points</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sessions.reverse().map((session, index) => {
-          const NLPIPoints = calculateNLPIPoints(index, session.net_profit);
-          const POYPoints = calculatePOYPoints(index, session.net_profit);
-          return (
-            <TableRow key={session.id}>
-              <TableCell>{session.member.first_name}</TableCell>
-              <TableCell>{formatMoney(session.buy_in)}</TableCell>
-              <TableCell>{formatMoney(session.cash_out)}</TableCell>
-              <TableCell className={getProfitTextColor(session.net_profit)}>
-                {formatMoney(session.net_profit)}
-              </TableCell>
-              <TableCell>{session.rebuys}</TableCell>
-              <TableCell>{NLPIPoints.toFixed(3)}</TableCell>
-              <TableCell>{POYPoints.toFixed(2)}</TableCell>
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+    <Card className="w-full mb-8">
+      <CardTitle>Session Overview</CardTitle>
+      <Table className={cn(className)}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Member</TableHead>
+            <TableHead>Buy-In</TableHead>
+            <TableHead>Cash-Out</TableHead>
+            <TableHead>Net Profit</TableHead>
+            <TableHead>Rebuys</TableHead>
+            <TableHead>NLPI Points</TableHead>
+            <TableHead>POY Points</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sessions.map((session, index) => {
+            return (
+              <TableRow key={session.id}>
+                <TableCell>{session.member.first_name}</TableCell>
+                <TableCell>{formatMoney(session.buy_in)}</TableCell>
+                <TableCell>{formatMoney(session.cash_out)}</TableCell>
+                <TableCell className={getProfitTextColor(session.net_profit)}>
+                  {formatMoney(session.net_profit)}
+                </TableCell>
+                <TableCell>{session.rebuys}</TableCell>
+                <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
+                <TableCell>{session.poy_points.toFixed(2)}</TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </Card>
   );
 }
 

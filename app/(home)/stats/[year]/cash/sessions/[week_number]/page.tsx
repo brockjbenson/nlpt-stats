@@ -4,11 +4,11 @@ import { createClient } from "@/utils/supabase/server";
 import React from "react";
 
 interface Props {
-  params: Promise<{ year: string; weekNumber: string }>;
+  params: Promise<{ year: string; week_number: string }>;
 }
 
 async function Page({ params }: Props) {
-  const { year, weekNumber } = await params;
+  const { year, week_number } = await params;
   const db = await createClient();
   const { data: season, error: seasonError } = await db
     .from("season")
@@ -17,7 +17,7 @@ async function Page({ params }: Props) {
   const { data: week, error: weekError } = await db
     .from("week")
     .select("*")
-    .eq("weekNumber", weekNumber);
+    .eq("week_number", week_number);
 
   if (seasonError) {
     return <p>Error fetching Season data: {seasonError.message}</p>;
@@ -28,10 +28,11 @@ async function Page({ params }: Props) {
   }
 
   const { data: sessions, error: sessionError } = await db
-    .from("cashSession")
-    .select(`*, member:memberId (firstName)`)
-    .eq("seasonId", season[0].id)
-    .eq("weekId", week[0].id);
+    .from("cash_session")
+    .select(`*, member:member_id(*)`)
+    .eq("season_id", season[0].id)
+    .eq("week_id", week[0].id)
+    .filter("buy_in", "gt", 0);
 
   if (sessionError) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
@@ -40,7 +41,7 @@ async function Page({ params }: Props) {
   return (
     <>
       <h1>
-        {year} : Week {weekNumber}
+        Week {week_number}, {year}
       </h1>
       {sessions.length === 0 ? (
         <p className="text-muted mt-12 text-center mx-auto">

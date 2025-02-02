@@ -6,9 +6,10 @@
 
 @layer base {
   :root {
-    --background: 210 30% 5%;
-    --foreground: 210 60% 98%;
-    --card: 210 30% 5%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 90%;
+    --card: 0 0% 7.5%;
+    --card-border: 0 0% 15%;
     --card-foreground: 210 60% 98%;
     --popover: 210 60% 4.5%;
     --popover-foreground: 210 60% 98%;
@@ -17,7 +18,7 @@
     --primary-foreground: 0 0% 9%;
     --secondary: 210 60% 27%;
     --secondary-foreground: 210 60% 98%;
-    --muted: 0 0% 50%;
+    --muted: 0 0% 65%;
     --muted-foreground: 0 0% 63.9%;
     --accent: 0 0% 14.9%;
     --accent-foreground: 210 60% 98%;
@@ -63,7 +64,7 @@
     @apply bg-background text-foreground;
   }
   h1 {
-    @apply text-3xl font-bold text-center mx-auto;
+    @apply text-3xl font-bold my-4 text-left w-full;
   }
 
   h2 {

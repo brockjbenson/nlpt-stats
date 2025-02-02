@@ -7,12 +7,15 @@ import {
   getLargestWins,
   getNetProfitLeaders,
   getPOYPointsLeaders,
+  getProfitTextColor,
+  getRankTextColor,
 } from "@/utils/utils";
 import { Medal, User2 } from "lucide-react";
 import React from "react";
 import StatsTable from "./_components/stats-table";
 import CashGameTable from "@/components/cashgames/cashgame-table";
 import MemberImage from "@/components/members/member-image";
+import { cn } from "@/lib/utils";
 
 interface Params {
   params: Promise<{ year: number }>;
@@ -41,232 +44,223 @@ async function Page({ params }: Params) {
 
   const memberIds = members.map((member) => member.id);
 
-  const { data: sessions, error: sessionError } = await db.rpc(
-    "get_cash_sessions_by_season",
-    {
-      target_season_id: season[0].id,
-    }
-  );
+  const { data: sessions, error: sessionError } = await db
+    .from("cash_session")
+    .select(`*, member:member_id(*), week:week_id(*)`)
+    .eq("season_id", season[0].id);
 
   if (sessionError) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
   }
 
-  const rankedPOYMembers = getPOYPointsLeaders(sessions, memberIds, members);
+  const sessionSortedByWeek = sessions.sort(
+    (a, b) => a.week.week_number - b.week.week_number
+  );
+
+  const rankedPOYMembers = getPOYPointsLeaders(
+    sessionSortedByWeek,
+    memberIds,
+    members
+  );
   const rankedNetProfitLeaders = getNetProfitLeaders(
     sessions,
     memberIds,
     members
   );
-  const largestWinsLeaders = getLargestWins(sessions, members);
+  const largestWinsLeaders = getLargestWins(sessionSortedByWeek, members);
 
   const cumulativeCashStats = getCumulativeCashStats(
-    sessions,
+    sessionSortedByWeek,
     memberIds,
     members
   );
 
   return (
     <>
-      <h1>{season[0].year} Stats</h1>
-      <h2 className="w-full text-lg text-left mb-4">Stats Leaders</h2>
-      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-12 gap-4">
+      <h1 className="mb-8">{season[0].year} Stats</h1>
+      <h2 className="w-full text-xl text-left mb-4">Stats Leaders</h2>
+      <div className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mb-12 gap-8">
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-left text-base">POY Points</CardTitle>
+            <CardTitle>POY Points</CardTitle>
           </CardHeader>
-          <CardContent>
-            {rankedPOYMembers.map((member, index) => {
-              if (index === 0) {
-                return (
-                  <div
-                    className="grid grid-cols-[50px,1fr] gap-4"
-                    key={member.id}>
-                    <MemberImage src={member.image} alt={member.name} />
-                    <div>
-                      <span className="flex text-base items-center gap-2">
-                        {member.name}
-                      </span>
-                      <span className="font-semibold text-xl">
-                        {member.totalPOYPoints} points
-                      </span>
-                    </div>
+          <div className="flex flex-col gap-4">
+            {[...rankedPOYMembers].slice(0, 3).map((member, index) => (
+              <div
+                className="flex items-center justify-between"
+                key={member.id + member.totalPOYPoints}
+              >
+                <div className="flex items-center gap-4">
+                  <MemberImage
+                    className="w-10 h-10"
+                    src={member.image}
+                    alt={member.name}
+                  />
+                  <h3 className="text-xl font-medium">{member.name}</h3>
+                </div>
+
+                <p className="font-semibold text-xl">{member.totalPOYPoints}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Net Profit</CardTitle>
+          </CardHeader>
+          <div className="flex flex-col gap-4">
+            {[...rankedNetProfitLeaders].slice(0, 3).map((member, index) => (
+              <div
+                className="flex items-center justify-between"
+                key={member.id + member.totalNetProfit}
+              >
+                <div className="flex items-center gap-4">
+                  <MemberImage
+                    className="w-10 h-10"
+                    src={member.image}
+                    alt={member.name}
+                  />
+                  <h3 className="text-xl font-medium">{member.name}</h3>
+                </div>
+
+                <p
+                  className={cn(
+                    getProfitTextColor(member.totalNetProfit),
+                    "font-semibold text-xl"
+                  )}
+                >
+                  {formatMoney(member.totalNetProfit)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Largest Wins</CardTitle>
+          </CardHeader>
+          <div className="flex flex-col gap-4">
+            {[...largestWinsLeaders].slice(0, 3).map((member, index) => (
+              <div
+                className="flex items-center justify-between"
+                key={member.memberId + member.netProfit + member.weekNumber}
+              >
+                <div className="flex items-center gap-4">
+                  <MemberImage
+                    className="w-10 h-10"
+                    src={member.image || ""}
+                    alt={member.name}
+                  />
+                  <h3 className="text-xl font-medium">{member.name}</h3>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-green-500 text-xl">
+                    {formatMoney(member.netProfit)}
+                  </p>
+                  <p className="text-sm text-muted">(W{member.weekNumber})</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Avg Win</CardTitle>
+          </CardHeader>
+          <div className="flex flex-col gap-4">
+            {[...cumulativeCashStats]
+              .sort((a, b) => b.averageWin - a.averageWin)
+              .slice(0, 3)
+              .map((data) => (
+                <div
+                  className="flex items-center justify-between"
+                  key={data.averageWin + data.member.id}
+                >
+                  <div className="flex items-center gap-4">
+                    <MemberImage
+                      className="w-10 h-10"
+                      src={data.member.portrait_url}
+                      alt={data.member.first_name}
+                    />
+                    <h3 className="text-xl font-medium">
+                      {data.member.first_name} {data.member.last_name}
+                    </h3>
                   </div>
-                );
-              }
-            })}
-          </CardContent>
+
+                  <p className="font-semibold text-green-500 text-xl">
+                    {formatMoney(data.averageWin)}
+                  </p>
+                </div>
+              ))}
+          </div>
         </Card>
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-left text-base">Net Profit</CardTitle>
+            <CardTitle>Wins</CardTitle>
+          </CardHeader>
+          <div className="flex flex-col gap-4">
+            {[...cumulativeCashStats]
+              .sort((a, b) => b.wins - a.wins)
+              .slice(0, 3)
+              .map((data) => (
+                <div
+                  className="flex items-center justify-between"
+                  key={data.averageWin + data.member.id}
+                >
+                  <div className="flex items-center gap-4">
+                    <MemberImage
+                      className="w-10 h-10"
+                      src={data.member.portrait_url}
+                      alt={data.member.first_name}
+                    />
+                    <h3 className="text-xl font-medium">
+                      {data.member.first_name} {data.member.last_name}
+                    </h3>
+                  </div>
+
+                  <p className="font-semibold text-xl">{data.wins}</p>
+                </div>
+              ))}
+          </div>
+        </Card>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Best Win Percentage</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="w-full">
-              {rankedNetProfitLeaders.map((member, index) => {
-                if (index === 0) {
-                  return (
-                    <div
-                      className="grid grid-cols-[50px,1fr] gap-4"
-                      key={member.id}>
-                      <MemberImage src={member.image} alt={member.name} />
-                      <div>
-                        <span className="flex text-base items-center gap-2">
-                          {member.name}
-                        </span>
-                        <span className="font-semibold text-green-500 text-xl">
-                          {formatMoney(member.totalNetProfit)}
-                        </span>
-                      </div>
+            <div className="flex flex-col gap-4">
+              {[...cumulativeCashStats]
+                .sort((a, b) => b.winPercentage - a.winPercentage)
+                .slice(0, 3)
+                .map((data) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.averageWin}
+                  >
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.member.portrait_url}
+                        alt={data.member.first_name}
+                      />
+                      <h3 className="text-xl font-medium">
+                        {data.member.first_name} {data.member.last_name}
+                      </h3>
                     </div>
-                  );
-                }
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-left text-base">Largest Win</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="w-full">
-              {largestWinsLeaders.map((member, index) => {
-                if (index === 0) {
-                  return (
-                    <div
-                      className="grid grid-cols-[50px,1fr] gap-4"
-                      key={member.memberId}>
-                      <MemberImage src={member.image || ""} alt={member.name} />
-                      <div>
-                        <span className="flex text-base items-center gap-2">
-                          {member.name}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-green-500 text-xl">
-                            {formatMoney(member.netProfit)}
-                          </span>
-                          <span className="text-sm text-muted">
-                            (W{member.weekNumber})
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-              })}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-left text-base">Avg Win</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="w-full">
-              {[...cumulativeCashStats]
-                .sort((a, b) => b.averageWin - a.averageWin)
-                .map((data, index) => {
-                  if (index === 0) {
-                    return (
-                      <div
-                        className="grid grid-cols-[50px,1fr] gap-4"
-                        key={data.averageWin}>
-                        <MemberImage
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <div>
-                          <span className="flex text-base items-center gap-2">
-                            {data.member.first_name} {data.member.last_name}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-green-500 text-xl">
-                              {formatMoney(data.averageWin)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                })}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-left text-base">Wins</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="w-full">
-              {[...cumulativeCashStats]
-                .sort((a, b) => b.wins - a.wins)
-                .map((data, index) => {
-                  if (index === 0) {
-                    return (
-                      <div
-                        className="grid grid-cols-[50px,1fr] gap-4"
-                        key={data.averageWin}>
-                        <MemberImage
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <div>
-                          <span className="flex text-base items-center gap-2">
-                            {data.member.first_name} {data.member.last_name}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xl">
-                              {data.wins}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                })}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-left text-base">
-              Best Win Streak
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="w-full">
-              {[...cumulativeCashStats]
-                .sort((a, b) => b.winStreak - a.winStreak)
-                .map((data, index) => {
-                  if (index === 0) {
-                    return (
-                      <div
-                        className="grid grid-cols-[50px,1fr] gap-4"
-                        key={data.averageWin}>
-                        <MemberImage
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <div>
-                          <span className="flex text-base items-center gap-2">
-                            {data.member.first_name} {data.member.last_name}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-xl">
-                              {data.winStreak}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                })}
-            </ul>
+
+                    <p className="font-semibold text-xl">
+                      {data.winPercentage.toFixed(2)}%
+                    </p>
+                  </div>
+                ))}
+            </div>
           </CardContent>
         </Card>
       </div>
-      <h2 className="mb-8 font-semibold text-lg">Cash Stats</h2>
+      <h2 className="mb-4 font-semibold text-xl w-full text-left">
+        Cash Stats
+      </h2>
       <StatsTable cumulativeCashStats={cumulativeCashStats} />
       <CashGameTable
         members={members}

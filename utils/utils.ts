@@ -50,6 +50,16 @@ export function getProfitTextColor(profit: number) {
       : "text-foreground";
 }
 
+export function getRankTextColor(rank: number) {
+  return rank === 1
+    ? "text-yellow-400"
+    : rank === 2
+      ? "text-gray-300"
+      : rank === 3
+        ? "text-orange-500"
+        : "text-foreground";
+}
+
 export function formatMoney(amount: number) {
   return amount >= 0
     ? `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -287,16 +297,12 @@ export const getPOYPointsLeaders = (
       0
     );
 
-    console.log("totalPOYPoints", totalPOYPoints);
-
     const netProfit = allSessions.reduce(
       (sum, session) => sum + session.net_profit,
       0
     );
 
     const bonusPoints = netProfit > 0 ? netProfit / 2 : 0;
-
-    console.log("bonusPoints", bonusPoints);
 
     return {
       id: member.id,

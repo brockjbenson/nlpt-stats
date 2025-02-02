@@ -12,6 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
+import { Card } from "../ui/card";
 
 interface Props {
   members: Member[];
@@ -94,7 +95,7 @@ async function CashGameTable({
   };
 
   return (
-    <div className="mt-12 w-full max-w-screen-xl mx-auto">
+    <Card className="w-full overflow-hidden">
       <Table>
         <TableHeader>
           <TableRow>
@@ -108,7 +109,8 @@ async function CashGameTable({
                     isAdmin
                       ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
                       : `/stats/${year}/cash/sessions/${week.week_number}`
-                  }>
+                  }
+                >
                   Week {week.week_number}
                 </Link>
               </TableHead>
@@ -132,7 +134,7 @@ async function CashGameTable({
           )}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }
 
