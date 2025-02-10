@@ -27,8 +27,6 @@ function RecentSession({ sessions, year }: Props) {
     (a, b) => b.net_profit - a.net_profit
   );
 
-  console.log(rankedSessions);
-
   return (
     <div className=" w-full max-w-screen-xl">
       <h3 className="mb-4 font-semibold text-lg">

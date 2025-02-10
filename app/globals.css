@@ -81,3 +81,28 @@
     }
   }
 }
+
+#main-wrapper {
+  max-height: calc(100vh - 102.44px);
+  overflow-y: auto;
+}
+
+@media (display-mode: standalone) {
+  /* Ensure full height and prevent unwanted scrolling */
+  html {
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  #main-wrapper {
+    max-height: calc(100vh - 122.5px);
+  }
+
+  /* Prevent unintended gestures */
+  .pwa-mode {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}

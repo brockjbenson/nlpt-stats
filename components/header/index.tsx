@@ -14,15 +14,12 @@ async function Header() {
   } = await db.auth.getUser();
 
   return (
-    <header className="border-t-2 sticky top-0 py-6 bg-background/50 backdrop-blur-xl z-50 border-t-primary border-b border-b-neutral-600">
+    <header className="border-t-2 hidden lg:block sticky top-0 py-6 bg-background/50 backdrop-blur-xl z-50 border-t-primary border-b border-b-neutral-600">
       <div className=" max-w-screen-xl flex px-4 justify-between items-center mx-auto">
         <Logo />
         <Nav excludeAdmin={!user} />
         <div className="gap-2 hidden lg:flex">
           <HeaderAuth />
-        </div>
-        <div className="lg:hidden">
-          <MobileNav excludeAdmin={!user} />
         </div>
       </div>
     </header>

@@ -8,7 +8,9 @@ export default async function Layout({
   return (
     <>
       <Header />
-      <main className="flex flex-col max-w-screen-xl mx-auto w-full p-4 items-center">
+      <main
+        id="main-wrapper"
+        className="flex overflow-y-auto flex-col max-w-screen-xl mx-auto w-full p-4 items-center">
         {children}
       </main>
     </>
