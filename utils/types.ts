@@ -6,6 +6,29 @@ export type Member = {
   portrait_url: string;
 };
 
+export type Tournament = {
+  id: string;
+  data: Date;
+  name: string;
+  money_in_play: number;
+  buy_ins: number;
+  rebuys: number;
+  player_count: number;
+  season_id: string;
+};
+
+export type TournamentSession = {
+  id: string;
+  buy_in: number;
+  cash_out: number;
+  net_profit: number;
+  rebuys: number;
+  tournament_id: string;
+  member_id: string;
+  nlpi_points: number;
+  poy_points: number;
+};
+
 export type CashSession = {
   id: string;
   buy_in: number;
