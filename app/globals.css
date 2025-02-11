@@ -63,19 +63,12 @@
   body {
     @apply bg-background text-foreground;
   }
-  h1 {
-    @apply text-3xl font-bold my-4 text-left w-full;
-  }
 
   h2 {
     @apply text-2xl font-semibold;
   }
 
   @media (max-width: 640px) {
-    h1 {
-      @apply text-xl;
-    }
-
     h2 {
       @apply text-lg;
     }
@@ -83,7 +76,9 @@
 }
 
 #main-wrapper {
-  max-height: calc(100vh - 102.44px);
+  max-height: 100vh;
+  padding-top: 81px;
+  padding-bottom: 122.5px;
   overflow-y: auto;
 }
 
@@ -93,10 +88,6 @@
     height: 100vh;
     margin: 0;
     overflow: hidden;
-  }
-
-  #main-wrapper {
-    max-height: calc(100vh - 122.5px);
   }
 
   /* Prevent unintended gestures */

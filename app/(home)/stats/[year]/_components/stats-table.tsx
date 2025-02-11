@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -20,24 +20,75 @@ interface Props {
 function StatsTable({ cumulativeCashStats }: Props) {
   return (
     <Card className="w-full mb-8">
+      <CardTitle className="pt-2 pb-4 pl-2">Cash Stats</CardTitle>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Member</TableHead>
-            <TableHead>Net Profit</TableHead>
-            <TableHead>Gross Profit</TableHead>
-            <TableHead>Gross Losses</TableHead>
-            <TableHead>Session Avg</TableHead>
-            <TableHead>Avg Win</TableHead>
-            <TableHead>Avg Loss</TableHead>
-            <TableHead>Avg Buy-In</TableHead>
-            <TableHead>Avg Bullets</TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Net</span>
+                <span>Profit</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Gross</span>
+                <span>Profit</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Gross</span>
+                <span>Losses</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Session</span>
+                <span>Average</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Average</span>
+                <span>Win</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Average</span>
+                <span>Loss</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Average</span>
+                <span>Buy-In</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Average</span>
+                <span>Bullets</span>
+              </span>
+            </TableHead>
             <TableHead>Sessions</TableHead>
             <TableHead>Wins</TableHead>
             <TableHead>Losses</TableHead>
             <TableHead>Win %</TableHead>
-            <TableHead>Best W Streak</TableHead>
-            <TableHead>Worst L Streak</TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Best W</span>
+                <span>Streak</span>
+              </span>
+            </TableHead>
+            <TableHead>
+              <span className="w-full flex flex-col gap-1 items-center justify-center">
+                <span>Worst L</span>
+                <span>Streak</span>
+              </span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -49,41 +100,34 @@ function StatsTable({ cumulativeCashStats }: Props) {
                   <TableCell className="font-bold">
                     <Link
                       className="hover:text-primary underline"
-                      href={`/members/${stats.member.id}`}
-                    >
+                      href={`/members/${stats.member.id}`}>
                       {stats.member.first_name}
                     </Link>
                   </TableCell>
                   <TableCell
-                    className={cn(getProfitTextColor(stats.netProfit))}
-                  >
+                    className={cn(getProfitTextColor(stats.netProfit))}>
                     {formatMoney(stats.netProfit)}
                   </TableCell>
                   <TableCell
-                    className={cn(getProfitTextColor(stats.grossProfit))}
-                  >
+                    className={cn(getProfitTextColor(stats.grossProfit))}>
                     {formatMoney(stats.grossProfit)}
                   </TableCell>
                   <TableCell
-                    className={cn(getProfitTextColor(stats.grossLoss))}
-                  >
+                    className={cn(getProfitTextColor(stats.grossLoss))}>
                     {formatMoney(stats.grossLoss)}
                   </TableCell>
                   <TableCell
                     className={cn(
                       getProfitTextColor(stats.netProfit / stats.sessionsPlayed)
-                    )}
-                  >
+                    )}>
                     {formatMoney(stats.netProfit / stats.sessionsPlayed || 0)}
                   </TableCell>
                   <TableCell
-                    className={cn(getProfitTextColor(stats.averageWin))}
-                  >
+                    className={cn(getProfitTextColor(stats.averageWin))}>
                     {formatMoney(stats.averageWin)}
                   </TableCell>
                   <TableCell
-                    className={cn(getProfitTextColor(stats.averageLoss))}
-                  >
+                    className={cn(getProfitTextColor(stats.averageLoss))}>
                     {formatMoney(stats.averageLoss)}
                   </TableCell>
                   <TableCell>{formatMoney(stats.averageBuyIn || 0)}</TableCell>
@@ -99,8 +143,7 @@ function StatsTable({ cumulativeCashStats }: Props) {
                         stats.winPercentage < 50
                           ? "text-red-500"
                           : "text-green-500"
-                      )}
-                    >
+                      )}>
                       {stats.winPercentage.toFixed(2)}%
                     </span>
                   </TableCell>
