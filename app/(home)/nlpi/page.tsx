@@ -11,10 +11,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { CashSession, CashSessionNLPI } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
-import React, { Suspense } from "react";
-import NLPISkeleton from "./loading";
-import NavigateBack from "@/components/back-button/back-button";
-import MobilePageHeader from "@/components/page-header/page-header";
+import React from "react";
 import PageHeader from "@/components/page-header/page-header";
 
 async function NLPI() {
@@ -22,23 +19,22 @@ async function NLPI() {
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
 
-  // Fetch all members
-  const { data: members, error: memberError } = await db
-    .from("members")
-    .select("*");
+  const [
+    { data: sessions, error: sessionError },
+    { data: members, error: memberError },
+  ] = await Promise.all([
+    db.rpc("get_nlpi_sessions"),
+    db.from("members").select("*"),
+  ]);
 
   if (memberError) {
     return <p>Error fetching Member data: {memberError.message}</p>;
   }
-
-  const memberIds = members.map((member) => member.id);
-
-  const { data: sessions, error: sessionError } =
-    await db.rpc("get_nlpi_sessions");
-
   if (sessionError) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
   }
+
+  const memberIds = members.map((member) => member.id);
 
   const previousYearSessions = [...sessions].filter(
     (session: CashSessionNLPI) => {
@@ -193,74 +189,72 @@ async function NLPI() {
 
   return (
     <>
-      <Suspense fallback={<NLPISkeleton />}>
-        <PageHeader title="NLPI Rankings" />
-        <div className="w-full px-2 mt-4 max-w-screen-xl mx-auto">
-          <Card className="w-full  mb-8">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rank</TableHead>
-                  <TableHead>Last Week</TableHead>
-                  <TableHead>End {previousYear}</TableHead>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Avg Points</TableHead>
-                  <TableHead>Total Points</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {finalRanks.map((member) => {
-                  const changeData = getRankChangeInfo(
-                    member.currentRank,
-                    member.lastWeekRank
-                  );
-                  return (
-                    <TableRow key={member.id}>
-                      <TableCell className="flex items-center gap-2">
-                        {member.currentRank}
-                        <span
-                          className={cn(
-                            changeData.color,
-                            "flex items-center gap-1"
-                          )}>
-                          {changeData.icon}
-                          <span className="text-base md:text-xl">
-                            {displayRankChange(
-                              member.lastWeekRank,
-                              member.currentRank
-                            )}
-                          </span>
+      <PageHeader title="NLPI Rankings" />
+      <div className="w-full px-2 mt-4 max-w-screen-xl mx-auto">
+        <Card className="w-full  mb-8">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Rank</TableHead>
+                <TableHead>Last Week</TableHead>
+                <TableHead>End {previousYear}</TableHead>
+                <TableHead>Member</TableHead>
+                <TableHead>Avg Points</TableHead>
+                <TableHead>Total Points</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {finalRanks.map((member) => {
+                const changeData = getRankChangeInfo(
+                  member.currentRank,
+                  member.lastWeekRank
+                );
+                return (
+                  <TableRow key={member.id}>
+                    <TableCell className="flex items-center gap-2">
+                      {member.currentRank}
+                      <span
+                        className={cn(
+                          changeData.color,
+                          "flex items-center gap-1"
+                        )}>
+                        {changeData.icon}
+                        <span className="text-base md:text-xl">
+                          {displayRankChange(
+                            member.lastWeekRank,
+                            member.currentRank
+                          )}
                         </span>
-                      </TableCell>
-                      <TableCell>{member.lastWeekRank || "-"}</TableCell>
-                      <TableCell>{member.previousYearRank || "-"}</TableCell>
-                      <TableCell>{member.name}</TableCell>
-                      <TableCell>
-                        {(
-                          member.totalPoints /
-                          (sessionsByMember[member.id]?.length || 1)
-                        ).toFixed(3)}
-                      </TableCell>
-                      <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </Card>
-          <h2 className="mt-12 w-full text-base pb-2 border-b border-muted mr-auto">
-            Ineligible Members{" "}
-            <span className="text-sm text-muted">
-              (no data for most recent 20 sessions)
-            </span>
-          </h2>
-          <ul className="flex flex-col mb-4 mt-4 mr-auto">
-            {ineligibleMembers.map((member) => (
-              <li key={member.id}>{member.name}</li>
-            ))}
-          </ul>
-        </div>
-      </Suspense>
+                      </span>
+                    </TableCell>
+                    <TableCell>{member.lastWeekRank || "-"}</TableCell>
+                    <TableCell>{member.previousYearRank || "-"}</TableCell>
+                    <TableCell>{member.name}</TableCell>
+                    <TableCell>
+                      {(
+                        member.totalPoints /
+                        (sessionsByMember[member.id]?.length || 1)
+                      ).toFixed(3)}
+                    </TableCell>
+                    <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+        <h2 className="mt-12 w-full text-base pb-2 border-b border-muted mr-auto">
+          Ineligible Members{" "}
+          <span className="text-sm text-muted">
+            (no data for most recent 20 sessions)
+          </span>
+        </h2>
+        <ul className="flex flex-col mb-4 mt-4 mr-auto">
+          {ineligibleMembers.map((member) => (
+            <li key={member.id}>{member.name}</li>
+          ))}
+        </ul>
+      </div>
     </>
   );
 }

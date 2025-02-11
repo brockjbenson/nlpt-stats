@@ -15,7 +15,9 @@ interface Props {
 }
 
 function MobileNav({ excludeAdmin, className }: Props) {
-  const currentRoute = usePathname();
+  const pathname = usePathname();
+  const [clicked, setClicked] = useState("");
+
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,8 +52,6 @@ function MobileNav({ excludeAdmin, className }: Props) {
     };
   }, [lastScrollY]); // Depend on lastScrollY to track changes
 
-  console.log(currentRoute);
-
   return (
     <div
       onClick={() => {
@@ -65,7 +65,14 @@ function MobileNav({ excludeAdmin, className }: Props) {
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            className="flex flex-col items-center justify-center gap-1 text-sm font-semibold"
+            onClick={() => {
+              setClicked("stats");
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
+              (pathname.includes("stats") || clicked === "stats") &&
+                "text-primary"
+            )}
             href="/stats/2025">
             <GoGraph className="w-6 h-6" />
             Stats
@@ -73,7 +80,14 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            className="flex flex-col items-center justify-center gap-1 text-sm font-semibold"
+            onClick={() => {
+              setClicked("members");
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
+              (pathname.includes("members") || clicked === "members") &&
+                "text-primary"
+            )}
             href="/members">
             <FaUsers className="w-6 h-6" />
             Members
@@ -81,14 +95,27 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            className="flex bg-primary p-4 rounded-full flex-col items-center justify-center gap-1 text-sm font-semibold"
+            onClick={() => {
+              setClicked("home");
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
+              (pathname === "/" || clicked === "home") && "text-primary"
+            )}
             href="/">
             <Home className="w-6 h-6" />
+            Home
           </Link>
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            className="flex flex-col items-center justify-center gap-1 text-sm font-semibold"
+            onClick={() => {
+              setClicked("poy");
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
+              (pathname.includes("poy") || clicked === "poy") && "text-primary"
+            )}
             href="/poy">
             <FaTrophy className="w-6 h-6" />
             POY
@@ -96,7 +123,14 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            className="flex flex-col items-center justify-center gap-1 text-sm font-semibold"
+            onClick={() => {
+              setClicked("nlpi");
+            }}
+            className={cn(
+              "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
+              (pathname.includes("nlpi") || clicked === "nlpi") &&
+                "text-primary"
+            )}
             href="/nlpi">
             <FaRankingStar className="w-6 h-6" />
             NLPI

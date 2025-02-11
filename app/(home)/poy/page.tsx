@@ -22,35 +22,34 @@ async function Page({ params }: Params) {
   const { year } = await params;
   const currentYear = new Date().getFullYear();
   const db = await createClient();
-  const { data: season, error: seasonError } = await db
-    .from("season")
-    .select("*")
-    .eq("year", year ? year : currentYear);
+  const [
+    { data: seasons, error: seasonError },
+    { data: members, error: memberError },
+  ] = await Promise.all([
+    db
+      .from("season")
+      .select("*")
+      .eq("year", year ?? currentYear)
+      .single(),
+    db.from("members").select("*"),
+  ]);
 
-  if (seasonError) {
+  if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
-  }
+  if (memberError)
+    return <p>Error fetching Member data: {memberError.message}</p>;
 
   const { data: sessions, error: sessionError } = await db
     .from("cash_session")
-    .select(`*, week:week_id(*)`)
-    .eq("season_id", season[0].id);
+    .select(`*, week:week_id(week_number)`)
+    .eq("season_id", seasons?.id);
 
-  if (sessionError) {
+  if (sessionError)
     return <p>Error fetching Session data: {sessionError.message}</p>;
-  }
 
   const sessionsSortedByWeek = sessions.sort(
     (a, b) => a.week.week_number - b.week.week_number
   );
-
-  const { data: members, error: memberError } = await db
-    .from("members")
-    .select("*");
-
-  if (memberError) {
-    return <p>Error fetching Member data: {memberError.message}</p>;
-  }
 
   const memberIds = members.map((member) => member.id);
 
@@ -93,21 +92,20 @@ async function Page({ params }: Params) {
         color: "text-foreground",
         icon: <Minus className="text-foreground" size={14} />,
       };
-    } else if (currentRank < lastWeekRank) {
-      return {
-        positive: true,
-        change: lastWeekRank - currentRank,
-        color: "text-green-500",
-        icon: <ArrowUp className="text-green-500" size={16} />,
-      };
-    } else {
-      return {
-        positive: false,
-        change: currentRank - lastWeekRank,
-        color: "text-red-500",
-        icon: <ArrowDown className="text-red-500" size={16} />,
-      };
     }
+    return currentRank < lastWeekRank
+      ? {
+          positive: true,
+          change: lastWeekRank - currentRank,
+          color: "text-green-500",
+          icon: <ArrowUp className="text-green-500" size={16} />,
+        }
+      : {
+          positive: false,
+          change: currentRank - lastWeekRank,
+          color: "text-red-500",
+          icon: <ArrowDown className="text-red-500" size={16} />,
+        };
   };
 
   const displayRankChange = (lastWeek: number | null, current: number) => {
