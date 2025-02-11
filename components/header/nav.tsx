@@ -14,13 +14,12 @@ import AdminNav from "../admin-nav/admin-nav";
 
 function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
   return (
-    <NavigationMenu className="hidden lg:block">
+    <NavigationMenu className="hidden md:block">
       <NavigationMenuList className="flex gap-8 justify-center">
         <NavigationMenuItem>
           <NavigationMenuLink
             className="relative after:content-[''] after:absolute text-base font-medium after:transition-all after:duration-300 after:ease-in-out after:opacity-100 after:left-1/2 after:-translate-x-1/2 after:-bottom-2 after:h-[2px] after:bg-primary hover:text-primary after:w-0 hover:after:w-full"
-            href="/members"
-          >
+            href="/members">
             Members
           </NavigationMenuLink>
         </NavigationMenuItem>
@@ -34,24 +33,21 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
                 <li className="flex flex-col">
                   <Link
                     className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2025"
-                  >
+                    href="/stats/2025">
                     2025
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2025/cash"
-                      >
+                        href="/stats/2025/cash">
                         Cash
                       </Link>
                     </li>
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2025/tournaments"
-                      >
+                        href="/stats/2025/tournaments">
                         Tournaments
                       </Link>
                     </li>
@@ -60,24 +56,21 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
                 <li className="flex flex-col">
                   <Link
                     className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2024"
-                  >
+                    href="/stats/2024">
                     2024
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2024/cash"
-                      >
+                        href="/stats/2024/cash">
                         Cash
                       </Link>
                     </li>
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2024/tournaments"
-                      >
+                        href="/stats/2024/tournaments">
                         Tournaments
                       </Link>
                     </li>
@@ -86,24 +79,21 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
                 <li className="flex flex-col">
                   <Link
                     className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2023"
-                  >
+                    href="/stats/2023">
                     2023
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2023/cash"
-                      >
+                        href="/stats/2023/cash">
                         Cash
                       </Link>
                     </li>
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2023/tournaments"
-                      >
+                        href="/stats/2023/tournaments">
                         Tournaments
                       </Link>
                     </li>
@@ -112,24 +102,21 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
                 <li className="flex flex-col">
                   <Link
                     className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2022"
-                  >
+                    href="/stats/2022">
                     2022
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2022/cash"
-                      >
+                        href="/stats/2022/cash">
                         Cash
                       </Link>
                     </li>
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2022/tournaments"
-                      >
+                        href="/stats/2022/tournaments">
                         Tournaments
                       </Link>
                     </li>
@@ -138,24 +125,21 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
                 <li className="flex flex-col">
                   <Link
                     className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/career"
-                  >
+                    href="/stats/career">
                     Career
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/career/cash"
-                      >
+                        href="/stats/career/cash">
                         Cash
                       </Link>
                     </li>
                     <li>
                       <Link
                         className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/career/tournaments"
-                      >
+                        href="/stats/career/tournaments">
                         Tournaments
                       </Link>
                     </li>
@@ -168,16 +152,14 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
         <NavigationMenuItem>
           <NavigationMenuLink
             className="relative after:content-[''] after:absolute text-base font-medium after:transition-all after:duration-300 after:ease-in-out after:opacity-100 after:left-1/2 after:-translate-x-1/2 after:-bottom-2 after:h-[2px] after:bg-primary hover:text-primary after:w-0 hover:after:w-full"
-            href="/poy"
-          >
+            href="/poy">
             POY Standings
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink
             className="relative after:content-[''] after:absolute text-base font-medium after:transition-all after:duration-300 after:ease-in-out after:opacity-100 after:left-1/2 after:-translate-x-1/2 after:-bottom-2 after:h-[2px] after:bg-primary hover:text-primary after:w-0 hover:after:w-full"
-            href="/nlpi"
-          >
+            href="/nlpi">
             NLPI Rankings
           </NavigationMenuLink>
         </NavigationMenuItem>

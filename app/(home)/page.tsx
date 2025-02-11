@@ -1,3 +1,4 @@
+import PageHeader from "@/components/page-header/page-header";
 import RecentSession from "@/components/recent-session";
 import { createClient } from "@/utils/supabase/server";
 
@@ -23,11 +24,9 @@ export default async function Home() {
     return <p>Error fetching Session data: {sessionError.message}</p>;
   }
 
-  console.log(sessions);
-
   return (
     <>
-      <h2>Most Recent Session</h2>
+      <PageHeader title="Home" />
       <RecentSession sessions={sessions} year={currentYear} />
     </>
   );

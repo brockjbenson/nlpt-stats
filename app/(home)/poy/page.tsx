@@ -1,3 +1,4 @@
+import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -128,67 +129,73 @@ async function Page({ params }: Params) {
     }
   };
 
+  console.log(rankedPOYMembers);
+
   return (
     <>
-      <h1 className="mb-12">Player of the Year Standings</h1>
-      <Card className="w-full">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Rank</TableHead>
-              <TableHead>Last Week</TableHead>
-              <TableHead>Member</TableHead>
-              <TableHead>Points Behind</TableHead>
-              <TableHead>Avg Points Per Week</TableHead>
-              <TableHead>Total Points</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rankedPOYMembers.map((member) => {
-              const pointsBehind =
-                rankedPOYMembers[0].totalPOYPoints - member.totalPOYPoints;
-              const lastWeekRank = lastWeekRankedPOYMembers.filter(
-                (lastWeekMember) => lastWeekMember.id === member.id
-              )[0].currentRank;
-              const changeData = getRankChangeInfo(
-                member.currentRank,
-                lastWeekRank
-              );
-              return (
-                <TableRow key={member.id}>
-                  <TableCell className="flex items-center gap-2">
-                    {member.currentRank}
-                    <span
-                      className={cn(
-                        changeData.color,
-                        "flex items-center gap-1"
-                      )}
-                    >
-                      {changeData.icon}
-                      <span className="text-base md:text-xl">
-                        {displayRankChange(lastWeekRank, member.currentRank)}
+      <PageHeader title="POY Standings" />
+      <div className="w-full mb-8 max-w-screen-xl mx-auto px-2">
+        <Card className="w-full">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Rank</TableHead>
+                <TableHead>Last Week</TableHead>
+                <TableHead>Member</TableHead>
+                <TableHead>Points Behind</TableHead>
+                <TableHead>Avg Points Per Week</TableHead>
+                <TableHead>Total Points</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rankedPOYMembers.map((member) => {
+                const pointsBehind =
+                  rankedPOYMembers[0].totalPOYPoints - member.totalPOYPoints;
+                const lastWeekMember = lastWeekRankedPOYMembers.find(
+                  (lastWeekMember) => lastWeekMember.id === member.id
+                );
+
+                const lastWeekRank = lastWeekMember?.currentRank || null;
+
+                const changeData = getRankChangeInfo(
+                  member.currentRank,
+                  lastWeekRank
+                );
+                return (
+                  <TableRow key={member.id}>
+                    <TableCell className="flex items-center gap-2">
+                      {member.currentRank}
+                      <span
+                        className={cn(
+                          changeData.color,
+                          "flex items-center gap-1"
+                        )}>
+                        {changeData.icon}
+                        <span className="text-sm md:text-base">
+                          {displayRankChange(lastWeekRank, member.currentRank)}
+                        </span>
                       </span>
-                    </span>
-                  </TableCell>
-                  <TableCell>{lastWeekRank}</TableCell>
-                  <TableCell>{member.name}</TableCell>
-                  <TableCell>
-                    {pointsBehind === 0 ? (
-                      <Minus size={14} />
-                    ) : (
-                      pointsBehind.toFixed(2)
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {(member.totalPOYPoints / maxWeekNumber).toFixed(2)}
-                  </TableCell>
-                  <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Card>
+                    </TableCell>
+                    <TableCell>{lastWeekRank || <Minus size={14} />}</TableCell>
+                    <TableCell>{member.name}</TableCell>
+                    <TableCell>
+                      {pointsBehind === 0 ? (
+                        <Minus size={14} />
+                      ) : (
+                        pointsBehind.toFixed(2)
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {(member.totalPOYPoints / maxWeekNumber).toFixed(2)}
+                    </TableCell>
+                    <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
     </>
   );
 }

@@ -63,21 +63,37 @@
   body {
     @apply bg-background text-foreground;
   }
-  h1 {
-    @apply text-3xl font-bold my-4 text-left w-full;
-  }
 
   h2 {
     @apply text-2xl font-semibold;
   }
 
   @media (max-width: 640px) {
-    h1 {
-      @apply text-xl;
-    }
-
     h2 {
       @apply text-lg;
     }
+  }
+}
+
+#main-wrapper {
+  max-height: 100vh;
+  padding-top: 81px;
+  padding-bottom: 122.5px;
+  overflow-y: auto;
+}
+
+@media (display-mode: standalone) {
+  /* Ensure full height and prevent unwanted scrolling */
+  html {
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+
+  /* Prevent unintended gestures */
+  .pwa-mode {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
 }
