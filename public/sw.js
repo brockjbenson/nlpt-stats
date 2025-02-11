@@ -1,33 +1,51 @@
 const CACHE_NAME = "nlptstats-cache-v1";
 const urlsToCache = [
-  "/", // Home Page
-  "/members", // Example: About Page
-  "/poy", // Example: Contact Page
-  "/nlpi", // Static CSS
-  "/stats/2025", // Static JavaScript
+  "/",
+  "/members",
+  "/poy",
+  "/nlpi",
+  "/stats/2025",
   "/_next/static/",
 ];
 
 // Install event: Cache specified pages
-self.addEventListener("install", function (event) {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache);
     })
   );
 });
 
-// Fetch event: Serve cached pages when offline
-self.addEventListener("fetch", function (event) {
+// Fetch event: Prioritize network for navigation requests
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  // Ensure all navigation requests go to the network first
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.redirected) {
+            return Response.redirect(response.url, response.status);
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // For non-navigation requests, check cache first
   event.respondWith(
-    caches.match(event.request).then(function (response) {
-      return response || fetch(event.request);
+    caches.match(request).then((cachedResponse) => {
+      return cachedResponse || fetch(request);
     })
   );
 });
 
 // Push notification event
-self.addEventListener("push", function (event) {
+self.addEventListener("push", (event) => {
   if (event.data) {
     const data = event.data.json();
     const options = {
@@ -45,16 +63,16 @@ self.addEventListener("push", function (event) {
 });
 
 // Notification click event
-self.addEventListener("notificationclick", function (event) {
+self.addEventListener("notificationclick", (event) => {
   console.log("Notification click received.");
   event.notification.close();
   event.waitUntil(clients.openWindow("https://nlptstats.com"));
 });
 
 // Activate event: Clean up old caches
-self.addEventListener("activate", function (event) {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(function (cacheNames) {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
