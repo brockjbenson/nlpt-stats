@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table";
 import React from "react";
 
-function NLPISkeleton() {
+function loading() {
   return (
     <div className="animate-pulse">
       <PageHeader skeleton />
@@ -21,10 +21,9 @@ function NLPISkeleton() {
               <TableRow>
                 <TableHead>Rank</TableHead>
                 <TableHead>Last Week</TableHead>
-                <TableHead>End 2024</TableHead>
                 <TableHead>Member</TableHead>
+                <TableHead>Points Behind</TableHead>
                 <TableHead>Avg Points</TableHead>
-                <TableHead>Total Points</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -40,10 +39,10 @@ function NLPISkeleton() {
                     <div className="w-[64px] h-[24px] bg-neutral-700 rounded"></div>
                   </TableCell>
                   <TableCell>
-                    <div className="w-[55px] h-[24px] bg-neutral-700 rounded"></div>
+                    <div className="w-[82px] h-[24px] bg-neutral-700 rounded"></div>
                   </TableCell>
                   <TableCell>
-                    <div className="w-[50px] h-[24px] bg-neutral-700 rounded"></div>
+                    <div className="w-[55px] h-[24px] bg-neutral-700 rounded"></div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -55,4 +54,4 @@ function NLPISkeleton() {
   );
 }
 
-export default NLPISkeleton;
+export default loading;

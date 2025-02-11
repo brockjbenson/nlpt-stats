@@ -59,7 +59,7 @@ function MobileNav({ excludeAdmin, className }: Props) {
       }}
       ref={containerRef}
       className={cn(
-        "px-2 md:hidden block pt-2 z-[2340573245] transition-all duration-300 pb-8 fixed bottom-0 bg-background/20 backdrop-blur-md left-0 w-screen border-t border-t-primary",
+        "px-2 md:hidden block pt-2 z-[2340573245] transition-all duration-300 pb-8 fixed bottom-0 bg-background/70 backdrop-blur-md left-0 w-screen border-t border-t-primary",
         isScrolled ? "opacity-20 translate-y-full" : "opacity-100 translate-y-0"
       )}>
       <ul className="w-full grid gap-4 grid-cols-5">

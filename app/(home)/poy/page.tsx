@@ -129,12 +129,10 @@ async function Page({ params }: Params) {
     }
   };
 
-  console.log(rankedPOYMembers);
-
   return (
     <>
       <PageHeader title="POY Standings" />
-      <div className="w-full mb-8 max-w-screen-xl mx-auto px-2">
+      <div className="w-full mt-4 mb-8 max-w-screen-xl mx-auto px-2">
         <Card className="w-full">
           <Table>
             <TableHeader>

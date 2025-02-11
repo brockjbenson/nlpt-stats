@@ -8,10 +8,12 @@ function PageHeader({
   children,
   title,
   className,
+  skeleton = false,
 }: {
   children?: React.ReactNode;
   title?: string;
   className?: string;
+  skeleton?: boolean;
 }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -56,9 +58,18 @@ function PageHeader({
           ? "max-md:-translate-y-full max-md:opacity-20"
           : "max-md:translate-y-0 max-md:opacity-100"
       )}>
-      <NavigateBack />
-      {title && <h1 className="text-2xl md:text-lg font-bold">{title}</h1>}
-      {children && children}
+      {skeleton ? (
+        <>
+          <div className="h-[32px] bg-neutral-700 rounded w-16"></div>
+          <div className="h-[32px] bg-neutral-700 rounded w-40"></div>
+        </>
+      ) : (
+        <>
+          <NavigateBack />
+          {title && <h1 className="text-2xl md:text-lg font-bold">{title}</h1>}
+          {children && children}
+        </>
+      )}
     </div>
   );
 }

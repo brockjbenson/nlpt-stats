@@ -51,7 +51,7 @@ function MemberCard({
   return (
     <span
       className={cn(
-        "border-b border-neutral-400 grid gap-8 py-8 w-full",
+        "border-b border-neutral-500 grid gap-4 md:gap-8 py-4 md:py-8 w-full",
         allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
       )}>
       <MemberImage
@@ -59,14 +59,14 @@ function MemberCard({
         alt={member.first_name + member.last_name}
       />
       <ul className="flex flex-col w-full justify-center gap-2">
-        <li className="flex gap-2">
-          <span className="text-muted">Name:</span>
+        <li className="flex gap-2 items-center">
+          <span className="text-muted text-sm md:text-base">Name:</span>
           <span>
             {member.first_name} {member.last_name}
           </span>
         </li>
-        <li className="flex gap-2">
-          <span className="text-muted">Nickname:</span>
+        <li className="flex gap-2 items-center">
+          <span className="text-muted text-sm md:text-base">Nickname:</span>
           <span>{member.nickname}</span>
         </li>
       </ul>

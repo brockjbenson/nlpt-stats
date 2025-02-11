@@ -306,7 +306,7 @@ export const getPOYPointsLeaders = (
 
     return {
       id: member.id,
-      name: `${member.first_name} ${member.last_name}`,
+      name: `${member.first_name}`,
       image: member.portrait_url,
       totalPOYPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)),
     };
