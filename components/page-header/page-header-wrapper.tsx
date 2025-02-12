@@ -41,7 +41,7 @@ function PageHeaderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={cn(
-        "w-full border-b backdrop-blur-md bg-background/40 md:bg-background z-[304958] fixed md:relative top-0 border-neutral-500 mb-4 px-2 py-4 flex md:hidden items-center transition-all duration-300 justify-between",
+        "w-full border-b backdrop-blur-md bg-background/40 md:bg-background z-[304958] fixed md:relative top-0 border-neutral-500 mb-4 px-2 pb-4 pt-14 flex md:hidden items-center transition-all duration-300 justify-between",
         isScrolled
           ? "max-md:-translate-y-full max-md:opacity-20"
           : "max-md:translate-y-0 max-md:opacity-100"

@@ -84,7 +84,7 @@
 @media (max-width: 640px) {
   #main-wrapper {
     max-height: 100vh;
-    padding-top: 69px;
+    padding-top: 109px;
     padding-bottom: 122.5px;
   }
   #main-wrapper::-webkit-scrollbar {
@@ -102,7 +102,7 @@
 
   #main-wrapper {
     max-height: 100vh;
-    padding-top: 69px;
+    padding-top: 109px;
     padding-bottom: 122.5px;
   }
 

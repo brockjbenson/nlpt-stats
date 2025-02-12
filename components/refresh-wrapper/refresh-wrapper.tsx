@@ -83,7 +83,7 @@ const PullToRefresh = ({ children }: { children: ReactNode }) => {
       className="relative overflow-hidden">
       {/* Pull-to-refresh container (smooth height expansion) */}
       <div
-        className="flex fixed w-full left-0 top-[65px] items-center justify-center transition-all duration-75"
+        className="flex fixed w-full left-0 top-[105px] items-center justify-center transition-all duration-75"
         style={{
           height: loading ? maxHeight : pullHeight, // Expands smoothly when loading starts
         }}>
