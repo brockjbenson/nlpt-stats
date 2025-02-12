@@ -1,13 +1,6 @@
 import Header from "@/components/header";
-import RefreshWrapper from "@/components/refresh-wrapper/refresh-wrapper";
 
-export default async function Layout({
-  children,
-  title,
-}: {
-  children: React.ReactNode;
-  title?: string; // Accept title from metadata
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />

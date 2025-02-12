@@ -1,4 +1,4 @@
-import PageHeader from "@/components/page-header/page-header-wrapper";
+import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
 import {
   Table,

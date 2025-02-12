@@ -6,19 +6,26 @@ import { Toaster } from "@/components/ui/toaster";
 import MobileNav from "@/components/header/mobile-nav";
 import PullToRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const defaultUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
 
 export const metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(defaultUrl), // Ensures metadataBase is always a valid URL
   title: "NLPT - Stats",
   description: "Northern Lights Poker Tour Stats",
-  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
   },
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 const geistSans = Geist({
