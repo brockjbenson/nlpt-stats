@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import { Toaster } from "@/components/ui/toaster";
 import MobileNav from "@/components/header/mobile-nav";
+import PullToRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -50,7 +51,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          {children}
+          <PullToRefresh>{children}</PullToRefresh>
           <MobileNav />
         </ThemeProvider>
         <Toaster />

@@ -19,8 +19,8 @@ interface Props {
 
 function StatsTable({ cumulativeCashStats }: Props) {
   return (
-    <Card className="w-full mb-8">
-      <CardTitle className="pt-2 pb-4 pl-2">Cash Stats</CardTitle>
+    <Card className="w-full mb-4">
+      <CardTitle>Cash Stats</CardTitle>
       <Table>
         <TableHeader>
           <TableRow>

@@ -9,11 +9,10 @@ export default async function Layout({
   return (
     <>
       <Header />
-      <main className="flex flex-col mt-4 items-center">
-        <div className="flex flex-col gap-12 w-full max-w-screen-xl p-4">
-          <h1>Admin</h1>
-          <div className="w-full">{children}</div>
-        </div>
+      <main
+        id="main-wrapper"
+        className="flex overflow-y-auto flex-col mx-auto w-full lg:px-4 items-center">
+        <div className="max-w-screen-xl mx-auto w-full">{children}</div>
       </main>
     </>
   );

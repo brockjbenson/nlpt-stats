@@ -1,76 +1,37 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import NavigateBack from "../back-button/back-button";
-import { cn } from "@/lib/utils";
+import HeaderAuth from "@/components/header-auth";
+import PageHeaderWrapper from "./page-header-wrapper";
 
-function PageHeader({
-  children,
-  title,
-  className,
-  skeleton = false,
-}: {
+interface props {
   children?: React.ReactNode;
-  title?: string;
-  className?: string;
   skeleton?: boolean;
-}) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  title?: string;
+}
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
-
-  const handleScroll = () => {
-    const mainContainer = document.getElementById("main-wrapper");
-
-    if (mainContainer) {
-      const currentScrollY = mainContainer.scrollTop;
-
-      // Check if user is scrolling down
-      if (currentScrollY > lastScrollY && currentScrollY > 50) {
-        setIsScrolled(true); // Make nav transparent
-      } else {
-        setIsScrolled(false); // Make nav opaque
-      }
-
-      setLastScrollY(currentScrollY); // Update last scroll position
-    }
-  };
-
-  useEffect(() => {
-    const mainContainer = document.getElementById("main-wrapper");
-
-    if (mainContainer) {
-      mainContainer.addEventListener("scroll", handleScroll);
-    }
-
-    return () => {
-      mainContainer?.removeEventListener("scroll", handleScroll);
-    };
-  }, [lastScrollY]); // Depend on lastScrollY to track changes
-
-  return (
-    <div
-      className={cn(
-        "w-full border-b backdrop-blur-md bg-background/40 md:bg-background z-[304958] max-md:fixed top-0 border-neutral-500 mb-4 px-2 py-6 flex md:hidden items-center transition-all duration-300 justify-between",
-        className,
-        isScrolled
-          ? "max-md:-translate-y-full max-md:opacity-20"
-          : "max-md:translate-y-0 max-md:opacity-100"
-      )}>
-      {skeleton ? (
-        <>
+function PageHeader({ children, skeleton = false, title }: props) {
+  if (skeleton) {
+    return (
+      <PageHeaderWrapper>
+        <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 w-full">
           <div className="h-[32px] bg-neutral-700 rounded w-16"></div>
-          <div className="h-[32px] bg-neutral-700 rounded w-40"></div>
-        </>
-      ) : (
-        <>
-          <NavigateBack />
-          {title && <h1 className="text-2xl md:text-lg font-bold">{title}</h1>}
-          {children && children}
-        </>
-      )}
-    </div>
+          <div className="bg-neutral-700 mx-auto rounded w-32 h-[36px] "></div>
+          <div className="bg-neutral-700 h-[32px] rounded-full w-16 aspect-square "></div>
+        </div>
+      </PageHeaderWrapper>
+    );
+  }
+  return (
+    <PageHeaderWrapper>
+      <div className="grid grid-cols-[65px_1fr_65px] gap-2 w-full">
+        <NavigateBack />
+        {title && (
+          <h1 className="text-xl text-center md:text-2xl font-bold">{title}</h1>
+        )}
+        {children && children}
+        <HeaderAuth />
+      </div>
+    </PageHeaderWrapper>
   );
 }
 

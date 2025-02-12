@@ -1,5 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
 import RecentSession from "@/components/recent-session";
+import PullToRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function Home() {
@@ -27,7 +28,7 @@ export default async function Home() {
   return (
     <>
       <PageHeader title="Home" />
-      <RecentSession sessions={sessions} year={currentYear} />
+      <RecentSession className="pt-4" sessions={sessions} year={currentYear} />
     </>
   );
 }

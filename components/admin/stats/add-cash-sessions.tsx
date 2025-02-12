@@ -233,7 +233,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex sticky max-w-screen-lg mx-auto top-[103px] py-4 bg-background z-10 items-center justify-between">
+      <div className="flex sticky max-w-screen-lg mx-auto top-0 py-4 bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>

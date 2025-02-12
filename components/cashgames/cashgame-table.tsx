@@ -12,7 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
-import { Card } from "../ui/card";
+import { Card, CardTitle } from "../ui/card";
 
 interface Props {
   members: Member[];
@@ -96,6 +96,7 @@ async function CashGameTable({
 
   return (
     <Card className="w-full overflow-hidden">
+      <CardTitle>Cash Sessions</CardTitle>
       <Table>
         <TableHeader>
           <TableRow>
@@ -105,12 +106,12 @@ async function CashGameTable({
             {weeks.map((week) => (
               <TableHead className="whitespace-nowrap" key={week.id}>
                 <Link
+                  className="underline"
                   href={
                     isAdmin
                       ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
                       : `/stats/${year}/cash/sessions/${week.week_number}`
-                  }
-                >
+                  }>
                   Week {week.week_number}
                 </Link>
               </TableHead>

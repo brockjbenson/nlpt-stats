@@ -135,7 +135,7 @@ async function Page({ params }: Params) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rank</TableHead>
+                <TableHead className="!relative">Rank</TableHead>
                 <TableHead>Last Week</TableHead>
                 <TableHead>Member</TableHead>
                 <TableHead>Points Behind</TableHead>
@@ -159,7 +159,7 @@ async function Page({ params }: Params) {
                 );
                 return (
                   <TableRow key={member.id}>
-                    <TableCell className="flex items-center gap-2">
+                    <TableCell className="flex !relative items-center gap-2">
                       {member.currentRank}
                       <span
                         className={cn(

@@ -9,6 +9,7 @@ import { SelectTrigger } from "@radix-ui/react-select";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import PageHeader from "@/components/page-header/page-header";
+import OverviewMobile from "./_components/overview-mobile";
 
 interface Params {
   params: Promise<{ year: number }>;
@@ -63,9 +64,9 @@ async function Page({ params }: Params) {
 
   return (
     <>
-      <PageHeader className="m-0">
+      <PageHeader>
         <Select>
-          <SelectTrigger className="border-none flex items-center gap-1 text-2xl font-bold w-fit">
+          <SelectTrigger className="border-none mx-auto flex items-center gap-1 text-2xl font-bold w-fit">
             {currentSeason.year} Stats
             <ChevronDown className="w-6 h-6 ml-2" />
           </SelectTrigger>
@@ -87,6 +88,11 @@ async function Page({ params }: Params) {
         members={members}
         memberIds={memberIds}
         sessions={sessions}
+      />
+      <OverviewMobile
+        members={members}
+        sessions={sessions}
+        memberIds={memberIds}
       />
       <div className="px-2 pb-8 w-full">
         <StatsTable cumulativeCashStats={cumulativeCashStats} />

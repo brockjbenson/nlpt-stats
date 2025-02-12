@@ -1,3 +1,4 @@
+import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -12,7 +13,6 @@ import { createClient } from "@/utils/supabase/server";
 import { CashSession, CashSessionNLPI } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
-import PageHeader from "@/components/page-header/page-header";
 
 async function NLPI() {
   const db = await createClient();
@@ -195,7 +195,7 @@ async function NLPI() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rank</TableHead>
+                <TableHead className="!relative">Rank</TableHead>
                 <TableHead>Last Week</TableHead>
                 <TableHead>End {previousYear}</TableHead>
                 <TableHead>Member</TableHead>
@@ -211,7 +211,7 @@ async function NLPI() {
                 );
                 return (
                   <TableRow key={member.id}>
-                    <TableCell className="flex items-center gap-2">
+                    <TableCell className="flex !relative items-center gap-2">
                       {member.currentRank}
                       <span
                         className={cn(
@@ -219,7 +219,7 @@ async function NLPI() {
                           "flex items-center gap-1"
                         )}>
                         {changeData.icon}
-                        <span className="text-base md:text-xl">
+                        <span className="text-sm md:text-base">
                           {displayRankChange(
                             member.lastWeekRank,
                             member.currentRank

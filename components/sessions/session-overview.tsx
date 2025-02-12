@@ -28,10 +28,10 @@ function SessionOverview({ sessions }: Props) {
   return (
     <div className="grid mt-4 mb-4 grid-cols-1 w-full max-w-screen-xl px-2 mx-auto md:grid-cols-3 gap-4">
       <Card>
-        <CardTitle className="pt-2 pl-2">Session Info</CardTitle>
+        <CardTitle>Session Info</CardTitle>
         <ul>
           <li className="flex items-center justify-between w-full pb-2">
-            <span className="text-muted md:text-base text-sm">
+            <span className="text-muted md:text-base text-xs">
               Total Player
             </span>
             <span className="font-semibold text-lg md:text-xl">
@@ -39,7 +39,7 @@ function SessionOverview({ sessions }: Props) {
             </span>
           </li>
           <li className="flex items-center justify-between w-full pb-2">
-            <span className="text-muted md:text-base text-sm">
+            <span className="text-muted md:text-base text-xs">
               Total Buy-Ins
             </span>
             <span className="font-semibold text-lg md:text-xl">
@@ -49,7 +49,7 @@ function SessionOverview({ sessions }: Props) {
             </span>
           </li>
           <li className="flex items-center justify-between w-full pb-2">
-            <span className="text-muted md:text-base text-sm">
+            <span className="text-muted md:text-base text-xs">
               Money In Play
             </span>
             <span className="font-semibold text-lg md:text-xl">
@@ -61,7 +61,7 @@ function SessionOverview({ sessions }: Props) {
         </ul>
       </Card>
       <Card>
-        <CardTitle className="pt-2 pl-2">Top Earner</CardTitle>
+        <CardTitle>Top Earner</CardTitle>
         <div className="flex flex-col gap-4">
           <span className="flex items-center gap-4">
             <MemberImage
@@ -76,7 +76,7 @@ function SessionOverview({ sessions }: Props) {
           </span>
           <div className="grid grid-cols-4 gap-4 w-full">
             <span className="flex flex-col gap-1 items-start w-full">
-              <p className="text-muted md:text-base text-sm">Net Profit</p>
+              <p className="text-muted md:text-base text-xs">Net Profit</p>
               <p
                 className={cn(
                   getProfitTextColor(topEarner.net_profit),
@@ -86,19 +86,19 @@ function SessionOverview({ sessions }: Props) {
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">
-              <p className="text-muted md:text-base text-sm">Rebuys</p>
+              <p className="text-muted md:text-base text-xs">Rebuys</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {topEarner.rebuys}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">
-              <p className="text-muted md:text-base text-sm">NLPI Points</p>
+              <p className="text-muted md:text-base text-xs">NLPI Points</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {topEarner.nlpi_points.toFixed(3)}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-end w-full">
-              <p className="text-muted md:text-base text-sm">POY Points</p>
+              <p className="text-muted md:text-base text-xs">POY Points</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {topEarner.poy_points.toFixed(2)}
               </p>
@@ -107,7 +107,7 @@ function SessionOverview({ sessions }: Props) {
         </div>
       </Card>
       <Card>
-        <CardTitle className="pt-2 pl-2">Biggest Loser</CardTitle>
+        <CardTitle>Biggest Loser</CardTitle>
         <div className="flex flex-col gap-4">
           <span className="flex items-center gap-4">
             <MemberImage
@@ -122,7 +122,7 @@ function SessionOverview({ sessions }: Props) {
           </span>
           <div className="grid grid-cols-4 gap-4 w-full">
             <span className="flex flex-col gap-1 items-start w-full">
-              <p className="text-muted md:text-base text-sm">Net Profit</p>
+              <p className="text-muted md:text-base text-xs">Net Profit</p>
               <p
                 className={cn(
                   getProfitTextColor(biggestLoser.net_profit),
@@ -132,19 +132,19 @@ function SessionOverview({ sessions }: Props) {
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">
-              <p className="text-muted md:text-base text-sm">Rebuys</p>
+              <p className="text-muted md:text-base text-xs">Rebuys</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {biggestLoser.rebuys}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">
-              <p className="text-muted md:text-base text-sm">NLPI Points</p>
+              <p className="text-muted md:text-base text-xs">NLPI Points</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {biggestLoser.nlpi_points.toFixed(3)}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-end w-full">
-              <p className="text-muted md:text-base text-sm">POY Points</p>
+              <p className="text-muted md:text-base text-xs">POY Points</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
                 {biggestLoser.poy_points.toFixed(2)}
               </p>

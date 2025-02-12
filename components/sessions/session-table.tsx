@@ -24,9 +24,9 @@ interface Props {
 
 function SessionTable({ sessions, className }: Props) {
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-2">
+    <div className="w-full max-w-screen-xl mx-auto mt-4 px-2">
       <Card className="w-full mb-8">
-        <CardTitle className="pt-2 pl-2">Session Overview</CardTitle>
+        <CardTitle className="">Session Overview</CardTitle>
         <Table className={cn(className)}>
           <TableHeader>
             <TableRow>

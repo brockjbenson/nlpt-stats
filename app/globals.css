@@ -11,8 +11,8 @@
     --card: 0 0% 7.5%;
     --card-border: 0 0% 15%;
     --card-foreground: 210 60% 98%;
-    --popover: 210 60% 4.5%;
-    --popover-foreground: 210 60% 98%;
+    --popover: 0 0% 7.5%;
+    --popover-foreground: 0 0% 7.5%;
     --primary: 161 74% 45%;
     --primary-hover: 161 74% 55%;
     --primary-foreground: 0 0% 9%;
@@ -76,10 +76,20 @@
 }
 
 #main-wrapper {
-  max-height: 100vh;
-  padding-top: 81px;
-  padding-bottom: 122.5px;
+  max-height: calc(100vh - 102.44px);
+  min-height: calc(100vh - 102.44px);
   overflow-y: auto;
+}
+
+@media (max-width: 640px) {
+  #main-wrapper {
+    max-height: 100vh;
+    padding-top: 69px;
+    padding-bottom: 122.5px;
+  }
+  #main-wrapper::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (display-mode: standalone) {
@@ -88,6 +98,12 @@
     height: 100vh;
     margin: 0;
     overflow: hidden;
+  }
+
+  #main-wrapper {
+    max-height: 100vh;
+    padding-top: 69px;
+    padding-bottom: 122.5px;
   }
 
   /* Prevent unintended gestures */

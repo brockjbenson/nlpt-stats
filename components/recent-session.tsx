@@ -17,9 +17,10 @@ interface ExtendedCashSession extends CashSession {
 interface Props {
   sessions: ExtendedCashSession[]; // Making sessions an array
   year?: number;
+  className?: string;
 }
 
-function RecentSession({ sessions, year }: Props) {
+function RecentSession({ sessions, year, className }: Props) {
   const playedSessions = sessions.filter((session) => session.buy_in > 0);
   const weekNumber = playedSessions[0].week.week_number;
 
@@ -28,10 +29,13 @@ function RecentSession({ sessions, year }: Props) {
   );
 
   return (
-    <div className=" w-full max-w-screen-xl">
-      <h3 className="mb-4 font-semibold text-lg">
-        Week {weekNumber}, {year ? year : null}
-      </h3>
+    <div className={cn("w-full mx-auto max-w-screen-xl", className)}>
+      <div className="flex items-center mt-4 justify-between px-2 w-full">
+        <h1 className="text-xl font-bold md:text-2xl">Recent Session</h1>
+        <p className="text-sm md:text-base text-muted font-semibold">
+          Week {weekNumber}, {year}
+        </p>
+      </div>
       <SessionTable sessions={rankedSessions} />
     </div>
   );
