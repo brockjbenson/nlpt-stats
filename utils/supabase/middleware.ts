@@ -9,15 +9,25 @@ export const updateSession = async (request: NextRequest) => {
       },
     });
 
+    const pathname = request.nextUrl.pathname;
+
+    const publicPaths = [
+      "/manifest.json",
+      "/icons/",
+      "/favicon.ico",
+      "/robots.txt",
+    ];
+    if (publicPaths.some((path) => pathname.startsWith(path))) {
+      return response;
+    }
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
+          getAll: () => request.cookies.getAll(),
+          setAll: (cookiesToSet) => {
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value)
             );
@@ -30,17 +40,14 @@ export const updateSession = async (request: NextRequest) => {
       }
     );
 
-    // Refresh session if expired
     const { data, error } = await supabase.auth.getUser();
-    const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-    const isSignInPage = request.nextUrl.pathname.startsWith("/sign-in");
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isSignInPage = pathname.startsWith("/sign-in");
 
-    // 🚫 If user is NOT logged in, redirect to sign-in (but don't loop on /sign-in)
     if (!data?.user && !isSignInPage) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
 
-    // 🛡️ If user is logged in but NOT an admin, restrict `/admin`
     const userRole = data.user?.user_metadata?.role;
     if (isAdminRoute && userRole !== "admin") {
       return NextResponse.redirect(new URL("/", request.url));

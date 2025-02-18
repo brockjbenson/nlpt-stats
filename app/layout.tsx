@@ -12,6 +12,7 @@ const defaultUrl =
 
 export const metadata = {
   metadataBase: new URL(defaultUrl), // Ensures metadataBase is always a valid URL
+  manifest: "/manifest.json",
   title: "NLPT - Stats",
   description: "Northern Lights Poker Tour Stats",
   appleWebApp: {
