@@ -3,8 +3,6 @@ import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import Header from "@/components/header";
 import { Toaster } from "@/components/ui/toaster";
-import MobileNav from "@/components/header/mobile-nav";
-import PullToRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
@@ -52,14 +50,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-background overflow-hidden text-foreground">
+      <body className="bg-background min-h-screen text-foreground">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <PullToRefresh>{children}</PullToRefresh>
-          <MobileNav />
+          {children}
         </ThemeProvider>
         <Toaster />
       </body>

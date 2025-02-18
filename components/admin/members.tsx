@@ -81,12 +81,12 @@ function MembersList({ members }: Props) {
     router.refresh();
   };
   return (
-    <div className="mb-12 flex flex-col mt-4 gap-4">
+    <div className="mb-12 flex px-2 flex-col mt-4 gap-4">
       <fieldset>
         <Input
           onChange={(e) => doSearch(e.target.value)}
           value={searchValue}
-          className="w-full max-w-md"
+          className="w-full text-base max-w-md"
           type="search"
           name="search"
           placeholder="Search"

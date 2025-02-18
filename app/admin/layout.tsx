@@ -1,5 +1,6 @@
-import AdminNav from "@/components/admin-nav/admin-nav";
 import Header from "@/components/header";
+import MobileNav from "@/components/header/mobile-nav";
+import PageHeader from "@/components/page-header/page-header";
 
 export default async function Layout({
   children,
@@ -11,9 +12,13 @@ export default async function Layout({
       <Header />
       <main
         id="main-wrapper"
-        className="flex overflow-y-auto flex-col mx-auto w-full lg:px-4 items-center">
-        <div className="max-w-screen-xl mx-auto w-full">{children}</div>
+        className="flex flex-col mx-auto w-full lg:px-4 items-center">
+        <div className="max-w-screen-xl mx-auto w-full">
+          <PageHeader title="Admin" />
+          {children}
+        </div>
       </main>
+      <MobileNav />
     </>
   );
 }

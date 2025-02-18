@@ -1,24 +1,25 @@
+import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import { getCumulativeCashStats } from "@/utils/utils";
-import React from "react";
-import StatsTable from "./_components/stats-table";
-import CashGameTable from "@/components/cashgames/cashgame-table";
-import StatsOverview from "./_components/overview";
-import { Select, SelectContent } from "@/components/ui/select";
-import { SelectTrigger } from "@radix-ui/react-select";
-import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import PageHeader from "@/components/page-header/page-header";
-import OverviewMobile from "./_components/overview-mobile";
+import Link from "next/link";
+import React from "react";
+import CashGameTable from "@/components/cashgames/cashgame-table";
+import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
+import StatsOverview from "@/components/cashgames/overview";
+import OverviewMobile from "@/components/cashgames/overview-mobile";
+import StatsTable from "@/components/cashgames/stats-table";
 
-interface Params {
-  params: Promise<{ year: number }>;
+interface Props {
+  searchParams: Promise<{
+    year: string;
+  }>;
 }
 
-async function Page({ params }: Params) {
+async function Page({ searchParams }: Props) {
   const db = await createClient();
-  const { year } = await params;
-
+  const { year } = await searchParams;
+  const yearNumber = Number(year);
   const [
     { data: seasons, error: seasonError },
     { data: members, error: memberError },
@@ -26,16 +27,11 @@ async function Page({ params }: Params) {
     db.from("season").select("*"),
     db.from("members").select("*").order("first_name", { ascending: true }),
   ]);
-
   if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
   if (memberError)
     return <p>Error fetching Member data: {memberError.message}</p>;
-
-  const currentSeason = seasons.find((season) => season.year === Number(year));
-
-  if (!currentSeason) return <p>No season found for {year}</p>;
-
+  const activeSeason = seasons.find((season) => season.year === yearNumber);
   const { data: sessions, error: sessionError } = await db
     .from("cash_session")
     .select(
@@ -45,7 +41,7 @@ async function Page({ params }: Params) {
       week:week_id(week_number)
     `
     )
-    .eq("season_id", currentSeason.id);
+    .eq("season_id", activeSeason.id);
 
   if (sessionError)
     return <p>Error fetching Session data: {sessionError.message}</p>;
@@ -61,22 +57,21 @@ async function Page({ params }: Params) {
     memberIds,
     members
   );
-
   return (
     <>
       <PageHeader>
         <Select>
-          <SelectTrigger className="border-none mx-auto flex items-center gap-1 text-2xl font-bold w-fit">
-            {currentSeason.year} Stats
+          <SelectTrigger className="border-none mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
+            {activeSeason.year} Stats
             <ChevronDown className="w-6 h-6 ml-2" />
           </SelectTrigger>
           <SelectContent>
-            <div key={currentSeason.id} className="flex w-full flex-col">
+            <div key={activeSeason.id} className="flex w-full flex-col">
               {seasons.map((season) => (
                 <Link
                   key={season.id + season.year}
                   className="w-full py-2 pl-2 pr-4"
-                  href={`/stats/${season.year}`}>
+                  href={`/stats/cash?year=${season.year}`}>
                   {season.year}
                 </Link>
               ))}
@@ -98,8 +93,8 @@ async function Page({ params }: Params) {
         <StatsTable cumulativeCashStats={cumulativeCashStats} />
         <CashGameTable
           members={members}
-          year={currentSeason.year}
-          seasonId={currentSeason.id}
+          year={activeSeason.year}
+          seasonId={activeSeason.id}
         />
       </div>
     </>

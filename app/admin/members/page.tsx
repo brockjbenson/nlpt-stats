@@ -17,7 +17,7 @@ async function MembersAdmin() {
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex px-2 items-center justify-between">
         <h2 className=" text-2xl font-medium flex gap-2 items-end">
           Members
           <span className="text-lg font-normal text-muted">

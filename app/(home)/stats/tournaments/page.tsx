@@ -1,7 +1,11 @@
-import YearCarousel from "@/components/tournament/year-carousel";
+import PageHeader from "@/components/page-header/page-header";
+import { Card } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
 import { Tournament } from "@/utils/types";
+import { formatMoney } from "@/utils/utils";
+import Link from "next/link";
 import React from "react";
+import YearCarousel from "../../../../components/tournament/year-carousel";
 import TournamentCard from "@/components/tournament/tournament-card";
 
 interface Props {
@@ -25,11 +29,10 @@ async function Page({ searchParams }: Props) {
     .from("tournament_sessions")
     .select(
       `
-    *,
-    member:member_id(*)
-  `
+      *,
+      member:member_id(*)
+    `
     );
-
   if (tournamentsError) return <p>Error fetching tournaments</p>;
   if (seasonsError) return <p>Error fetching members</p>;
   const tournaments = year
@@ -42,20 +45,20 @@ async function Page({ searchParams }: Props) {
   if (tournamentSessionsError)
     return (
       <>
+        <PageHeader title="Tournaments" />
         <p>Error Fetching Tournament Sessions</p>
       </>
     );
   return (
     <>
-      <YearCarousel isAdmin seasons={seasons} year={year} />
-      <h2 className="px-2 font-bold text-2xl">{year} Tournaments</h2>
-      <div className="grid grid-cols-1 px-2 mt-4 md:grid-cols-3 gap-4">
+      <PageHeader title="Tournaments" />
+      <YearCarousel seasons={seasons} year={year} />
+      <div className="grid grid-cols-1 px-2 md:grid-cols-3 gap-4">
         {tournaments.map((tournament: Tournament) => (
           <TournamentCard
             sessions={tournamentSessions}
             key={tournament.id}
             tournament={tournament}
-            isAdmin
           />
         ))}
       </div>

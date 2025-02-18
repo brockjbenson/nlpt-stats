@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { FaUserCircle } from "react-icons/fa";
+import { RxHamburgerMenu } from "react-icons/rx";
 
 export default async function AuthButton() {
   const supabase = await createClient();
@@ -18,13 +18,49 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return user ? (
+  if (!user) {
+    return (
+      <Button asChild size="sm" variant={"outline"}>
+        <Link className=" self-end ml-auto align-middle w-fit" href="/sign-in">
+          Sign in
+        </Link>
+      </Button>
+    );
+  }
+
+  const isAdmin = user.user_metadata.role === "admin";
+
+  return (
     <Sheet>
       <SheetTrigger asChild>
-        <FaUserCircle className="ml-auto" size={32} />
+        <RxHamburgerMenu className="ml-auto" size={32} />
       </SheetTrigger>
-      <SheetContent>
-        <SheetTitle>Account</SheetTitle>
+      <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
+        <SheetTitle className="w-full sr-only flex items-center font-bold justify-center mb-8 text-2xl">
+          NLPT Stats
+        </SheetTitle>
+        {isAdmin && (
+          <div className="mb-8">
+            <p className="text-2xl font-semibold mb-2">Admin Nav</p>
+            <ul className="flex flex-col gap-2">
+              <li>
+                <Link href="/admin/users">Users</Link>
+              </li>
+              <li>
+                <Link href="/admin/stats/tournaments">Tournaments</Link>
+              </li>
+              <li>
+                <Link href="/admin/stats/cash">Cash</Link>
+              </li>
+              <li>
+                <Link href="/admin/members">Members</Link>
+              </li>
+              <li>
+                <Link href="/admin/seasons">Seasons</Link>
+              </li>
+            </ul>
+          </div>
+        )}
         <form action={signOutAction}>
           <Button type="submit" size="sm" variant={"outline"}>
             Sign out
@@ -33,11 +69,5 @@ export default async function AuthButton() {
       </SheetContent>
       <SheetOverlay />
     </Sheet>
-  ) : (
-    <Button asChild size="sm" variant={"outline"}>
-      <Link className=" self-end ml-auto align-middle w-fit" href="/sign-in">
-        Sign in
-      </Link>
-    </Button>
   );
 }

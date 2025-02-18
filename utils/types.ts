@@ -8,13 +8,14 @@ export type Member = {
 
 export type Tournament = {
   id: string;
-  data: Date;
+  date: Date;
   name: string;
   money_in_play: number;
   buy_ins: number;
   rebuys: number;
   player_count: number;
   season_id: string;
+  places_payed: number;
 };
 
 export type TournamentSession = {
@@ -27,6 +28,7 @@ export type TournamentSession = {
   member_id: string;
   nlpi_points: number;
   poy_points: number;
+  place: number;
 };
 
 export type CashSession = {

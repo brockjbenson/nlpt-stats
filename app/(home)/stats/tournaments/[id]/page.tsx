@@ -1,3 +1,4 @@
+import PageHeader from "@/components/page-header/page-header";
 import TournamentInfo from "@/components/tournament/tournament-info-card";
 import TournamentSessions from "@/components/tournament/tournament-sessions";
 import { createClient } from "@/utils/supabase/server";
@@ -31,17 +32,16 @@ async function Page({ params }: Props) {
     return <p>Error fetching sessions {sessionsError.message}</p>;
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-2">
-      <h2 className="text-2xl w-full flex items-center justify-center mb-8">
-        {tournament.name}
-      </h2>
-      <TournamentInfo tournament={tournament} isAdmin sessions={sessions} />
-      <TournamentSessions
-        sessions={sessions}
-        isAdmin
-        tournamentId={tournament.id}
-      />
-    </div>
+    <>
+      <PageHeader title={"Tournament"} />
+      <div className="w-full max-w-screen-xl mx-auto px-2">
+        <h2 className="text-2xl w-full flex items-center justify-center mb-8">
+          {tournament.name}
+        </h2>
+        <TournamentInfo tournament={tournament} sessions={sessions} />
+        <TournamentSessions sessions={sessions} tournamentId={tournament.id} />
+      </div>
+    </>
   );
 }
 

@@ -3,7 +3,6 @@ import SessionOverview from "@/components/sessions/session-overview";
 import SessionTable from "@/components/sessions/session-table";
 import { createClient } from "@/utils/supabase/server";
 import React, { Suspense } from "react";
-import Loading from "./loading";
 
 interface Props {
   params: Promise<{ year: string; week_number: string }>;
@@ -42,19 +41,17 @@ async function Page({ params }: Props) {
 
   return (
     <>
-      <Suspense fallback={<Loading />}>
-        <PageHeader title={`Week ${week_number}, ${year}`} />
-        {sessions.length === 0 ? (
-          <p className="text-muted mt-12 text-center mx-auto">
-            No sessions recorded for this week
-          </p>
-        ) : (
-          <>
-            <SessionOverview sessions={sessions} />
-            <SessionTable sessions={sessions} />
-          </>
-        )}
-      </Suspense>
+      <PageHeader title={`Week ${week_number}, ${year}`} />
+      {sessions.length === 0 ? (
+        <p className="text-muted mt-12 text-center mx-auto">
+          No sessions recorded for this week
+        </p>
+      ) : (
+        <>
+          <SessionOverview sessions={sessions} />
+          <SessionTable sessions={sessions} />
+        </>
+      )}
     </>
   );
 }
