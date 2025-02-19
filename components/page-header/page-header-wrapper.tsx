@@ -2,9 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { MdRefresh } from "react-icons/md";
+import { CgSpinner } from "react-icons/cg";
 
 function PageHeaderWrapper({ children }: { children: React.ReactNode }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -47,6 +51,18 @@ function PageHeaderWrapper({ children }: { children: React.ReactNode }) {
           : "max-md:translate-y-0 max-md:opacity-100"
       )}>
       {children}
+      <button
+        onClick={() => {
+          setLoading(true);
+          window.location.reload();
+        }}
+        className="absolute right-12">
+        {loading ? (
+          <CgSpinner className="animate-spin w-8 h-8" />
+        ) : (
+          <MdRefresh className="w-8 h-8" />
+        )}
+      </button>
     </div>
   );
 }

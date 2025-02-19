@@ -6,6 +6,7 @@ import {
   CashSessionWithMember,
   CashSessionWithWeek,
   Member,
+  TournamentSession,
 } from "./types";
 
 const POYPointsMap: Record<number, number> = {
@@ -27,6 +28,7 @@ const POYPointsMap: Record<number, number> = {
   16: 1,
   17: 1,
 };
+
 /**
  * Redirects to a specified path with an encoded message as a query parameter.
  * @param {('error' | 'success')} type - The type of message, either 'error' or 'success'.
@@ -309,6 +311,91 @@ export const getPOYPointsLeaders = (
       name: `${member.first_name}`,
       image: member.portrait_url,
       totalPOYPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)),
+    };
+  });
+
+  return memberPOYPoints
+    .filter((member) => member.totalPOYPoints > 0)
+    .sort((a, b) => b.totalPOYPoints - a.totalPOYPoints)
+    .map((member, index) => ({
+      ...member,
+      currentRank: index + 1, // Add rank
+    }));
+};
+
+export const getPOYPointsLeadersWithTournaments = (
+  sessions: CashSession[],
+  memberIds: any[],
+  members: Member[],
+  tournamentSessions: {
+    id: string;
+    poy_points: number;
+    member_id: string;
+    season_id: string;
+    tournament_id: string;
+    date: string;
+  }[]
+) => {
+  const sessionsCopy = [...sessions];
+
+  const sessionsByMember = memberIds.reduce<Record<string, CashSession[]>>(
+    (acc, memberId) => {
+      acc[memberId] = sessionsCopy.filter(
+        (session) => session.member_id === memberId
+      );
+      return acc;
+    },
+    {}
+  );
+
+  const tournamentSessionsByMember = memberIds.reduce<
+    Record<
+      string,
+      {
+        id: string;
+        poy_points: number;
+        member_id: string;
+        season_id: string;
+        tournament_id: string;
+      }[]
+    >
+  >((acc, memberId) => {
+    acc[memberId] = tournamentSessions.filter(
+      (session) => session.member_id === memberId
+    );
+    return acc;
+  }, {});
+
+  const memberPOYPoints = members.map((member) => {
+    const allSessions = sessionsByMember[member.id] || [];
+    const allTournamentSessions = tournamentSessionsByMember[member.id] || [];
+
+    const totalPOYPoints = allSessions.reduce(
+      (sum, session) => sum + session.poy_points,
+      0
+    );
+
+    const totalPOYPointsTournaments = allTournamentSessions.reduce(
+      (sum, session) => sum + session.poy_points,
+      0
+    );
+
+    const netProfit = allSessions.reduce(
+      (sum, session) => sum + session.net_profit,
+      0
+    );
+
+    const bonusPoints = netProfit > 0 ? netProfit / 2 : 0;
+
+    return {
+      id: member.id,
+      name: `${member.first_name}`,
+      image: member.portrait_url,
+      cashPoints: parseFloat((totalPOYPoints + bonusPoints).toFixed(2)),
+      tournamentPoints: parseFloat(totalPOYPointsTournaments.toFixed(2)),
+      totalPOYPoints:
+        parseFloat((totalPOYPoints + bonusPoints).toFixed(2)) +
+        parseFloat(totalPOYPointsTournaments.toFixed(2)),
     };
   });
 

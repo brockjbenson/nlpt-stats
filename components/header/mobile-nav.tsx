@@ -66,13 +66,9 @@ function MobileNav({ excludeAdmin, className }: Props) {
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            onClick={() => {
-              setClicked("cash");
-            }}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              (pathname.includes("cash") || clicked === "cash") &&
-                "text-primary"
+              pathname.includes("cash") && "text-primary"
             )}
             href="/stats/cash?year=2025">
             <FaMoneyBill className="w-6 h-6" />
@@ -81,13 +77,9 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            onClick={() => {
-              setClicked("tournament");
-            }}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              (pathname.includes("tournament") || clicked === "tournament") &&
-                "text-primary"
+              pathname.includes("tournament") && "text-primary"
             )}
             href="/stats/tournaments">
             <FaTrophy className="w-6 h-6" />
@@ -96,13 +88,9 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            onClick={() => {
-              setClicked("career");
-            }}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              (pathname.includes("career") || clicked === "career") &&
-                "text-primary"
+              pathname.includes("career") && "text-primary"
             )}
             href="/stats/career">
             <FaChartArea className="w-6 h-6" />
@@ -111,12 +99,9 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            onClick={() => {
-              setClicked("poy");
-            }}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              (pathname.includes("poy") || clicked === "poy") && "text-primary"
+              pathname.includes("poy") && "text-primary"
             )}
             href="/poy">
             <FaRankingStar className="w-6 h-6" />
@@ -125,13 +110,9 @@ function MobileNav({ excludeAdmin, className }: Props) {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
-            onClick={() => {
-              setClicked("nlpi");
-            }}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              (pathname.includes("nlpi") || clicked === "nlpi") &&
-                "text-primary"
+              pathname.includes("nlpi") && "text-primary"
             )}
             href="/nlpi">
             <TbWorldStar className="w-6 h-6" />

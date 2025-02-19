@@ -32,115 +32,74 @@ function Nav({ excludeAdmin }: { excludeAdmin: boolean }) {
               <ul className="grid gap-12 w-full max-w-screen-md grid-cols-5">
                 <li className="flex flex-col">
                   <Link
-                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2025">
-                    2025
+                    className="w-full text-white border-b border-muted pb-1 font-semibold hover:text-primary"
+                    href="/stats/cash?year=2025">
+                    Cash
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2025/cash">
-                        Cash
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/cash?year=2025">
+                        2025
                       </Link>
                     </li>
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2025/tournaments">
-                        Tournaments
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/cash?year=2024">
+                        2024
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/cash?year=2023">
+                        2023
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/cash?year=2025">
+                        2022
                       </Link>
                     </li>
                   </ul>
                 </li>
                 <li className="flex flex-col">
                   <Link
-                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2024">
-                    2024
+                    className="w-full text-white border-b border-muted pb-1 font-semibold hover:text-primary"
+                    href="/stats/tournaments">
+                    Tournaments
                   </Link>
                   <ul className="w-full m-0 pt-1">
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2024/cash">
-                        Cash
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/tournaments?year=2025">
+                        2025
                       </Link>
                     </li>
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2024/tournaments">
-                        Tournaments
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-                <li className="flex flex-col">
-                  <Link
-                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2023">
-                    2023
-                  </Link>
-                  <ul className="w-full m-0 pt-1">
-                    <li>
-                      <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2023/cash">
-                        Cash
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/tournaments?year=2024">
+                        2024
                       </Link>
                     </li>
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2023/tournaments">
-                        Tournaments
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-                <li className="flex flex-col">
-                  <Link
-                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/2022">
-                    2022
-                  </Link>
-                  <ul className="w-full m-0 pt-1">
-                    <li>
-                      <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2022/cash">
-                        Cash
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/tournaments?year=2023">
+                        2023
                       </Link>
                     </li>
                     <li>
                       <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/2022/tournaments">
-                        Tournaments
-                      </Link>
-                    </li>
-                  </ul>
-                </li>
-                <li className="flex flex-col">
-                  <Link
-                    className="w-full border-b border-foreground pb-1 font-semibold hover:text-primary"
-                    href="/stats/career">
-                    Career
-                  </Link>
-                  <ul className="w-full m-0 pt-1">
-                    <li>
-                      <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/career/cash">
-                        Cash
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="text-sm text-foreground/90 hover:text-primary"
-                        href="/stats/career/tournaments">
-                        Tournaments
+                        className="text-sm text-white/90 hover:text-primary"
+                        href="/stats/tournaments?year=2025">
+                        2022
                       </Link>
                     </li>
                   </ul>

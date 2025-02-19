@@ -1,6 +1,17 @@
 import { Member, TournamentSession } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
+import { Card, CardTitle } from "../ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../ui/table";
+import { formatMoney, getProfitTextColor } from "@/utils/utils";
+import { PiMedalFill } from "react-icons/pi";
 
 interface SessionsWithMember extends TournamentSession {
   member: Member;
@@ -36,7 +47,90 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
       );
     }
   }
-  return <div>TournamentSessions</div>;
+
+  const renderPlacementMedal = (place: number) => {
+    switch (place) {
+      case 1:
+        return (
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            <PiMedalFill className="text-yellow-600 w-10 h-10" />
+            <span className="text-black text-xs absolute z-10 top-2 font-bold">
+              1
+            </span>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            <PiMedalFill className="text-gray-600 w-10 h-10" />
+            <span className="text-white text-xs absolute z-10 top-2 font-bold">
+              2
+            </span>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            <PiMedalFill className="text-orange-600 w-10 h-10" />
+            <span className="text-black text-xs absolute z-10 top-2 font-bold">
+              3
+            </span>
+          </div>
+        );
+      default:
+        return (
+          <div className="w-10 h-10 relative flex items-center justify-center">
+            {place}
+          </div>
+        );
+    }
+  };
+  return (
+    <div className="mt-4">
+      <Card>
+        <CardTitle>Tournament Sessions</CardTitle>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="!relative">Place</TableHead>
+              <TableHead>Member</TableHead>
+              <TableHead>Buy in</TableHead>
+              <TableHead>Cash out</TableHead>
+              <TableHead>Net Profit</TableHead>
+              <TableHead>Rebuys</TableHead>
+              <TableHead>POY Points</TableHead>
+              <TableHead>NLPI points</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sessions
+              .filter((s) => s.place > 0)
+              .sort((a, b) => a.place - b.place)
+              .map((session) => {
+                return (
+                  <TableRow key={session.id}>
+                    <TableCell className="!relative">
+                      {renderPlacementMedal(session.place)}
+                    </TableCell>
+                    <TableCell>{session.member.first_name}</TableCell>
+                    <TableCell>{formatMoney(session.buy_in)}</TableCell>
+                    <TableCell>{formatMoney(session.cash_out)}</TableCell>
+                    <TableCell>
+                      <span className={getProfitTextColor(session.net_profit)}>
+                        {formatMoney(session.net_profit)}
+                      </span>
+                    </TableCell>
+                    <TableCell>{session.rebuys}</TableCell>
+                    <TableCell>{session.poy_points.toFixed(2)}</TableCell>
+                    <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
+                  </TableRow>
+                );
+              })}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
+  );
 }
 
 export default TournamentSessions;

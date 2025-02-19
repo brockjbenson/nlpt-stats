@@ -1,3 +1,5 @@
+import { Tournament, TournamentSession } from "./types";
+
 const NLPIPointsMap: Record<number, number> = {
   1: 10.5,
   2: 9,

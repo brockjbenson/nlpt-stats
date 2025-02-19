@@ -10,7 +10,15 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
-import { getPOYPointsLeaders } from "@/utils/utils";
+import {
+  CashSession,
+  CashSessionWithWeek,
+  TournamentSession,
+} from "@/utils/types";
+import {
+  getPOYPointsLeaders,
+  getPOYPointsLeadersWithTournaments,
+} from "@/utils/utils";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
@@ -23,7 +31,7 @@ async function Page({ params }: Params) {
   const currentYear = new Date().getFullYear();
   const db = await createClient();
   const [
-    { data: seasons, error: seasonError },
+    { data: season, error: seasonError },
     { data: members, error: memberError },
   ] = await Promise.all([
     db
@@ -39,10 +47,25 @@ async function Page({ params }: Params) {
   if (memberError)
     return <p>Error fetching Member data: {memberError.message}</p>;
 
-  const { data: sessions, error: sessionError } = await db
-    .from("cash_session")
-    .select(`*, week:week_id(week_number)`)
-    .eq("season_id", seasons?.id);
+  const [
+    { data: sessions, error: sessionError },
+    { data: tournamentSessions, error: tournamentSessionError },
+  ] = await Promise.all([
+    db
+      .from("cash_session")
+      .select(`*, week:week_id(week_number)`)
+      .eq("season_id", season.id),
+    db.rpc("get_tournament_sessions_by_season", {
+      target_season_id: season.id,
+    }),
+  ]);
+
+  if (tournamentSessionError)
+    return (
+      <p>
+        Error fetching Tournament Session data: {tournamentSessionError.message}
+      </p>
+    );
 
   if (sessionError)
     return <p>Error fetching Session data: {sessionError.message}</p>;
@@ -53,10 +76,11 @@ async function Page({ params }: Params) {
 
   const memberIds = members.map((member) => member.id);
 
-  const rankedPOYMembers = getPOYPointsLeaders(
+  const rankedPOYMembers = getPOYPointsLeadersWithTournaments(
     sessionsSortedByWeek,
     memberIds,
-    members
+    members,
+    tournamentSessions
   );
 
   const maxWeekNumber = Math.max(
@@ -67,10 +91,22 @@ async function Page({ params }: Params) {
     (session) => session.week.week_number !== maxWeekNumber
   );
 
-  const lastWeekRankedPOYMembers = getPOYPointsLeaders(
+  const lastWeekSessionsDate = new Date(
+    filteredSessions.filter(
+      (sessions: CashSessionWithWeek) =>
+        sessions.week.week_number === maxWeekNumber - 1
+    )[0].created_at
+  );
+
+  const filteredTournamentSessions = tournamentSessions.filter(
+    (session: { date: string }) => new Date(session.date) < lastWeekSessionsDate
+  );
+
+  const lastWeekRankedPOYMembers = getPOYPointsLeadersWithTournaments(
     filteredSessions,
     memberIds,
-    members
+    members,
+    filteredTournamentSessions
   );
 
   const getRankChangeInfo = (
@@ -140,6 +176,8 @@ async function Page({ params }: Params) {
                 <TableHead>Member</TableHead>
                 <TableHead>Points Behind</TableHead>
                 <TableHead>Avg Points Per Week</TableHead>
+                <TableHead>Major Points</TableHead>
+                <TableHead>Cash Points</TableHead>
                 <TableHead>Total Points</TableHead>
               </TableRow>
             </TableHeader>
@@ -184,6 +222,8 @@ async function Page({ params }: Params) {
                     <TableCell>
                       {(member.totalPOYPoints / maxWeekNumber).toFixed(2)}
                     </TableCell>
+                    <TableCell>{member.tournamentPoints.toFixed(2)}</TableCell>
+                    <TableCell>{member.cashPoints.toFixed(2)}</TableCell>
                     <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
                   </TableRow>
                 );

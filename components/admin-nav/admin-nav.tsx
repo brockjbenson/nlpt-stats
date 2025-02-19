@@ -15,7 +15,9 @@ async function AdminNav() {
     <div className="w-screen flex justify-center">
       <ul className="flex gap-12">
         <li className="flex flex-col">
-          <Link className="whitespace-nowrap p-1" href="/admin/stats/cash">
+          <Link
+            className="whitespace-nowrap text-white p-1"
+            href="/admin/stats/cash">
             Cash
           </Link>
           <ul>
@@ -30,7 +32,7 @@ async function AdminNav() {
           <ul>
             <li>
               <Link
-                className="whitespace-nowrap p-1"
+                className="whitespace-nowrap text-white p-1"
                 href="/admin/stats/cashgames/new">
                 Add Sessions
               </Link>
@@ -39,21 +41,21 @@ async function AdminNav() {
         </li>
         <li>
           <Link
-            className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
+            className="whitespace-nowrap text-white pb-1 border-b-2 border-foreground hover:border-primary"
             href="/admin/members">
             Members
           </Link>
         </li>
         <li>
           <Link
-            className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
+            className="whitespace-nowrap text-white pb-1 border-b-2 border-foreground hover:border-primary"
             href="/admin/records">
             Records
           </Link>
         </li>
         <li>
           <Link
-            className="whitespace-nowrap pb-1 border-b-2 border-foreground hover:border-primary"
+            className="whitespace-nowrap text-white pb-1 border-b-2 border-foreground hover:border-primary"
             href="/admin/seasons">
             Seasons
           </Link>

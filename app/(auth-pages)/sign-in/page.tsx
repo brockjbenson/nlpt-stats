@@ -27,7 +27,7 @@ export default function Login(props: {
 
   return (
     <form className="w-full max-w-sm max-h-fit flex flex-col">
-      <h1 className="text-2xl font-medium">Sign in</h1>
+      <h1 className="md:text-2xl font-semibold">Sign in</h1>
       <div className="flex w-full flex-col gap-2 [&>input]:mb-3 mt-8">
         <Label htmlFor="email">Email</Label>
         <Input

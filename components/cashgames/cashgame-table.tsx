@@ -95,47 +95,49 @@ async function CashGameTable({
   };
 
   return (
-    <Card className="w-full overflow-hidden">
-      <CardTitle>Cash Sessions</CardTitle>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="whitespace-nowrap sticky left-0 z-10">
-              Member
-            </TableHead>
-            {weeks.map((week) => (
-              <TableHead className="whitespace-nowrap" key={week.id}>
-                <Link
-                  className="underline"
-                  href={
-                    isAdmin
-                      ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
-                      : `/stats/${year}/cash/sessions/${week.week_number}`
-                  }>
-                  Week {week.week_number}
-                </Link>
+    <div className="px-2 w-full max-w-screen-xl mx-auto">
+      <Card className="w-full overflow-hidden">
+        <CardTitle>Cash Sessions</CardTitle>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="whitespace-nowrap sticky left-0 z-10">
+                Member
               </TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {members.map(
-            (member) =>
-              hasAtLeastOneSession(member.id) && (
-                <TableRow key={member.id}>
-                  <TableCell className="sticky font-semibold left-0 z-10">
-                    {member.first_name}
-                  </TableCell>
-                  {weeks.map((week) => {
-                    const sessionData = getSessionData(member.id, week.id);
-                    return renderTableCell(sessionData, week.id);
-                  })}
-                </TableRow>
-              )
-          )}
-        </TableBody>
-      </Table>
-    </Card>
+              {weeks.map((week) => (
+                <TableHead className="whitespace-nowrap" key={week.id}>
+                  <Link
+                    className="underline"
+                    href={
+                      isAdmin
+                        ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
+                        : `/stats/cash/${year}/${week.week_number}`
+                    }>
+                    Week {week.week_number}
+                  </Link>
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {members.map(
+              (member) =>
+                hasAtLeastOneSession(member.id) && (
+                  <TableRow key={member.id}>
+                    <TableCell className="sticky font-semibold left-0 z-10">
+                      {member.first_name}
+                    </TableCell>
+                    {weeks.map((week) => {
+                      const sessionData = getSessionData(member.id, week.id);
+                      return renderTableCell(sessionData, week.id);
+                    })}
+                  </TableRow>
+                )
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+    </div>
   );
 }
 

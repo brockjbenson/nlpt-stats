@@ -7,7 +7,7 @@ export default async function Layout({
 }) {
   return (
     <>
-      <Logo className="absolute top-8" size="xl" />
+      <Logo className="absolute top-16" size="xl" />
       {children}
     </>
   );

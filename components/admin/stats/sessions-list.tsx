@@ -41,10 +41,10 @@ function SessionsList({
         const season = getSeasonInfo(session.season_id);
         return (
           <div
-            className="grid py-8 border-b first:border-t border-neutral-500 grid-cols-[60px_1fr_min-content] gap-4"
+            className="grid py-3 relative md:py-8 border-b first:border-t border-neutral-500 md:grid-cols-[60px_1fr_min-content] gap-4"
             key={`${session.member_id}_${index}`}>
             {member?.portrait_url ? (
-              <div className="rounded-full overflow-hidden w-full aspect-square flex items-center justify-center">
+              <div className="rounded-full hidden overflow-hidden w-full aspect-square md:flex items-center justify-center">
                 <Image
                   src={member.portrait_url}
                   alt={`${member.first_name}_${member.last_name}`}
@@ -60,49 +60,67 @@ function SessionsList({
                 />
               </div>
             )}
-            <div className="flex items-center justify-between gap-12">
-              <h3 className="w-fit whitespace-nowrap font-bold text-2xl">
+            <div className="flex flex-col gap-4 md:flex-row items-center justify-between md:gap-12">
+              <h3 className="w-fit whitespace-nowrap font-bold text-base md:text-2xl">
                 {member?.first_name} {member?.last_name}
               </h3>
-              <ul className="flex w-fit justify-start gap-8">
+              <ul className="grid grid-cols-6 gap-2 md:flex w-full md:w-fit justify-start md:gap-8">
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Buy-In</span>
-                  <span className="font-medium">
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Buy-In
+                  </span>
+                  <span className="font-medium text-sm md:text-lg">
                     ${session.buy_in.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Cash Out</span>
-                  <span className="font-medium">
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Cash Out
+                  </span>
+                  <span className="font-medium text-sm md:text-lg">
                     ${session.cash_out.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Net Profit</span>
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Net Profit
+                  </span>
                   <span
                     className={cn(
-                      "font-medium",
+                      "font-medium text-sm md:text-lg",
                       session.net_profit > 0 ? "text-green-600" : "text-red-500"
                     )}>
                     ${session.net_profit.toFixed(2)}
                   </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Rebuys</span>
-                  <span className="font-medium">{session.rebuys}</span>
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Rebuys
+                  </span>
+                  <span className="font-medium text-sm md:text-lg">
+                    {session.rebuys}
+                  </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Season</span>
-                  <span className="font-medium">{season?.year}</span>
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Season
+                  </span>
+                  <span className="font-medium text-sm md:text-lg">
+                    {season?.year}
+                  </span>
                 </li>
                 <li className="flex flex-col gap-2 items-center">
-                  <span className="text-neutral-400">Week</span>
-                  <span className="font-medium">{week?.week_number}</span>
+                  <span className="text-neutral-400 text-xs md:text-base">
+                    Week
+                  </span>
+                  <span className="font-medium text-sm md:text-lg">
+                    {week?.week_number}
+                  </span>
                 </li>
               </ul>
             </div>
             <button
-              className="w-8 h-8 flex self-center items-center justify-center rounded-full border border-transparent hover:border-primary group"
+              className="w-8 h-8 max-md:absolute max-md:top-3 max-md:right-2 flex md:self-center items-center justify-center rounded-full border border-transparent hover:border-primary group"
               onClick={() => removeSessionFromList(index)}>
               <X className="w-6 h-6 group-hover:fill-primary" />
             </button>

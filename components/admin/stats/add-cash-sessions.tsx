@@ -233,7 +233,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex sticky max-w-screen-lg mx-auto top-0 py-4 bg-background z-10 items-center justify-between">
+      <div className="flex sticky px-2 max-w-screen-lg mx-auto top-0 py-4 bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>
@@ -245,7 +245,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           </button>
         )}
       </div>
-      <div className="w-full mt-8 max-w-screen-lg mx-auto">
+      <div className="w-full px-2 mt-8 max-w-screen-lg mx-auto">
         {sessionsToAdd.length > 0 && (
           <SessionsList
             sessionsToAdd={sessionsToAdd}

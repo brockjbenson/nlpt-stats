@@ -3,6 +3,7 @@ import { Card } from "../ui/card";
 import Link from "next/link";
 import { formatMoney } from "@/utils/utils";
 import { Member, Tournament, TournamentSession } from "@/utils/types";
+import MemberImage from "../members/member-image";
 
 interface SessionWithMember extends TournamentSession {
   member: Member;
@@ -16,10 +17,16 @@ interface Props {
 }
 
 function TournamentCard({ tournament, isAdmin, sessions }: Props) {
+  const correctSessions = sessions?.filter(
+    (s) => s.tournament_id === tournament.id
+  );
   const tournamentWinner =
-    sessions && sessions.length > 0
-      ? sessions.sort((a, b) => b.place - a.place)[0]
+    correctSessions && correctSessions.length > 0
+      ? [...correctSessions] // Create a shallow copy before sorting
+          .filter((s) => s.place > 0) // Remove entries where place is 0
+          .sort((a, b) => a.place - b.place)[0] // Sort by lowest place number (1st place wins)
       : null;
+
   return (
     <Card key={tournament.id} className="p-4 flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -41,7 +48,16 @@ function TournamentCard({ tournament, isAdmin, sessions }: Props) {
       <div className="flex flex-col gap-2 justify-center items-center">
         <h3 className="text-muted text-sm">Winner</h3>
         {tournamentWinner ? (
-          <p>{tournamentWinner.member.first_name}</p>
+          <div className="grid grid-cols-[50px_1fr] gap-2 items-center">
+            <MemberImage
+              src={tournamentWinner.member.portrait_url}
+              alt={tournamentWinner.member.first_name}
+            />
+            <p className="text-lg md:text-xl font-bold">
+              {tournamentWinner.member.first_name}{" "}
+              {tournamentWinner.member.last_name}
+            </p>
+          </div>
         ) : (
           <p>Winner not Found</p>
         )}

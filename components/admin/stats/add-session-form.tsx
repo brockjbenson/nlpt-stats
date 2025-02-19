@@ -57,14 +57,16 @@ function AddSessionForm({
     }
   };
   return (
-    <div ref={formRef} className="grid grid-cols-4 gap-4 mb-12 items-center">
+    <div
+      ref={formRef}
+      className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 items-center">
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="buyIn">Buy In</Label>
         <span className="relative flex items-center">
           <span className="absolute left-2">$</span>
           <Input
             ref={buyInRef}
-            className="pl-6"
+            className="pl-6 text-base"
             type="number"
             id="buyIn"
             step={0.05}
@@ -78,7 +80,7 @@ function AddSessionForm({
         <span className="relative flex items-center">
           <span className="absolute left-2">$ </span>
           <Input
-            className="pl-6"
+            className="pl-6 text-base"
             type="number"
             id="cashOut"
             step={0.05}
@@ -94,7 +96,7 @@ function AddSessionForm({
         <span className="relative flex items-center">
           <span className="absolute left-2">$ </span>
           <Input
-            className="pl-6"
+            className="pl-6 text-base"
             type="number"
             id="netProfit"
             value={formState.net_profit.toFixed(2)}
@@ -108,6 +110,7 @@ function AddSessionForm({
       <fieldset className="flex flex-col gap-4 grow">
         <Label htmlFor="rebuys">Rebuys</Label>
         <Input
+          className="text-base"
           type="number"
           id="rebuys"
           value={formState.rebuys}
