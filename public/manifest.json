@@ -2,7 +2,7 @@
   "name": "Northern Lights Poker Tour Stats",
   "short_name": "NLPTStats",
   "description": "Northern Lights Poker Tour Stats",
-  "start_url": "/sign-in",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
