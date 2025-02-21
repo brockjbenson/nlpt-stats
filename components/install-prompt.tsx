@@ -17,7 +17,7 @@ const InstallPrompt = () => {
       (window.navigator as any).standalone;
 
     if (!isStandalone) {
-      setShowPrompt(true);
+      setShowPrompt(false);
     }
   }, []);
 
@@ -48,30 +48,6 @@ const InstallPrompt = () => {
               <strong>"Add to Home Screen"</strong>.
             </p>
           </span>
-        );
-      case "Android":
-      case "Chrome":
-        return (
-          <p>
-            📥 Tap the install icon in your browser's menu to install this app.
-          </p>
-        );
-      case "Safari":
-        return (
-          <p>
-            🖥️ Click on the share icon in the toolbar and select "Add to Home
-            Screen."
-          </p>
-        );
-      case "Firefox":
-        return <p>🦊 Go to the browser settings and select "Install." </p>;
-      case "Edge":
-        return <p>🔵 Use the Edge menu to install this app.</p>;
-      default:
-        return (
-          <p>
-            💻 Install this app from your browser menu for a better experience.
-          </p>
         );
     }
   };

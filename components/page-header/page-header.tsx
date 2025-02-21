@@ -2,6 +2,8 @@ import React from "react";
 import NavigateBack from "../back-button/back-button";
 import HeaderAuth from "@/components/header-auth";
 import PageHeaderWrapper from "./page-header-wrapper";
+import Link from "next/link";
+import Image from "next/image";
 
 interface props {
   children?: React.ReactNode;
@@ -23,8 +25,15 @@ function PageHeader({ children, skeleton = false, title }: props) {
   }
   return (
     <PageHeaderWrapper>
-      <div className="grid grid-cols-[65px_1fr_65px] gap-2 w-full">
-        <NavigateBack />
+      <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
+        <Link href="/">
+          <Image
+            src="/icons/nlpt-no-bg.png"
+            alt="logo"
+            width={40}
+            height={40}
+          />
+        </Link>
         {title && (
           <h1 className="text-xl text-center md:text-2xl font-bold">{title}</h1>
         )}

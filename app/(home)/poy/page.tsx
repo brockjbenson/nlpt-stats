@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { getPOYData, ProcessedPOYData } from "@/utils/poy/utils";
 import { createClient } from "@/utils/supabase/server";
 import {
   CashSession,
@@ -23,92 +24,48 @@ import {
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
+type POYData = {
+  member_id: string;
+  first_name: string;
+  all_cash_sessions: {
+    poy_points: number;
+    created_at: string;
+    net_profit: number;
+  }[];
+  all_tournament_sessions: {
+    poy_points: number;
+    date: string;
+  }[];
+};
+
 interface Params {
-  params: Promise<{ year: string | null }>;
+  searchParams: Promise<{ year: string | null }>;
 }
 
-async function Page({ params }: Params) {
-  const { year } = await params;
+async function Page({ searchParams }: Params) {
+  const { year } = await searchParams;
   const currentYear = new Date().getFullYear();
   const db = await createClient();
-  const [
-    { data: season, error: seasonError },
-    { data: members, error: memberError },
-  ] = await Promise.all([
+  const [{ data: season, error: seasonError }] = await Promise.all([
     db
       .from("season")
       .select("*")
       .eq("year", year ?? currentYear)
       .single(),
-    db.from("members").select("*"),
   ]);
 
   if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
-  if (memberError)
-    return <p>Error fetching Member data: {memberError.message}</p>;
 
-  const [
-    { data: sessions, error: sessionError },
-    { data: tournamentSessions, error: tournamentSessionError },
-  ] = await Promise.all([
-    db
-      .from("cash_session")
-      .select(`*, week:week_id(week_number)`)
-      .eq("season_id", season.id),
-    db.rpc("get_tournament_sessions_by_season", {
-      target_season_id: season.id,
-    }),
-  ]);
+  const { data: poyData, error: poyError } = await db.rpc("get_poy_data", {
+    target_season_id: season.id,
+  });
 
-  if (tournamentSessionError)
-    return (
-      <p>
-        Error fetching Tournament Session data: {tournamentSessionError.message}
-      </p>
-    );
+  if (poyError) {
+    return <p>Error fetching POY data: {poyError.message}</p>;
+  }
 
-  if (sessionError)
-    return <p>Error fetching Session data: {sessionError.message}</p>;
-
-  const sessionsSortedByWeek = sessions.sort(
-    (a, b) => a.week.week_number - b.week.week_number
-  );
-
-  const memberIds = members.map((member) => member.id);
-
-  const rankedPOYMembers = getPOYPointsLeadersWithTournaments(
-    sessionsSortedByWeek,
-    memberIds,
-    members,
-    tournamentSessions
-  );
-
-  const maxWeekNumber = Math.max(
-    ...sessionsSortedByWeek.map((session) => session.week.week_number)
-  );
-
-  const filteredSessions = sessionsSortedByWeek.filter(
-    (session) => session.week.week_number !== maxWeekNumber
-  );
-
-  const lastWeekSessionsDate = new Date(
-    filteredSessions.filter(
-      (sessions: CashSessionWithWeek) =>
-        sessions.week.week_number === maxWeekNumber - 1
-    )[0].created_at
-  );
-
-  const filteredTournamentSessions = tournamentSessions.filter(
-    (session: { date: string }) => new Date(session.date) < lastWeekSessionsDate
-  );
-
-  const lastWeekRankedPOYMembers = getPOYPointsLeadersWithTournaments(
-    filteredSessions,
-    memberIds,
-    members,
-    filteredTournamentSessions
-  );
+  const pointsData: ProcessedPOYData[] = getPOYData(poyData);
 
   const getRankChangeInfo = (
     currentRank: number,
@@ -186,35 +143,39 @@ async function Page({ params }: Params) {
                   Total <br /> Points
                 </TableHead>
                 <TableHead>
-                  Avg <br /> Points
+                  Cash <br /> Points
                 </TableHead>
                 <TableHead>
                   Major <br /> Points
                 </TableHead>
                 <TableHead>
-                  Cash <br /> Points
+                  Cash <br /> Played
+                </TableHead>
+                <TableHead>
+                  Avg Cash <br /> Per Week
+                </TableHead>
+                <TableHead>
+                  Majors <br /> Played
+                </TableHead>
+                <TableHead>
+                  Avg Major <br /> Per Tourney
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rankedPOYMembers.map((member) => {
-                const pointsBehind =
-                  rankedPOYMembers[0].totalPOYPoints - member.totalPOYPoints;
-                const lastWeekMember = lastWeekRankedPOYMembers.find(
-                  (lastWeekMember) => lastWeekMember.id === member.id
-                );
-
-                const lastWeekRank = lastWeekMember?.currentRank || null;
-
+              {pointsData.map((data) => {
+                if (data.total === 0) {
+                  return null;
+                }
                 const changeData = getRankChangeInfo(
-                  member.currentRank,
-                  lastWeekRank
+                  data.rank,
+                  data.lastWeekRank
                 );
                 return (
-                  <TableRow key={member.id}>
+                  <TableRow key={data.member_id}>
                     <TableCell>
                       <span className="flex items-center gap-2">
-                        {member.currentRank}
+                        {data.rank}
                         <span
                           className={cn(
                             changeData.color,
@@ -222,29 +183,42 @@ async function Page({ params }: Params) {
                           )}>
                           {changeData.icon}
                           <span className="text-sm md:text-base">
-                            {displayRankChange(
-                              lastWeekRank,
-                              member.currentRank
-                            )}
+                            {displayRankChange(data.lastWeekRank, data.rank)}
                           </span>
                         </span>
                       </span>
                     </TableCell>
-                    <TableCell>{lastWeekRank || <Minus size={14} />}</TableCell>
-                    <TableCell>{member.name}</TableCell>
                     <TableCell>
-                      {pointsBehind === 0 ? (
-                        <Minus size={14} />
+                      {data.lastWeekRank > 0 ? (
+                        data.lastWeekRank
                       ) : (
-                        pointsBehind.toFixed(2)
+                        <Minus size={14} />
                       )}
                     </TableCell>
-                    <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
+                    <TableCell>{data.first_name}</TableCell>
                     <TableCell>
-                      {(member.totalPOYPoints / maxWeekNumber).toFixed(2)}
+                      {data.pointsBehind === 0 ? (
+                        <Minus size={14} />
+                      ) : (
+                        data.pointsBehind.toFixed(2)
+                      )}
                     </TableCell>
-                    <TableCell>{member.tournamentPoints.toFixed(2)}</TableCell>
-                    <TableCell>{member.cashPoints.toFixed(2)}</TableCell>
+                    <TableCell>{data.total.toFixed(2)}</TableCell>
+                    <TableCell>{data.cash_points.toFixed(2)}</TableCell>
+                    <TableCell>{data.tournament_points.toFixed(2)}</TableCell>
+                    <TableCell>{data.cashSessionsPlayed}</TableCell>
+                    <TableCell>
+                      {(
+                        data.cash_points / data.cashSessionsPlayed || 0
+                      ).toFixed(2)}
+                    </TableCell>
+                    <TableCell>{data.tournamentSessionsPlayed}</TableCell>
+                    <TableCell>
+                      {(
+                        data.tournament_points /
+                          data.tournamentSessionsPlayed || 0
+                      ).toFixed(2)}
+                    </TableCell>
                   </TableRow>
                 );
               })}

@@ -154,3 +154,23 @@ export type NLPIData = {
     tournament_id: string;
   }[];
 };
+
+export type CareerCashStatsData = {
+  id: string;
+  buy_in: number;
+  created_at: string;
+  cash_out: number;
+  net_profit: number;
+  rebuys: number;
+  week: {
+    id: string;
+    week_number: number;
+  };
+  season: {
+    id: string;
+    year: number;
+  };
+  nlpi_points: number;
+  poy_points: number;
+  member: Member;
+};
