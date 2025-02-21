@@ -21,7 +21,7 @@ async function Page({ params }: Props) {
     return <p>Error fetching tournament {tournamentError.message}</p>;
   if (membersError) return <p>Error fetching members {membersError.message}</p>;
   return (
-    <div>
+    <div className="pb-12">
       <h2>Add Sessions for {tournament.name}</h2>
       <TournamentSessionsForm members={members} tournament={tournament} />
     </div>

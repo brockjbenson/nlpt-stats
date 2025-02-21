@@ -20,7 +20,7 @@ function YearCarousel({ seasons, year, isAdmin = false }: Props) {
 
   return (
     <div
-      className="mb-4 border-b pb-4 border-neutral-500 px-2 overflow-hidden"
+      className="mb-4 border-b animate-in pb-4 border-neutral-500 px-2 overflow-hidden"
       ref={emblaMainRef}>
       <div className="flex touch-pan-y -ml-4">
         <Link

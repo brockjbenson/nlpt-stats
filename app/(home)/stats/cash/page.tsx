@@ -1,6 +1,5 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
-import { getCumulativeCashStats } from "@/utils/utils";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -18,45 +17,32 @@ interface Props {
 
 async function Page({ searchParams }: Props) {
   const db = await createClient();
+
   const { year } = await searchParams;
   const yearNumber = Number(year);
   const [
     { data: seasons, error: seasonError },
-    { data: members, error: memberError },
+    { data: members, error: membersError },
   ] = await Promise.all([
     db.from("season").select("*"),
     db.from("members").select("*").order("first_name", { ascending: true }),
   ]);
   if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
-  if (memberError)
-    return <p>Error fetching Member data: {memberError.message}</p>;
+
+  if (membersError)
+    return <p>Error fetching Member data: {membersError.message}</p>;
+
   const activeSeason = seasons.find((season) => season.year === yearNumber);
-  const { data: sessions, error: sessionError } = await db
-    .from("cash_session")
-    .select(
-      `
-      *,
-      member:member_id(id, first_name),
-      week:week_id(week_number)
-    `
-    )
-    .eq("season_id", activeSeason.id);
-
-  if (sessionError)
-    return <p>Error fetching Session data: {sessionError.message}</p>;
-
-  const sessionSortedByWeek = [...sessions].sort(
-    (a, b) => a.week.week_number - b.week.week_number
+  const { data: seasonStats, error: seasonStatsError } = await db.rpc(
+    "get_season_stats",
+    {
+      target_season_id: activeSeason.id,
+    }
   );
+  if (seasonStatsError)
+    return <p>Error fetching Season data: {seasonStatsError.message}</p>;
 
-  const memberIds = members.map((member) => member.id);
-
-  const cumulativeCashStats = getCumulativeCashStats(
-    sessionSortedByWeek,
-    memberIds,
-    members
-  );
   return (
     <>
       <PageHeader>
@@ -79,23 +65,17 @@ async function Page({ searchParams }: Props) {
           </SelectContent>
         </Select>
       </PageHeader>
-      <StatsOverview
-        members={members}
-        memberIds={memberIds}
-        sessions={sessions}
-      />
-      <OverviewMobile
-        members={members}
-        sessions={sessions}
-        memberIds={memberIds}
-      />
-      <div className="px-2 pb-8 w-full">
-        <StatsTable cumulativeCashStats={cumulativeCashStats} />
-        <CashGameTable
-          members={members}
-          year={activeSeason.year}
-          seasonId={activeSeason.id}
-        />
+      <div className="animate-in">
+        <StatsOverview seasonStats={seasonStats} />
+        <OverviewMobile seasonStats={seasonStats} />
+        <div className="pb-8 w-full">
+          <StatsTable seasonStats={seasonStats} />
+          <CashGameTable
+            members={members}
+            year={activeSeason.year}
+            seasonId={activeSeason.id}
+          />
+        </div>
       </div>
     </>
   );

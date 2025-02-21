@@ -54,7 +54,7 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
             <PiMedalFill className="text-yellow-600 w-10 h-10" />
-            <span className="text-black text-xs absolute z-10 top-2 font-bold">
+            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
               1
             </span>
           </div>
@@ -62,8 +62,8 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
       case 2:
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
-            <PiMedalFill className="text-gray-600 w-10 h-10" />
-            <span className="text-white text-xs absolute z-10 top-2 font-bold">
+            <PiMedalFill className="text-neutral-400 w-10 h-10" />
+            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
               2
             </span>
           </div>
@@ -72,7 +72,7 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
             <PiMedalFill className="text-orange-600 w-10 h-10" />
-            <span className="text-black text-xs absolute z-10 top-2 font-bold">
+            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
               3
             </span>
           </div>

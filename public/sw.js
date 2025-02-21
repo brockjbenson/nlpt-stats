@@ -1,33 +1,71 @@
-const CACHE_NAME = "nlptstats-cache-v1";
-const urlsToCache = [
-  "/", // Home Page
-  "/members", // Example: About Page
-  "/poy", // Example: Contact Page
-  "/nlpi", // Static CSS
-  "/stats/2025", // Static JavaScript
-  "/_next/static/",
+const CACHE_NAME = "nlptstats-cache-v2";
+const STATIC_ASSETS = [
+  "/",
+  "/members",
+  "/poy",
+  "/nlpi",
+  "/stats",
+  "/favicon.ico",
+  "/manifest.json",
+  "/offline.html", // Offline fallback page
+  "/icons/nlpt-192.png",
+  "/icons/nlpt-512.png",
 ];
 
-// Install event: Cache specified pages
-self.addEventListener("install", function (event) {
+// Install event: Precache static assets
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(urlsToCache);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
     })
   );
+  self.skipWaiting(); // Activate the new service worker immediately
 });
 
-// Fetch event: Serve cached pages when offline
-self.addEventListener("fetch", function (event) {
+// Fetch event: Serve cached assets & API data
+self.addEventListener("fetch", (event) => {
+  const requestUrl = new URL(event.request.url);
+
+  // Ignore requests to external APIs
+  if (!requestUrl.origin.includes(self.location.origin)) {
+    return;
+  }
+
+  // Use Network-First for API requests (cache API responses)
+  if (requestUrl.pathname.startsWith("/api/")) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, response.clone()); // Cache API response
+            return response;
+          });
+        })
+        .catch(() => caches.match(event.request)) // Fallback to cached API response
+    );
+    return;
+  }
+
+  // Use Cache-First strategy for static assets
   event.respondWith(
-    caches.match(event.request).then(function (response) {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cachedResponse) => {
+      return (
+        cachedResponse ||
+        fetch(event.request)
+          .then((response) => {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, response.clone());
+              return response;
+            });
+          })
+          .catch(() => caches.match("/offline.html")) // Show offline page if network fails
+      );
     })
   );
 });
 
 // Push notification event
-self.addEventListener("push", function (event) {
+self.addEventListener("push", (event) => {
   if (event.data) {
     const data = event.data.json();
     const options = {
@@ -45,16 +83,15 @@ self.addEventListener("push", function (event) {
 });
 
 // Notification click event
-self.addEventListener("notificationclick", function (event) {
-  console.log("Notification click received.");
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   event.waitUntil(clients.openWindow("https://nlptstats.com"));
 });
 
 // Activate event: Clean up old caches
-self.addEventListener("activate", function (event) {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(function (cacheNames) {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
@@ -62,4 +99,5 @@ self.addEventListener("activate", function (event) {
       );
     })
   );
+  self.clients.claim(); // Ensure clients use the new service worker
 });

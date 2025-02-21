@@ -1,5 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
-import { Card } from "@/components/ui/card";
+import POYInfo from "@/components/poy/poy-info";
+import { Card, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -165,20 +166,34 @@ async function Page({ params }: Params) {
 
   return (
     <>
-      <PageHeader title="POY Standings" />
-      <div className="w-full mt-4 mb-8 max-w-screen-xl mx-auto px-2">
+      <PageHeader>
+        <POYInfo />
+      </PageHeader>
+      <div className="w-full animate-in mt-4 mb-8 max-w-screen-xl mx-auto px-2">
         <Card className="w-full">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="!relative">Rank</TableHead>
-                <TableHead>Last Week</TableHead>
+                <TableHead>Rank</TableHead>
+                <TableHead>
+                  Last <br /> Week
+                </TableHead>
                 <TableHead>Member</TableHead>
-                <TableHead>Points Behind</TableHead>
-                <TableHead>Avg Points Per Week</TableHead>
-                <TableHead>Major Points</TableHead>
-                <TableHead>Cash Points</TableHead>
-                <TableHead>Total Points</TableHead>
+                <TableHead>
+                  Points <br /> Behind
+                </TableHead>
+                <TableHead>
+                  Total <br /> Points
+                </TableHead>
+                <TableHead>
+                  Avg <br /> Points
+                </TableHead>
+                <TableHead>
+                  Major <br /> Points
+                </TableHead>
+                <TableHead>
+                  Cash <br /> Points
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -197,16 +212,21 @@ async function Page({ params }: Params) {
                 );
                 return (
                   <TableRow key={member.id}>
-                    <TableCell className="flex !relative items-center gap-2">
-                      {member.currentRank}
-                      <span
-                        className={cn(
-                          changeData.color,
-                          "flex items-center gap-1"
-                        )}>
-                        {changeData.icon}
-                        <span className="text-sm md:text-base">
-                          {displayRankChange(lastWeekRank, member.currentRank)}
+                    <TableCell>
+                      <span className="flex items-center gap-2">
+                        {member.currentRank}
+                        <span
+                          className={cn(
+                            changeData.color,
+                            "flex items-center gap-1"
+                          )}>
+                          {changeData.icon}
+                          <span className="text-sm md:text-base">
+                            {displayRankChange(
+                              lastWeekRank,
+                              member.currentRank
+                            )}
+                          </span>
                         </span>
                       </span>
                     </TableCell>
@@ -219,12 +239,12 @@ async function Page({ params }: Params) {
                         pointsBehind.toFixed(2)
                       )}
                     </TableCell>
+                    <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
                     <TableCell>
                       {(member.totalPOYPoints / maxWeekNumber).toFixed(2)}
                     </TableCell>
                     <TableCell>{member.tournamentPoints.toFixed(2)}</TableCell>
                     <TableCell>{member.cashPoints.toFixed(2)}</TableCell>
-                    <TableCell>{member.totalPOYPoints.toFixed(2)}</TableCell>
                   </TableRow>
                 );
               })}

@@ -108,3 +108,49 @@ export type Week = {
   week_number: number;
   season_id: string;
 };
+
+export type SeasonCashStats = {
+  member_id: string;
+  first_name: string;
+  portrait_url: string;
+  poy_points: number;
+  gross_profit: number;
+  net_profit: number;
+  gross_losses: number;
+  sessions_played: number;
+  wins: number;
+  losses: number;
+  win_percentage: number;
+  win_streak: number;
+  loss_streak: number;
+  current_streak: string;
+  avg_win: number;
+  avg_loss: number;
+  avg_buy_in: number;
+  session_avg: number;
+  avg_rebuys: number;
+};
+
+export type NLPIData = {
+  cash_points: number;
+  current_rank: number;
+  end_last_year: number;
+  first_name: string;
+  last_week_rank: number;
+  member_id: string;
+  total_points: number;
+  tournament_points: number;
+  used_cash_sessions: {
+    created_at: string;
+    nlpi_points: number;
+    session_id: string;
+    week_number: number;
+    week_id: string;
+  }[];
+  used_tournament_sessions: {
+    date: string;
+    nlpi_points: number;
+    session_id: string;
+    tournament_id: string;
+  }[];
+};

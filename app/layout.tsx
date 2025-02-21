@@ -2,8 +2,8 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import PageRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 import { Viewport } from "next";
+import InstallPrompt from "@/components/install-prompt";
 
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
@@ -163,8 +163,8 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <PageRefresh />
           {children}
+          <InstallPrompt />
         </ThemeProvider>
         <Toaster />
       </body>

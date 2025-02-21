@@ -18,17 +18,7 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return (
-      <Button asChild size="sm" variant={"outline"}>
-        <Link className=" self-end ml-auto align-middle w-fit" href="/sign-in">
-          Sign in
-        </Link>
-      </Button>
-    );
-  }
-
-  const isAdmin = user.user_metadata.role === "admin";
+  const isAdmin = user?.user_metadata.role === "admin";
 
   return (
     <Sheet>
@@ -61,11 +51,41 @@ export default async function AuthButton() {
             </ul>
           </div>
         )}
-        <form action={signOutAction}>
-          <Button type="submit" size="sm" variant={"outline"}>
-            Sign out
+        <div className="mb-8">
+          <p className="text-2xl font-semibold mb-2">Navigation</p>
+          <ul className="flex flex-col gap-2">
+            <li>
+              <Link href="/stats/tournaments">Tournaments</Link>
+            </li>
+            <li>
+              <Link href="/stats/cash">Cash</Link>
+            </li>
+            <li>
+              <Link href="/members">Members</Link>
+            </li>
+            <li>
+              <Link href="/poy">POY Standings</Link>
+            </li>
+            <li>
+              <Link href="/nlpi">NLPI Rankings</Link>
+            </li>
+          </ul>
+        </div>
+        {user ? (
+          <form action={signOutAction}>
+            <Button type="submit" size="sm" variant={"outline"}>
+              Sign out
+            </Button>
+          </form>
+        ) : (
+          <Button asChild size="sm" variant={"outline"}>
+            <Link
+              className=" self-end ml-auto align-middle w-fit"
+              href="/sign-in">
+              Sign in
+            </Link>
           </Button>
-        </form>
+        )}
       </SheetContent>
       <SheetOverlay />
     </Sheet>

@@ -32,7 +32,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-[2304598234058] gap-4 bg-neutral-900 py-6 px-4 pt-16 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-500 data-[state=open]:duration-500",
+  "fixed z-[2304598234058] focus:border-none focus:outline-none focus:ring-none gap-4 bg-neutral-900 py-6 px-2 pt-16 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-500 data-[state=open]:duration-500",
   {
     variants: {
       side: {
@@ -176,8 +176,8 @@ const SheetContent = React.forwardRef<
         {/* Drag Handle */}
         <div
           ref={closeRef}
-          className="w-full absolute top-0 left-0 py-6 flex items-center justify-center cursor-grab">
-          <span className="w-2/5 h-1 bg-muted rounded-full" />
+          className="w-full absolute top-0 left-0 py-4 flex items-center justify-center cursor-grab">
+          <span className="w-1/5 h-1 bg-muted rounded-full" />
         </div>
       </SheetPrimitive.Content>
     </SheetPortal>

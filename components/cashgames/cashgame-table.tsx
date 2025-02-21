@@ -30,10 +30,9 @@ async function CashGameTable({
   const db = await createClient();
 
   // Fetch weeks for the season
-  const { data: weeks, error: weeksError } = await db
-    .from("week")
-    .select("id, week_number")
-    .eq("season_id", seasonId);
+  const [{ data: weeks, error: weeksError }] = await Promise.all([
+    db.from("week").select("id, week_number").eq("season_id", seasonId),
+  ]);
 
   if (weeksError) {
     return <p>Error fetching Weeks: {weeksError.message}</p>;

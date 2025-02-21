@@ -24,6 +24,7 @@
     --accent-foreground: 210 60% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 60% 98%;
+    --theme-red: 5, 90%, 51%;
     --border: 161 74% 45%;
     --input: 0 0% 14.9%;
     --ring: 161 74% 45%;
@@ -73,6 +74,21 @@
       @apply text-lg;
     }
   }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
 #sheet-scroll-container::-webkit-scrollbar {

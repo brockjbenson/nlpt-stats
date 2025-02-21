@@ -48,7 +48,7 @@ export function getProfitTextColor(profit: number) {
   return profit > 0
     ? "text-green-500"
     : profit < 0
-      ? "text-red-500"
+      ? "text-themeRed"
       : "text-foreground";
 }
 

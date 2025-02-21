@@ -1,3 +1,4 @@
+import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
 import {
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
-import { CashSession, CashSessionNLPI } from "@/utils/types";
+import { CashSession, CashSessionNLPI, NLPIData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
@@ -19,77 +20,49 @@ async function NLPI() {
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
 
-  const [
-    { data: sessions, error: sessionError },
-    { data: members, error: memberError },
-  ] = await Promise.all([
-    db.rpc("get_nlpi_sessions"),
-    db.from("members").select("*"),
-  ]);
+  const { data: season, error: seasonError } = await db
+    .from("season")
+    .select("*")
+    .eq("year", currentYear)
+    .single();
 
-  if (memberError) {
-    return <p>Error fetching Member data: {memberError.message}</p>;
-  }
-  if (sessionError) {
-    return <p>Error fetching Session data: {sessionError.message}</p>;
+  if (seasonError) {
+    return <p>Error fetching season: {seasonError.message}</p>;
   }
 
-  const memberIds = members.map((member) => member.id);
+  const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_data", {
+    target_season_id: season.id,
+  });
 
-  const previousYearSessions = [...sessions].filter(
-    (session: CashSessionNLPI) => {
-      return session.year === previousYear;
-    }
+  if (nlpiError) {
+    return <p>Error fetching NLPI data: {nlpiError.message}</p>;
+  }
+  const currentData = nlpiData.map((data: NLPIData) => {
+    const lastCashSession = data.used_cash_sessions.slice(-1)[0];
+
+    return {
+      ...data,
+      total_points: data.total_points - lastCashSession.nlpi_points,
+      cash_points: data.cash_points - lastCashSession.nlpi_points,
+    };
+  });
+
+  const ineligibleMembers = currentData.filter(
+    (data: NLPIData) => data.total_points === 0
   );
 
-  const sessionsByMember = memberIds.reduce((acc, memberId) => {
-    acc[memberId] = [...sessions]
-      .filter((session: CashSessionNLPI) => session.member_id === memberId)
-      .slice(0, 20);
-    return acc;
-  }, {});
-
-  const previousSessionsByMember = memberIds.reduce((acc, memberId) => {
-    acc[memberId] = [...previousYearSessions]
-      .filter((session: CashSessionNLPI) => session.member_id === memberId)
-      .slice(0, 20);
-    return acc;
-  }, {});
-
-  const memberRanks = members.map((member) => {
-    const allSessions = sessionsByMember[member.id] || [];
-    const totalPoints = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.nlpi_points,
-      0
-    );
-
-    const lastWeekSessions = allSessions.slice(1);
-    const lastWeekPoints = lastWeekSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.nlpi_points,
-      0
-    );
-
+  const lastWeekData = nlpiData.map((data: NLPIData) => {
+    const mostRecentSession = data.used_cash_sessions.slice(0)[0];
     return {
-      id: member.id,
-      name: member.first_name,
-      totalPoints,
-      lastWeekPoints,
+      ...data,
+      total_points: data.total_points - mostRecentSession.nlpi_points,
+      cash_points: data.cash_points - mostRecentSession.nlpi_points,
     };
   });
 
-  const previousYearMemberRanks = members.map((member) => {
-    const allSessions = previousSessionsByMember[member.id] || [];
-    const totalPoints = allSessions.reduce(
-      (sum: number, session: CashSession) => sum + session.nlpi_points,
-      0
-    );
-
-    return {
-      id: member.id,
-      name: member.first_name,
-      totalPoints,
-    };
-  });
+  const lastWeekRank = lastWeekData.sort(
+    (a: NLPIData, b: NLPIData) => b.total_points - a.total_points
+  );
 
   const getRankChangeInfo = (
     currentRank: number,
@@ -127,47 +100,6 @@ async function NLPI() {
     }
   };
 
-  const filteredMembers = memberRanks.filter(
-    (member) => member.totalPoints > 0
-  );
-
-  const ineligibleMembers = memberRanks.filter(
-    (member) => member.totalPoints === 0
-  );
-
-  const currentYearRankedMembers = [...filteredMembers]
-    .sort((a, b) => b.totalPoints - a.totalPoints)
-    .map((member, index) => ({
-      ...member,
-      currentRank: index + 1,
-    }));
-
-  const currentYearRankedLastWeek = [...filteredMembers]
-    .sort((a, b) => b.lastWeekPoints - a.lastWeekPoints)
-    .map((member, index) => ({
-      ...member,
-      lastWeekRank: index + 1,
-    }));
-
-  const previousYearRankedMembers = [...previousYearMemberRanks]
-    .sort((a, b) => b.totalPoints - a.totalPoints)
-    .map((member, index) => ({
-      ...member,
-      previousYearRank: member.totalPoints === 0 ? "-" : index + 1,
-    }));
-
-  const finalRanks = currentYearRankedMembers.map((member) => {
-    const lastWeek = currentYearRankedLastWeek.find((m) => m.id === member.id);
-    const previousYear = previousYearRankedMembers.find(
-      (m) => m.id === member.id
-    );
-    return {
-      ...member,
-      lastWeekRank: lastWeek ? lastWeek.lastWeekRank : null,
-      previousYearRank: previousYear ? previousYear.previousYearRank : null,
-    };
-  });
-
   const displayRankChange = (lastWeek: number | null, current: number) => {
     if (lastWeek === null) {
       return;
@@ -189,30 +121,52 @@ async function NLPI() {
 
   return (
     <>
-      <PageHeader title="NLPI Rankings" />
-      <div className="w-full px-2 mt-4 max-w-screen-xl mx-auto">
+      <PageHeader>
+        <NLPIInfo />
+      </PageHeader>
+      <div className="w-full animate-in px-2 mt-4 max-w-screen-xl mx-auto">
         <Card className="w-full  mb-8">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="!relative">Rank</TableHead>
-                <TableHead>Last Week</TableHead>
-                <TableHead>End {previousYear}</TableHead>
+                <TableHead>Rank</TableHead>
+                <TableHead>
+                  Last <br /> Week
+                </TableHead>
+                <TableHead>
+                  End <br /> {previousYear}
+                </TableHead>
                 <TableHead>Member</TableHead>
-                <TableHead>Avg Points</TableHead>
-                <TableHead>Total Points</TableHead>
+                <TableHead>
+                  Avg <br /> Points
+                </TableHead>
+                <TableHead>
+                  Total <br /> Points
+                </TableHead>
+                <TableHead>
+                  Total <br /> Cash
+                </TableHead>
+                <TableHead>
+                  Total <br /> Major
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {finalRanks.map((member) => {
+              {currentData.map((data: NLPIData) => {
+                if (data.total_points === 0) {
+                  return null;
+                }
+                const lastWeek: any = lastWeekRank.findIndex(
+                  (member: NLPIData) => member.member_id === data.member_id
+                );
                 const changeData = getRankChangeInfo(
-                  member.currentRank,
-                  member.lastWeekRank
+                  data.current_rank,
+                  lastWeek + 1
                 );
                 return (
-                  <TableRow key={member.id}>
-                    <TableCell className="flex !relative items-center gap-2">
-                      {member.currentRank}
+                  <TableRow key={data.member_id}>
+                    <TableCell className="flex items-center gap-2">
+                      {data.current_rank}
                       <span
                         className={cn(
                           changeData.color,
@@ -220,23 +174,25 @@ async function NLPI() {
                         )}>
                         {changeData.icon}
                         <span className="text-sm md:text-base">
-                          {displayRankChange(
-                            member.lastWeekRank,
-                            member.currentRank
-                          )}
+                          {displayRankChange(lastWeek + 1, data.current_rank)}
                         </span>
                       </span>
                     </TableCell>
-                    <TableCell>{member.lastWeekRank || "-"}</TableCell>
-                    <TableCell>{member.previousYearRank || "-"}</TableCell>
-                    <TableCell>{member.name}</TableCell>
                     <TableCell>
-                      {(
-                        member.totalPoints /
-                        (sessionsByMember[member.id]?.length || 1)
-                      ).toFixed(3)}
+                      {lastWeek + 1 || (
+                        <Minus className="text-foreground" size={14} />
+                      )}
                     </TableCell>
-                    <TableCell>{member.totalPoints.toFixed(3)}</TableCell>
+                    <TableCell>
+                      {data.end_last_year || (
+                        <Minus className="text-foreground" size={14} />
+                      )}
+                    </TableCell>
+                    <TableCell>{data.first_name}</TableCell>
+                    <TableCell>{(data.total_points / 24).toFixed(3)}</TableCell>
+                    <TableCell>{data.total_points.toFixed(3)}</TableCell>
+                    <TableCell>{data.cash_points.toFixed(3)}</TableCell>
+                    <TableCell>{data.tournament_points.toFixed(3)}</TableCell>
                   </TableRow>
                 );
               })}
@@ -244,16 +200,24 @@ async function NLPI() {
           </Table>
         </Card>
         <h2 className="mt-12 w-full text-base pb-2 border-b border-muted mr-auto">
-          Ineligible Members{" "}
+          Ineligible Members
           <span className="text-sm text-muted">
-            (no data for most recent 20 sessions)
+            (no data for most recent 20 cash sessions or last 4 tournaments)
           </span>
         </h2>
-        <ul className="flex flex-col mb-4 mt-4 mr-auto">
-          {ineligibleMembers.map((member) => (
-            <li key={member.id}>{member.name}</li>
-          ))}
-        </ul>
+        {ineligibleMembers.length === 0 ? (
+          <p className="mt-4">No members are ineligible for NLPI points.</p>
+        ) : (
+          ineligibleMembers.map((data: NLPIData) => {
+            return (
+              <div
+                key={data.member_id}
+                className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">{data.first_name}</h3>
+              </div>
+            );
+          })
+        )}
       </div>
     </>
   );

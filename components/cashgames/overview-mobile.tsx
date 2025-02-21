@@ -1,6 +1,6 @@
 "use client";
 
-import { CashSession, Member, Week } from "@/utils/types";
+import { CashSession, Member, SeasonCashStats, Week } from "@/utils/types";
 import useEmblaCarousel from "embla-carousel-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { EmblaOptionsType } from "embla-carousel";
@@ -24,20 +24,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-interface ExtendedCashSessions extends CashSession {
-  member: Member;
-  week: Week;
-  session: CashSession;
-}
-
 interface Props {
-  members: Member[];
-  memberIds: string[];
-  sessions: ExtendedCashSessions[];
+  seasonStats: SeasonCashStats[];
 }
 const OPTIONS: EmblaOptionsType = {};
 
-function OverviewMobile({ members, memberIds, sessions }: Props) {
+function OverviewMobile({ seasonStats }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaMainRef, emblaMainApi] = useEmblaCarousel(OPTIONS);
   const [emblaThumbsRef, emblaThumbsApi] = useEmblaCarousel({
@@ -66,27 +58,23 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
     emblaMainApi.on("select", onSelect).on("reInit", onSelect);
   }, [emblaMainApi, onSelect]);
 
-  const sessionSortedByWeek = sessions.sort(
-    (a, b) => a.week.week_number - b.week.week_number
+  const poyPointsLeaders = [...seasonStats].sort(
+    (a, b) => b.poy_points - a.poy_points
+  );
+  const netProfitLeaders = [...seasonStats].sort(
+    (a, b) => b.net_profit - a.net_profit
+  );
+  const winsLeaders = [...seasonStats].sort((a, b) => b.wins - a.wins);
+  const grossProfitLeaders = [...seasonStats].sort(
+    (a, b) => b.gross_profit - a.gross_profit
+  );
+  const winPercentageLeaders = [...seasonStats].sort(
+    (a, b) => b.win_percentage - a.win_percentage
+  );
+  const sessionAverageLeaders = [...seasonStats].sort(
+    (a, b) => b.session_avg - a.session_avg
   );
 
-  const rankedPOYMembers = getPOYPointsLeaders(
-    sessionSortedByWeek,
-    memberIds,
-    members
-  );
-  const rankedNetProfitLeaders = getNetProfitLeaders(
-    sessions,
-    memberIds,
-    members
-  );
-  const largestWinsLeaders = getLargestWins(sessionSortedByWeek, members);
-
-  const cumulativeCashStats = getCumulativeCashStats(
-    sessionSortedByWeek,
-    memberIds,
-    members
-  );
   return (
     <div className="w-full pb-4 mx-auto md:hidden block">
       <div className="mb-4 border-b pb-4 border-neutral-500">
@@ -126,23 +114,22 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Points Behind
                     </span>
-                    {[...rankedPOYMembers].map((member) => {
-                      const leaderPoints = rankedPOYMembers[0].totalPOYPoints;
+                    {poyPointsLeaders.map((data) => {
+                      const leaderPoints = poyPointsLeaders[0].poy_points;
                       return (
-                        <React.Fragment key={member.id + member.totalPOYPoints}>
+                        <React.Fragment key={data.member_id + data.poy_points}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {member.name}
+                            {data.first_name}
                           </h3>
                           <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {member.totalPOYPoints.toFixed(2)}
+                            {data.poy_points.toFixed(2)}
                           </p>
                           <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {member.totalPOYPoints - leaderPoints === 0
+                            {data.poy_points - leaderPoints === 0
                               ? "-"
-                              : (
-                                  (member.totalPOYPoints - leaderPoints) *
-                                  -1
-                                ).toFixed(2)}
+                              : ((data.poy_points - leaderPoints) * -1).toFixed(
+                                  2
+                                )}
                           </p>
                         </React.Fragment>
                       );
@@ -152,23 +139,23 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...rankedPOYMembers].slice(0, 3).map((member, index) => (
+                {poyPointsLeaders.slice(0, 3).map((data, index) => (
                   <div
                     className="flex items-center justify-between"
-                    key={member.id + member.totalPOYPoints + index + "poy"}>
+                    key={data.member_id + data.poy_points + index + "poy"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
                         className="w-10 h-10"
-                        src={member.image}
-                        alt={member.name}
+                        src={data.portrait_url}
+                        alt={data.first_name}
                       />
                       <h3 className="text-base md:text-xl font-medium">
-                        {member.name}
+                        {data.first_name}
                       </h3>
                     </div>
 
                     <p className="font-semibold text-lg md:text-xl">
-                      {member.totalPOYPoints}
+                      {data.poy_points.toFixed(2)}
                     </p>
                   </div>
                 ))}
@@ -200,49 +187,43 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 flex items-center justify-end border-b border-neutral-600 w-full text-muted">
                       Wins
                     </span>
-                    {[...cumulativeCashStats]
-                      .sort((a, b) => b.wins - a.wins)
-                      .map((data) => {
-                        if (data.totalRebuys === 0) return null;
-                        return (
-                          <React.Fragment key={data.member.id + data.wins}>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.member.first_name}
-                            </h3>
-                            <p className="font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                              {data.wins}
-                            </p>
-                          </React.Fragment>
-                        );
-                      })}
+                    {winsLeaders.map((data) => {
+                      return (
+                        <React.Fragment key={data.member_id + data.wins}>
+                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                            {data.first_name}
+                          </h3>
+                          <p className="font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full">
+                            {data.wins}
+                          </p>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...cumulativeCashStats]
-                  .sort((a, b) => b.wins - a.wins)
-                  .slice(0, 3)
-                  .map((data, index) => (
-                    <div
-                      className="flex items-center justify-between"
-                      key={data.wins + data.member.id + index + "wins"}>
-                      <div className="flex items-center gap-4">
-                        <MemberImage
-                          className="w-10 h-10"
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <h3 className="text-base md:text-xl font-medium">
-                          {data.member.first_name} {data.member.last_name}
-                        </h3>
-                      </div>
-
-                      <p className="font-semibold text-lg md:text-xl">
-                        {data.wins}
-                      </p>
+                {winsLeaders.slice(0, 3).map((data, index) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.wins + data.member_id + index + "wins"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.portrait_url}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
                     </div>
-                  ))}
+
+                    <p className="font-semibold text-lg md:text-xl">
+                      {data.wins}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -271,56 +252,51 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 flex items-center justify-end border-b border-neutral-600 w-full text-muted">
                       Net
                     </span>
-                    {[...cumulativeCashStats]
-                      .sort((a, b) => b.netProfit - a.netProfit)
-                      .map((data) => {
-                        if (data.totalRebuys === 0) return null;
-                        return (
-                          <React.Fragment key={data.member.id + data.netProfit}>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.member.first_name}
-                            </h3>
-                            <p
-                              className={cn(
-                                "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
-                                getProfitTextColor(data.netProfit)
-                              )}>
-                              {formatMoney(data.netProfit)}
-                            </p>
-                          </React.Fragment>
-                        );
-                      })}
+                    {netProfitLeaders.map((data) => {
+                      return (
+                        <React.Fragment key={data.member_id + data.net_profit}>
+                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                            {data.first_name}
+                          </h3>
+                          <p
+                            className={cn(
+                              "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
+                              getProfitTextColor(data.net_profit)
+                            )}>
+                            {formatMoney(data.net_profit)}
+                          </p>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...rankedNetProfitLeaders]
-                  .slice(0, 3)
-                  .map((member, index) => (
-                    <div
-                      className="flex items-center justify-between"
-                      key={member.id + member.totalNetProfit + index + "net"}>
-                      <div className="flex items-center gap-4">
-                        <MemberImage
-                          className="w-10 h-10"
-                          src={member.image}
-                          alt={member.name}
-                        />
-                        <h3 className="text-base md:text-xl font-medium">
-                          {member.name}
-                        </h3>
-                      </div>
-
-                      <p
-                        className={cn(
-                          getProfitTextColor(member.totalNetProfit),
-                          "font-semibold text-lg md:text-xl"
-                        )}>
-                        {formatMoney(member.totalNetProfit)}
-                      </p>
+                {netProfitLeaders.slice(0, 3).map((data, index) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.member_id + data.net_profit + index + "net"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.portrait_url}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
                     </div>
-                  ))}
+
+                    <p
+                      className={cn(
+                        getProfitTextColor(data.net_profit),
+                        "font-semibold text-lg md:text-xl"
+                      )}>
+                      {formatMoney(data.net_profit)}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -349,58 +325,52 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 flex items-center justify-end border-b border-neutral-600 w-full text-muted">
                       Gross
                     </span>
-                    {[...cumulativeCashStats]
-                      .sort((a, b) => b.grossProfit - a.grossProfit)
-                      .map((data) => {
-                        if (data.totalRebuys === 0) return null;
-                        return (
-                          <React.Fragment
-                            key={data.member.id + data.grossProfit}>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.member.first_name}
-                            </h3>
-                            <p
-                              className={cn(
-                                "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
-                                getProfitTextColor(data.grossProfit)
-                              )}>
-                              {formatMoney(data.grossProfit)}
-                            </p>
-                          </React.Fragment>
-                        );
-                      })}
+                    {grossProfitLeaders.map((data) => {
+                      return (
+                        <React.Fragment
+                          key={data.member_id + data.gross_profit}>
+                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                            {data.first_name}
+                          </h3>
+                          <p
+                            className={cn(
+                              "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
+                              getProfitTextColor(data.gross_profit)
+                            )}>
+                            {formatMoney(data.gross_profit)}
+                          </p>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...cumulativeCashStats]
-                  .sort((a, b) => b.grossProfit - a.grossProfit)
-                  .slice(0, 3)
-                  .map((data, index) => (
-                    <div
-                      className="flex items-center justify-between"
-                      key={data.grossProfit + data.member.id + index + "gross"}>
-                      <div className="flex items-center gap-4">
-                        <MemberImage
-                          className="w-10 h-10"
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <h3 className="text-base md:text-xl font-medium">
-                          {data.member.first_name} {data.member.last_name}
-                        </h3>
-                      </div>
-
-                      <p
-                        className={cn(
-                          "font-semibold text-lg md:text-xl",
-                          getProfitTextColor(data.grossProfit)
-                        )}>
-                        {formatMoney(data.grossProfit)}
-                      </p>
+                {grossProfitLeaders.slice(0, 3).map((data, index) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.gross_profit + data.member_id + index + "gross"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.portrait_url}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
                     </div>
-                  ))}
+
+                    <p
+                      className={cn(
+                        "font-semibold text-lg md:text-xl",
+                        getProfitTextColor(data.gross_profit)
+                      )}>
+                      {formatMoney(data.gross_profit)}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -432,61 +402,53 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 border-b flex items-center justify-end border-neutral-600 w-full text-muted">
                       Value
                     </span>
-                    {[...cumulativeCashStats]
-                      .sort((a, b) => b.winPercentage - a.winPercentage)
-                      .map((data) => {
-                        if (data.totalRebuys === 0) return null;
-                        return (
-                          <React.Fragment
-                            key={data.member.id + data.winPercentage}>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.member.first_name}
-                            </h3>
-                            <p
-                              className={cn(
-                                "font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full"
-                              )}>
-                              {data.sessionsPlayed}
-                            </p>
-                            <p
-                              className={cn(
-                                "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full"
-                              )}>
-                              {data.winPercentage.toFixed(2)}%
-                            </p>
-                          </React.Fragment>
-                        );
-                      })}
+                    {winPercentageLeaders.map((data) => {
+                      return (
+                        <React.Fragment
+                          key={data.member_id + data.win_percentage}>
+                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                            {data.first_name}
+                          </h3>
+                          <p
+                            className={cn(
+                              "font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full"
+                            )}>
+                            {data.sessions_played}
+                          </p>
+                          <p
+                            className={cn(
+                              "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full"
+                            )}>
+                            {data.win_percentage.toFixed(2)}%
+                          </p>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...cumulativeCashStats]
-                  .sort((a, b) => b.winPercentage - a.winPercentage)
-                  .slice(0, 3)
-                  .map((data, index) => (
-                    <div
-                      className="flex items-center justify-between"
-                      key={
-                        data.winPercentage + data.member.id + index + "win%"
-                      }>
-                      <div className="flex items-center gap-4">
-                        <MemberImage
-                          className="w-10 h-10"
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <h3 className="text-base md:text-xl font-medium">
-                          {data.member.first_name} {data.member.last_name}
-                        </h3>
-                      </div>
-
-                      <p className={cn("font-semibold text-lg md:text-xl")}>
-                        {data.winPercentage.toFixed(2)}%
-                      </p>
+                {winPercentageLeaders.slice(0, 3).map((data, index) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.win_percentage + data.member_id + index + "win%"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.portrait_url}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
                     </div>
-                  ))}
+
+                    <p className={cn("font-semibold text-lg md:text-xl")}>
+                      {data.win_percentage.toFixed(2)}%
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -518,98 +480,57 @@ function OverviewMobile({ members, memberIds, sessions }: Props) {
                     <span className="pb-2 border-b flex items-center justify-end border-neutral-600 w-full text-muted">
                       Avg Net
                     </span>
-                    {[...cumulativeCashStats]
-                      .sort((a, b) => {
-                        const ratioA = a.sessionsPlayed
-                          ? a.netProfit / a.sessionsPlayed
-                          : -Infinity;
-                        const ratioB = b.sessionsPlayed
-                          ? b.netProfit / b.sessionsPlayed
-                          : -Infinity;
-
-                        return ratioB - ratioA;
-                      })
-                      .map((data) => {
-                        if (data.totalRebuys === 0) return null;
-                        return (
-                          <React.Fragment
-                            key={
-                              data.netProfit / data.sessionsPlayed +
-                              data.member.id
-                            }>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.member.first_name}
-                            </h3>
-                            <p
-                              className={cn(
-                                "font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full"
-                              )}>
-                              {(data.totalRebuys / data.sessionsPlayed).toFixed(
-                                2
-                              )}
-                            </p>
-                            <p
-                              className={cn(
-                                "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
-                                getProfitTextColor(
-                                  data.netProfit / data.sessionsPlayed
-                                )
-                              )}>
-                              {formatMoney(
-                                data.netProfit / data.sessionsPlayed
-                              )}
-                            </p>
-                          </React.Fragment>
-                        );
-                      })}
+                    {sessionAverageLeaders.map((data) => {
+                      return (
+                        <React.Fragment key={data.session_avg + data.member_id}>
+                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                            {data.first_name}
+                          </h3>
+                          <p
+                            className={cn(
+                              "font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full"
+                            )}>
+                            {data.avg_rebuys.toFixed(2)}
+                          </p>
+                          <p
+                            className={cn(
+                              "font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full",
+                              getProfitTextColor(data.session_avg)
+                            )}>
+                            {formatMoney(data.session_avg)}
+                          </p>
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {[...cumulativeCashStats]
-                  .sort((a, b) => {
-                    const ratioA = a.sessionsPlayed
-                      ? a.netProfit / a.sessionsPlayed
-                      : -Infinity;
-                    const ratioB = b.sessionsPlayed
-                      ? b.netProfit / b.sessionsPlayed
-                      : -Infinity;
-
-                    return ratioB - ratioA;
-                  })
-                  .slice(0, 3)
-                  .map((data, index) => (
-                    <div
-                      className="flex items-center justify-between"
-                      key={
-                        data.netProfit / data.sessionsPlayed +
-                        data.member.id +
-                        index +
-                        "avg_win"
-                      }>
-                      <div className="flex items-center gap-4">
-                        <MemberImage
-                          className="w-10 h-10"
-                          src={data.member.portrait_url}
-                          alt={data.member.first_name}
-                        />
-                        <h3 className="text-base md:text-xl font-medium">
-                          {data.member.first_name} {data.member.last_name}
-                        </h3>
-                      </div>
-
-                      <p
-                        className={cn(
-                          "font-semibold text-lg md:text-xl",
-                          getProfitTextColor(
-                            data.netProfit / data.sessionsPlayed
-                          )
-                        )}>
-                        {formatMoney(data.netProfit / data.sessionsPlayed)}
-                      </p>
+                {sessionAverageLeaders.slice(0, 3).map((data, index) => (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.session_avg + data.member_id + index + "avg_win"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={data.portrait_url}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
                     </div>
-                  ))}
+
+                    <p
+                      className={cn(
+                        "font-semibold text-lg md:text-xl",
+                        getProfitTextColor(data.session_avg)
+                      )}>
+                      {formatMoney(data.session_avg)}
+                    </p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>

@@ -1,65 +1,76 @@
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
-export const updateSession = async (request: NextRequest) => {
-  try {
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  });
 
-    const pathname = request.nextUrl.pathname;
-
-    const publicPaths = [
-      "/manifest.json",
-      "/icons/",
-      "/favicon.ico",
-      "/robots.txt",
-    ];
-    if (publicPaths.some((path) => pathname.startsWith(path))) {
-      return response;
-    }
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => request.cookies.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value)
-            );
-            response = NextResponse.next({ request });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            );
-          },
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
         },
-      }
-    );
-
-    const { data, error } = await supabase.auth.getUser();
-    const isAdminRoute = pathname.startsWith("/admin");
-    const isSignInPage = pathname.startsWith("/sign-in");
-
-    if (!data?.user && !isSignInPage) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-
-    const userRole = data.user?.user_metadata?.role;
-    if (isAdminRoute && userRole !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
-
-    return response;
-  } catch (e) {
-    console.error("Error in middleware:", e);
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({
+            request,
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
       },
-    });
+    }
+  );
+
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // if (
+  //   !user &&
+  //   !request.nextUrl.pathname.startsWith("/sign-in") &&
+  //   !request.nextUrl.pathname.startsWith("/forgot-password")
+  // ) {
+  //   // No user and not on the sign-in or forgot-password page
+  //   const url = request.nextUrl.clone();
+  //   url.pathname = "/sign-in";
+  //   return NextResponse.redirect(url);
+  // }
+
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
+  const userRole = user?.user_metadata?.role;
+
+  if (isAdminRoute && userRole !== "admin") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
   }
-};
+
+  // IMPORTANT: You *must* return the supabaseResponse object as it is.
+  // If you're creating a new response object with NextResponse.next() make sure to:
+  // 1. Pass the request in it, like so:
+  //    const myNewResponse = NextResponse.next({ request })
+  // 2. Copy over the cookies, like so:
+  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  // 3. Change the myNewResponse object to fit your needs, but avoid changing
+  //    the cookies!
+  // 4. Finally:
+  //    return myNewResponse
+  // If this is not done, you may be causing the browser and server to go out
+  // of sync and terminate the user's session prematurely!
+
+  return supabaseResponse;
+}

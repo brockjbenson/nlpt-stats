@@ -38,7 +38,7 @@ const TableFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tfoot
     ref={ref}
-    className={cn("border-t  bg-muted/50 font-medium", className)}
+    className={cn(" bg-muted/50 font-medium", className)}
     {...props}
   />
 ));
@@ -50,7 +50,7 @@ const TableRow = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tr
     ref={ref}
-    className={cn("border-b border-muted/50 transition-colors", className)}
+    className={cn("!border-b-[1px] border-muted transition-colors", className)}
     {...props}
   />
 ));
@@ -63,7 +63,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 pr-4 py-4 last:pr-0 text-left text-muted text-sm md:text-base bg-card whitespace-nowrap first:sticky first:left-0 align-middle font-medium [&:has([role=checkbox])]:pr-0",
+      "h-12 pr-4 py-4 last:pr-0 align-bottom text-left text-muted text-sm md:text-base bg-card whitespace-nowrap first:left-0 font-normal [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -78,7 +78,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "pr-4 py-4 last:pr-0 text-sm md:text-base align-middle first:sticky bg-card first:left-0 whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+      "pr-4 py-4 last:pr-0 text-sm md:text-base align-middle bg-card first:left-0 whitespace-nowrap [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
