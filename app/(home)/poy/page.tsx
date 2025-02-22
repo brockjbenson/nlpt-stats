@@ -1,5 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
 import POYInfo from "@/components/poy/poy-info";
+import YearCarousel from "@/components/poy/year-carousel";
 import { Card, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -44,21 +45,25 @@ interface Params {
 
 async function Page({ searchParams }: Params) {
   const { year } = await searchParams;
-  const currentYear = new Date().getFullYear();
+  const currentYear = year ? year : new Date().getFullYear();
   const db = await createClient();
-  const [{ data: season, error: seasonError }] = await Promise.all([
-    db
-      .from("season")
-      .select("*")
-      .eq("year", year ?? currentYear)
-      .single(),
+  const [{ data: seasons, error: seasonError }] = await Promise.all([
+    db.from("season").select("*"),
   ]);
 
   if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
 
+  console.log(currentYear);
+
+  const activeSeason = seasons.find(
+    (season) => season.year === Number(currentYear)
+  );
+
+  console.log(activeSeason);
+
   const { data: poyData, error: poyError } = await db.rpc("get_poy_data", {
-    target_season_id: season.id,
+    target_season_id: activeSeason.id,
   });
 
   if (poyError) {
@@ -75,7 +80,7 @@ async function Page({ searchParams }: Params) {
       return {
         positive: false,
         change: 0,
-        color: "text-green-500",
+        color: "text-theme-green",
         icon: <ArrowUp size={16} />,
       };
     }
@@ -91,14 +96,14 @@ async function Page({ searchParams }: Params) {
       ? {
           positive: true,
           change: lastWeekRank - currentRank,
-          color: "text-green-500",
-          icon: <ArrowUp className="text-green-500" size={16} />,
+          color: "text-theme-green",
+          icon: <ArrowUp className="text-theme-green" size={16} />,
         }
       : {
           positive: false,
           change: currentRank - lastWeekRank,
-          color: "text-red-500",
-          icon: <ArrowDown className="text-red-500" size={16} />,
+          color: "text-theme-red",
+          icon: <ArrowDown className="text-theme-red" size={16} />,
         };
   };
 
@@ -126,6 +131,7 @@ async function Page({ searchParams }: Params) {
       <PageHeader>
         <POYInfo />
       </PageHeader>
+      <YearCarousel seasons={seasons} year={year || currentYear.toString()} />
       <div className="w-full animate-in mt-4 mb-8 max-w-screen-xl mx-auto px-2">
         <Card className="w-full">
           <Table>
@@ -180,7 +186,8 @@ async function Page({ searchParams }: Params) {
                           className={cn(
                             changeData.color,
                             "flex items-center gap-1"
-                          )}>
+                          )}
+                        >
                           {changeData.icon}
                           <span className="text-sm md:text-base">
                             {displayRankChange(data.lastWeekRank, data.rank)}

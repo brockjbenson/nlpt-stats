@@ -72,7 +72,7 @@ async function NLPI() {
       return {
         positive: false,
         change: 0,
-        color: "text-green-500",
+        color: "text-theme-green",
         icon: <ArrowUp size={16} />,
       };
     }
@@ -87,15 +87,15 @@ async function NLPI() {
       return {
         positive: true,
         change: lastWeekRank - currentRank,
-        color: "text-green-500",
-        icon: <ArrowUp className="text-green-500" size={16} />,
+        color: "text-theme-green",
+        icon: <ArrowUp className="text-theme-green" size={16} />,
       };
     } else {
       return {
         positive: false,
         change: currentRank - lastWeekRank,
-        color: "text-red-500",
-        icon: <ArrowDown className="text-red-500" size={16} />,
+        color: "text-theme-red",
+        icon: <ArrowDown className="text-theme-red" size={16} />,
       };
     }
   };
@@ -171,7 +171,8 @@ async function NLPI() {
                         className={cn(
                           changeData.color,
                           "flex items-center gap-1"
-                        )}>
+                        )}
+                      >
                         {changeData.icon}
                         <span className="text-sm md:text-base">
                           {displayRankChange(lastWeek + 1, data.current_rank)}
@@ -212,7 +213,8 @@ async function NLPI() {
             return (
               <div
                 key={data.member_id}
-                className="flex items-center justify-between">
+                className="flex items-center justify-between"
+              >
                 <h3 className="text-lg font-medium">{data.first_name}</h3>
               </div>
             );

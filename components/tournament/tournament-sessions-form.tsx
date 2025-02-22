@@ -157,7 +157,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
           <Select
             onValueChange={(value) =>
               setFormState({ ...formState, member_id: value })
-            }>
+            }
+          >
             <SelectTrigger id="member_id">
               {formState.member_id ? (
                 <p>
@@ -257,7 +258,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
           <Select
             onValueChange={(value) =>
               setFormState({ ...formState, place: Number(value) })
-            }>
+            }
+          >
             <SelectTrigger id="place">
               {formState.place ? <p>{formState.place}</p> : <p>Select Place</p>}
             </SelectTrigger>
@@ -277,13 +279,15 @@ function TournamentSessionsForm({ tournament, members }: Props) {
           onClick={(e) => {
             e.preventDefault();
             handleAddSession();
-          }}>
+          }}
+        >
           Add Session
         </SubmitButton>
       </form>
       <AlertDialog
         open={confirmAdd}
-        onOpenChange={() => setConfirmAdd(!confirmAdd)}>
+        onOpenChange={() => setConfirmAdd(!confirmAdd)}
+      >
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
@@ -297,7 +301,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
               onClick={() => {
                 setConfirmAdd(false);
                 handleAddAllSessions();
-              }}>
+              }}
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -305,13 +310,14 @@ function TournamentSessionsForm({ tournament, members }: Props) {
       </AlertDialog>
       <AlertDialog open={error !== undefined}>
         <AlertDialogContent className="border-red-500">
-          <XCircle className="w-16 h-16  mx-auto text-red-500" />
+          <XCircle className="w-16 h-16  mx-auto text-theme-red" />
           <AlertDialogTitle>Error Adding Sessions</AlertDialogTitle>
           <AlertDialogDescription>{error}</AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError(undefined)}>
+              onClick={() => setError(undefined)}
+            >
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -26,7 +26,8 @@ async function Season({ year }: Props) {
     <>
       <Link
         className="flex items-center mb-4 gap-2 hover:text-primary"
-        href="/admin/seasons">
+        href="/admin/seasons"
+      >
         <ArrowLeftIcon className="w-4 h-4" />
         All Seasons
       </Link>
@@ -36,13 +37,14 @@ async function Season({ year }: Props) {
         </h2>
         <Link
           className="bg-primary text-white font-medium px-4 py-2 rounded hover:bg-primary-dark"
-          href={`/admin/seasons?year=${season[0].year}&newweek=${season[0].id}`}>
+          href={`/admin/seasons?year=${season[0].year}&newweek=${season[0].id}`}
+        >
           Add Weeks
         </Link>
       </div>
       <div className="mt-8">
         {weeksError ? (
-          <p className="text-red-500 mt-16 text-center">
+          <p className="text-theme-red mt-16 text-center">
             {weeksError.message} fetching weeks for {season[0].year} season
           </p>
         ) : weeks.length === 0 ? (
@@ -54,7 +56,8 @@ async function Season({ year }: Props) {
             {weeks.map((week) => (
               <li className="py-2 border-b border-muted" key={week.id}>
                 <Link
-                  href={`/admin/seasons?year=${season[0].year}&week=${week.id}`}>
+                  href={`/admin/seasons?year=${season[0].year}&week=${week.id}`}
+                >
                   Week {week.weekNumber}
                 </Link>
               </li>

@@ -62,8 +62,9 @@ async function SessionsOverview({ sessions }: Props) {
         </h3>
         <p
           className={
-            "text-center text-lg lg:text-2xl mb-4 font-bold text-green-500"
-          }>
+            "text-center text-lg lg:text-2xl mb-4 font-bold text-theme-green"
+          }
+        >
           {formatMoney(avgWin)}
         </p>
       </div>
@@ -73,8 +74,9 @@ async function SessionsOverview({ sessions }: Props) {
         </h3>
         <p
           className={
-            "text-center text-lg lg:text-2xl mb-4 font-bold text-red-500"
-          }>
+            "text-center text-lg lg:text-2xl mb-4 font-bold text-theme-red"
+          }
+        >
           {formatMoney(avgLoss)}
         </p>
       </div>
@@ -102,7 +104,7 @@ async function SessionsOverview({ sessions }: Props) {
               <h4 className="text-sm lg:text-lg pb-2 border-b border-muted w-full">
                 Net Profit
               </h4>
-              <p className="font-semibold text-lg lg:text-2xl text-green-500">
+              <p className="font-semibold text-lg lg:text-2xl text-theme-green">
                 {formatMoney(leaderData.netProfit)}
               </p>
             </div>
@@ -110,7 +112,7 @@ async function SessionsOverview({ sessions }: Props) {
               <h4 className="text-sm lg:text-lg pb-2 border-b border-muted w-full">
                 Gross Profit
               </h4>
-              <p className="font-semibold text-lg lg:text-2xl text-green-500">
+              <p className="font-semibold text-lg lg:text-2xl text-theme-green">
                 {formatMoney(leaderData.grossProfit)}
               </p>
             </div>
@@ -122,7 +124,8 @@ async function SessionsOverview({ sessions }: Props) {
                 className={cn(
                   getProfitTextColor(leaderData.grossLoss),
                   "font-semibold text-lg lg:text-2xl"
-                )}>
+                )}
+              >
                 {formatMoney(leaderData.grossLoss)}
               </p>
             </div>
@@ -136,7 +139,8 @@ async function SessionsOverview({ sessions }: Props) {
                     leaderData.netProfit / leaderData.sessionsPlayed
                   ),
                   "font-semibold text-lg lg:text-2xl"
-                )}>
+                )}
+              >
                 {formatMoney(leaderData.netProfit / leaderData.sessionsPlayed)}
               </p>
             </div>
@@ -150,7 +154,8 @@ async function SessionsOverview({ sessions }: Props) {
                     leaderData.grossProfit / leaderData.sessionsPlayed
                   ),
                   "font-semibold text-lg lg:text-2xl"
-                )}>
+                )}
+              >
                 {formatMoney(
                   leaderData.grossProfit / leaderData.sessionsPlayed
                 )}
@@ -166,7 +171,8 @@ async function SessionsOverview({ sessions }: Props) {
                     leaderData.grossLoss / leaderData.sessionsPlayed
                   ),
                   "font-semibold text-lg lg:text-2xl"
-                )}>
+                )}
+              >
                 {formatMoney(leaderData.grossLoss / leaderData.sessionsPlayed)}
               </p>
             </div>

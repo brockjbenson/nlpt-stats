@@ -28,27 +28,13 @@ function POYInfo() {
             Cash Session Calculation:
           </p>
           <p className="mt-4 w-full font-bold flex gap-2 items-center justify-center">
-            <span>Session Net Profit</span> + <span>Rank Bonus</span> =
+            <span>Session Net Profit</span> {">"} <span>0</span> =
             <span>Points Won</span>
           </p>
+          <p className="mt-4 w-full font-bold flex gap-2 items-center justify-center">
+            <span>Session Net Profit</span> {"<"} <span>0</span> =<span>0</span>
+          </p>
           <div className="pl-4 mt-4">
-            <p className="mt-4 font-medium">
-              Session Ranking Points (rank bonus)
-            </p>
-            <ul className="mt-2 pl-4">
-              <li>1: 50</li>
-              <li>2: 40</li>
-              <li>3: 30</li>
-              <li>4: 25</li>
-              <li>5: 20</li>
-              <li>6: 15</li>
-              <li>7: 12.5</li>
-              <li>8: 10</li>
-              <li>9: 7.5</li>
-              <li>10: 5</li>
-              <li>11: 2.5</li>
-              <li>12+: 1</li>
-            </ul>
             <p className="mt-4">
               Additionally, you are awarded bonus points based on your{" "}
               <strong>Season Net Profit</strong> but only if you have a{" "}

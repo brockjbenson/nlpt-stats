@@ -167,9 +167,7 @@ function EditSessionForm({ sessions }: Props) {
           ? 0
           : calculateNLPIPoints(index + 1, session.net_profit),
       poy_points:
-        session.rebuys === 0
-          ? 0
-          : calculatePOYPoints(index + 1, session.net_profit),
+        session.rebuys === 0 ? 0 : calculatePOYPoints(session.net_profit),
     }));
 
     try {
@@ -214,7 +212,8 @@ function EditSessionForm({ sessions }: Props) {
           <Button
             onClick={saveEdits}
             className="absolute -top-16 right-0"
-            variant={"default"}>
+            variant={"default"}
+          >
             Save Edits
           </Button>
         )}
@@ -223,7 +222,8 @@ function EditSessionForm({ sessions }: Props) {
             return (
               <li
                 className="w-full py-4 border-b border-muted first:border-t grid grid-cols-[100px_1fr_1.5rem_1.5rem] gap-8"
-                key={session.member_id + index}>
+                key={session.member_id + index}
+              >
                 <MemberImage
                   src={session.member.portrait_url}
                   alt={`${session.member.first_name}_${session.member.last_name}`}
@@ -240,7 +240,8 @@ function EditSessionForm({ sessions }: Props) {
                         className={cn(
                           "text-base md:text-lg font-semibold",
                           getProfitTextColor(session.net_profit)
-                        )}>
+                        )}
+                      >
                         {formatMoney(session.net_profit)}
                       </p>
                     </span>
@@ -287,7 +288,8 @@ function EditSessionForm({ sessions }: Props) {
                       title="Edit Session"
                       className={cn(
                         "w-full group h-auto aspect-square my-auto flex items-center justify-center border border-transparent rounded-full"
-                      )}>
+                      )}
+                    >
                       <Pencil className={cn("w-3 h-3 text-white")} />
                     </button>
                   </DialogTrigger>
@@ -372,7 +374,8 @@ function EditSessionForm({ sessions }: Props) {
                               poy_points: 0,
                               season_id: "",
                             });
-                          }}>
+                          }}
+                        >
                           Cancel
                         </DialogClose>
                         <DialogClose
@@ -383,7 +386,8 @@ function EditSessionForm({ sessions }: Props) {
                               session.week,
                               session.season
                             )
-                          }>
+                          }
+                        >
                           Save
                         </DialogClose>
                       </div>
@@ -397,7 +401,8 @@ function EditSessionForm({ sessions }: Props) {
                     setRemoveSessionId(session.id);
                   }}
                   title="Remove Session"
-                  className="w-full group h-auto aspect-square my-auto flex items-center justify-center border border-transparent hover:border-primary rounded-full">
+                  className="w-full group h-auto aspect-square my-auto flex items-center justify-center border border-transparent hover:border-primary rounded-full"
+                >
                   <X className="w-4 h-4 group-hover:text-primary" />
                 </button>
               </li>
@@ -408,7 +413,8 @@ function EditSessionForm({ sessions }: Props) {
 
       <AlertDialog
         open={confirmDeleteOpen}
-        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}>
+        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}
+      >
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>
@@ -426,7 +432,8 @@ function EditSessionForm({ sessions }: Props) {
               onClick={() => {
                 setConfirmDeleteOpen(false);
                 removeSession();
-              }}>
+              }}
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -436,9 +443,10 @@ function EditSessionForm({ sessions }: Props) {
         open={
           !!error &&
           (typeof error === "string" ? error.trim() !== "" : error.length > 0)
-        }>
+        }
+      >
         <AlertDialogContent className="border-red-500">
-          <XCircle className="w-16 h-16  mx-auto text-red-500" />
+          <XCircle className="w-16 h-16  mx-auto text-theme-red" />
           <AlertDialogTitle>Error Saving Session Edits</AlertDialogTitle>
           <AlertDialogDescription>
             {typeof error === "string" ? error : JSON.stringify(error)}
@@ -446,7 +454,8 @@ function EditSessionForm({ sessions }: Props) {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError("")}>
+              onClick={() => setError("")}
+            >
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>

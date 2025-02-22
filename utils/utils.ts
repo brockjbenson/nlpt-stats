@@ -9,26 +9,6 @@ import {
   TournamentSession,
 } from "./types";
 
-const POYPointsMap: Record<number, number> = {
-  1: 50,
-  2: 40,
-  3: 30,
-  4: 25,
-  5: 20,
-  6: 15,
-  7: 12.5,
-  8: 10,
-  9: 7.5,
-  10: 5,
-  11: 2.5,
-  12: 1,
-  13: 1,
-  14: 1,
-  15: 1,
-  16: 1,
-  17: 1,
-};
-
 /**
  * Redirects to a specified path with an encoded message as a query parameter.
  * @param {('error' | 'success')} type - The type of message, either 'error' or 'success'.
@@ -46,10 +26,10 @@ export function encodedRedirect(
 
 export function getProfitTextColor(profit: number) {
   return profit > 0
-    ? "text-green-500"
+    ? "text-theme-green"
     : profit < 0
-      ? "text-themeRed"
-      : "text-foreground";
+      ? "text-theme-red"
+      : "text-muted";
 }
 
 export function getRankTextColor(rank: number) {
@@ -59,7 +39,7 @@ export function getRankTextColor(rank: number) {
       ? "text-gray-300"
       : rank === 3
         ? "text-orange-500"
-        : "text-foreground";
+        : "text-muted";
 }
 
 export function formatMoney(amount: number) {
@@ -270,8 +250,8 @@ export const rankSessions = (sessions: CashSessionNoId[]) => {
   return rankedSessions;
 };
 
-export const calculatePOYPoints = (rank: number, netProfit: number) => {
-  return netProfit > 0 ? netProfit + POYPointsMap[rank] : POYPointsMap[rank];
+export const calculatePOYPoints = (netProfit: number) => {
+  return netProfit > 0 ? netProfit : 0;
 };
 
 export const getPOYPointsLeaders = (

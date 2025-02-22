@@ -182,7 +182,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         season_id: session.season_id,
         member_id: session.member_id,
         nlpi_points: calculateNLPIPoints(session.rank!, session.net_profit),
-        poy_points: calculatePOYPoints(session.rank!, session.net_profit),
+        poy_points: calculatePOYPoints(session.net_profit),
       }));
 
       // Combine the sessions with points and missing sessions
@@ -240,7 +240,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         {sessionsToAdd.length > 0 && (
           <button
             onClick={() => setConfirmAdd(true)}
-            className="flex items-center justify-center px-6 h-12 text-white bg-primary hover:bg-primary-hover rounded font-medium">
+            className="flex items-center justify-center px-6 h-12 text-white bg-primary hover:bg-primary-hover rounded font-medium"
+          >
             Add Sessions
           </button>
         )}
@@ -267,7 +268,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       </div>
       <AlertDialog
         open={confirmAdd}
-        onOpenChange={() => setConfirmAdd(!confirmAdd)}>
+        onOpenChange={() => setConfirmAdd(!confirmAdd)}
+      >
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
@@ -281,7 +283,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
               onClick={() => {
                 setConfirmAdd(false);
                 addSessions();
-              }}>
+              }}
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -289,13 +292,14 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       </AlertDialog>
       <AlertDialog open={error !== undefined}>
         <AlertDialogContent className="border-red-500">
-          <XCircle className="w-16 h-16  mx-auto text-red-500" />
+          <XCircle className="w-16 h-16  mx-auto text-theme-red" />
           <AlertDialogTitle>Error Adding Sessions</AlertDialogTitle>
           <AlertDialogDescription>{error}</AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError(undefined)}>
+              onClick={() => setError(undefined)}
+            >
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>

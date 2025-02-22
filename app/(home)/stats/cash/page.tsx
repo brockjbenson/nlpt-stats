@@ -47,7 +47,7 @@ async function Page({ searchParams }: Props) {
     <>
       <PageHeader>
         <Select>
-          <SelectTrigger className="border-none mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
+          <SelectTrigger className="border-none bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
             {activeSeason.year} Stats
             <ChevronDown className="w-6 h-6 ml-2" />
           </SelectTrigger>
@@ -57,7 +57,8 @@ async function Page({ searchParams }: Props) {
                 <Link
                   key={season.id + season.year}
                   className="w-full py-2 pl-2 pr-4"
-                  href={`/stats/cash?year=${season.year}`}>
+                  href={`/stats/cash?year=${season.year}`}
+                >
                   {season.year}
                 </Link>
               ))}

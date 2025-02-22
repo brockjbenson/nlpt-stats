@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
 import { Card, CardTitle } from "../ui/card";
+import { Minus } from "lucide-react";
 
 interface Props {
   members: Member[];
@@ -78,14 +79,18 @@ async function CashGameTable({
 
   const renderTableCell = (sessionData: CashSession | null, weekId: string) => {
     if (!sessionData) {
-      return <TableCell key={weekId}>-</TableCell>;
+      return (
+        <TableCell key={weekId}>
+          <Minus className="text-muted" size={16} />
+        </TableCell>
+      );
     }
 
     const { id, net_profit, rebuys } = sessionData;
     return (
       <TableCell className={cn("font-medium text-center group")} key={weekId}>
         <span className="flex items-center gap-1">
-          <span className={cn(getProfitTextColor(net_profit))}>
+          <span className={cn("text-muted", getProfitTextColor(net_profit))}>
             {rebuys === 0 ? "DNP" : formatMoney(net_profit)}
           </span>
         </span>
@@ -100,7 +105,7 @@ async function CashGameTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="whitespace-nowrap sticky left-0 z-10">
+              <TableHead className="whitespace-nowrap left-0 z-10">
                 Member
               </TableHead>
               {weeks.map((week) => (
@@ -111,7 +116,8 @@ async function CashGameTable({
                       isAdmin
                         ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
                         : `/stats/cash/${year}/${week.week_number}`
-                    }>
+                    }
+                  >
                     Week {week.week_number}
                   </Link>
                 </TableHead>
@@ -123,7 +129,7 @@ async function CashGameTable({
               (member) =>
                 hasAtLeastOneSession(member.id) && (
                   <TableRow key={member.id}>
-                    <TableCell className="sticky font-semibold left-0 z-10">
+                    <TableCell className="font-semibold left-0 z-10">
                       {member.first_name}
                     </TableCell>
                     {weeks.map((week) => {
