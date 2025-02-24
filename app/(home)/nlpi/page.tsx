@@ -38,12 +38,9 @@ async function NLPI() {
     return <p>Error fetching NLPI data: {nlpiError.message}</p>;
   }
   const currentData = nlpiData.map((data: NLPIData) => {
-    const lastCashSession = data.used_cash_sessions.slice(-1)[0];
 
     return {
       ...data,
-      total_points: data.total_points - lastCashSession.nlpi_points,
-      cash_points: data.cash_points - lastCashSession.nlpi_points,
     };
   });
 
