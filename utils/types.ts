@@ -133,26 +133,17 @@ export type SeasonCashStats = {
 
 export type NLPIData = {
   cash_points: number;
-  current_rank: number;
-  end_last_year: number;
+  rank: number;
+  last_year_rank: number;
   first_name: string;
   last_week_rank: number;
   member_id: string;
+  divisor: number;
+  major_divisor: number;
+  cash_divisor: number;
   total_points: number;
   tournament_points: number;
-  used_cash_sessions: {
-    created_at: string;
-    nlpi_points: number;
-    session_id: string;
-    week_number: number;
-    week_id: string;
-  }[];
-  used_tournament_sessions: {
-    date: string;
-    nlpi_points: number;
-    session_id: string;
-    tournament_id: string;
-  }[];
+  actual_sessions_played: number;
 };
 
 export type CareerCashStatsData = {
