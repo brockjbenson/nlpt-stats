@@ -1,3 +1,4 @@
+import NLPICalculator from "@/components/nlpi/nlpi-calculator";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
-import { CashSession, CashSessionNLPI, NLPIData } from "@/utils/types";
+import { NLPIData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
@@ -78,54 +79,66 @@ async function NLPI() {
     }
   };
 
-  const displayRankChange = (lastWeek: number | null, current: number) => {
-    if (lastWeek === null) {
-      return;
-    }
-    const change = lastWeek - current;
-
-    if (change === 0) {
-      return;
-    }
-
-    if (change > 0) {
-      return change;
-    }
-
-    if (change < 0) {
-      return change * -1;
-    }
-  };
-
   return (
     <>
       <PageHeader>
         <NLPIInfo />
       </PageHeader>
       <div className="w-full animate-in px-2 mt-4 max-w-screen-xl mx-auto">
-        <Card className="w-full  mb-8">
+        <NLPICalculator nlpiData={nlpiData} />
+        <Card className="w-full mb-8">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Rank</TableHead>
+              <TableRow className="uppercase">
+                <TableHead className="md:pr-0">Ranking</TableHead>
                 <TableHead>
-                  Last <br /> Week
+                  <span className="flex flex-col items-center">
+                    <span>Last</span>
+                    <span>Week</span>
+                  </span>
+                </TableHead>
+                <TableHead className="pr-8">
+                  <span className="flex flex-col items-center">
+                    <span>End</span>
+                    <span>{previousYear}</span>
+                  </span>
+                </TableHead>
+                <TableHead className="pr-0">Member</TableHead>
+                <TableHead>
+                  <span className="flex flex-col items-center">
+                    <span>Avg</span>
+                    <span>Points</span>
+                  </span>
                 </TableHead>
                 <TableHead>
-                  End <br /> {previousYear}
-                </TableHead>
-                <TableHead>Member</TableHead>
-                <TableHead>
-                  Avg <br /> Points
-                </TableHead>
-                <TableHead>
-                  Total <br /> Points
+                  <span className="flex flex-col items-center">
+                    <span>Total</span>
+                    <span>Points</span>
+                  </span>
                 </TableHead>
                 <TableHead>
-                  Total <br /> Cash
+                  <span className="flex flex-col items-center">
+                    <span>Total</span>
+                    <span>Cash</span>
+                  </span>
                 </TableHead>
                 <TableHead>
-                  Total <br /> Major
+                  <span className="flex flex-col items-center">
+                    <span>Avg</span>
+                    <span>Cash</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="flex flex-col items-center">
+                    <span>Total</span>
+                    <span>Major</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="flex flex-col items-center">
+                    <span>Avg</span>
+                    <span>Major</span>
+                  </span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -140,45 +153,73 @@ async function NLPI() {
                 );
                 return (
                   <TableRow key={data.member_id}>
-                    <TableCell className="flex items-center gap-2">
-                      {data.rank}
-                      <span
-                        className={cn(
-                          changeData.color,
-                          "flex items-center gap-1"
-                        )}>
-                        {changeData.icon}
-                        <span className="text-sm md:text-base">
-                          {displayRankChange(data.last_week_rank, data.rank)}
+                    <TableCell>
+                      <span className="flex gap-2 items-center justify-center">
+                        <span
+                          className={cn(changeData.color, "flex items-center")}>
+                          {changeData.icon}
                         </span>
+                        {data.rank}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {data.last_week_rank || (
-                        <Minus className="text-foreground" size={14} />
-                      )}
+                      <span className="flex justify-center">
+                        {data.last_week_rank || (
+                          <Minus className="text-foreground" size={14} />
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell className="pr-8">
+                      <span className="flex justify-center">
+                        {data.last_year_rank || (
+                          <Minus className="text-foreground" size={14} />
+                        )}
+                      </span>
+                    </TableCell>
+                    <TableCell className="md:pr-0">
+                      {data.first_name} {data.last_name}
                     </TableCell>
                     <TableCell>
-                      {data.last_year_rank || (
-                        <Minus className="text-foreground" size={14} />
-                      )}
+                      <span className="flex justify-center">
+                        {(data.total_points / data.divisor).toFixed(3)}
+                      </span>
                     </TableCell>
-                    <TableCell>{data.first_name}</TableCell>
                     <TableCell>
-                      {(data.total_points / data.divisor).toFixed(3)}
+                      <span className="flex justify-center">
+                        {data.total_points.toFixed(3)}
+                      </span>
                     </TableCell>
-                    <TableCell>{data.total_points.toFixed(3)}</TableCell>
-                    <TableCell>{data.cash_points.toFixed(3)}</TableCell>
-                    <TableCell>{data.tournament_points.toFixed(3)}</TableCell>
+                    <TableCell>
+                      <span className="flex justify-center">
+                        {data.cash_points.toFixed(3)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="flex justify-center">
+                        {(data.cash_points / data.cash_divisor).toFixed(3)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="flex justify-center">
+                        {data.tournament_points.toFixed(3)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="flex justify-center">
+                        {(data.tournament_points / data.major_divisor).toFixed(
+                          3
+                        )}
+                      </span>
+                    </TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
         </Card>
-        <h2 className="mt-12 w-full text-base pb-2 border-b border-muted mr-auto">
+        <h2 className="mt-12 mb-2 w-full flex flex-col gap-1 text-base pb-2 border-b border-muted mr-auto">
           Ineligible Members
-          <span className="text-sm text-muted">
+          <span className="text-xs text-muted">
             (no data for most recent 20 cash sessions or last 4 tournaments)
           </span>
         </h2>

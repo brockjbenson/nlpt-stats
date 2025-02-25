@@ -198,8 +198,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
     const allSessions = [...finalSessions, ...allNewSessions];
 
-    console.log(allSessions);
-
     try {
       setLoading(true);
       const result = await addSessionAction(allSessions);
@@ -240,8 +238,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         {sessionsToAdd.length > 0 && (
           <button
             onClick={() => setConfirmAdd(true)}
-            className="flex items-center justify-center px-6 h-12 text-white bg-primary hover:bg-primary-hover rounded font-medium"
-          >
+            className="flex items-center justify-center px-6 h-12 text-white bg-primary hover:bg-primary-hover rounded font-medium">
             Add Sessions
           </button>
         )}
@@ -268,8 +265,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       </div>
       <AlertDialog
         open={confirmAdd}
-        onOpenChange={() => setConfirmAdd(!confirmAdd)}
-      >
+        onOpenChange={() => setConfirmAdd(!confirmAdd)}>
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
@@ -283,8 +279,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
               onClick={() => {
                 setConfirmAdd(false);
                 addSessions();
-              }}
-            >
+              }}>
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -298,8 +293,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError(undefined)}
-            >
+              onClick={() => setError(undefined)}>
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -60,8 +60,6 @@ function Admin() {
   });
 
   const insertDataForMissingWeeks = async () => {
-    console.log("Inserting data for missing weeks", missingWeeks);
-
     const missingWeeksData = missingWeeks.map((week) => {
       return {
         memberId: memberId,
@@ -80,7 +78,6 @@ function Admin() {
     if (error) {
       console.error(error);
     }
-    console.log("Inserted data for missing weeks");
   };
 
   return <button onClick={insertDataForMissingWeeks}>Update</button>;

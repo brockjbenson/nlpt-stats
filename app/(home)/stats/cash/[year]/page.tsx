@@ -39,8 +39,6 @@ async function Page({ params }: Props) {
     return <p>Error fetching Session data: {sessionError.message}</p>;
   }
 
-  console.log(sessions);
-
   return (
     <>
       <h1>{year} Cash Sessions</h1>

@@ -54,13 +54,9 @@ async function Page({ searchParams }: Params) {
   if (seasonError)
     return <p>Error fetching Season data: {seasonError.message}</p>;
 
-  console.log(currentYear);
-
   const activeSeason = seasons.find(
     (season) => season.year === Number(currentYear)
   );
-
-  console.log(activeSeason);
 
   const { data: poyData, error: poyError } = await db.rpc("get_poy_data", {
     target_season_id: activeSeason.id,
@@ -186,8 +182,7 @@ async function Page({ searchParams }: Params) {
                           className={cn(
                             changeData.color,
                             "flex items-center gap-1"
-                          )}
-                        >
+                          )}>
                           {changeData.icon}
                           <span className="text-sm md:text-base">
                             {displayRankChange(data.lastWeekRank, data.rank)}

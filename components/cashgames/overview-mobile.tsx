@@ -103,6 +103,10 @@ function OverviewMobile({ seasonStats }: Props) {
                 <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
                   <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
                     POY Points
+                    <br />
+                    <span className="text-muted font-normal text-lg">
+                      (cash only)
+                    </span>
                   </SheetTitle>
                   <div className="grid mt-4 w-full grid-cols-3">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
@@ -115,21 +119,27 @@ function OverviewMobile({ seasonStats }: Props) {
                       Points Behind
                     </span>
                     {poyPointsLeaders.map((data) => {
-                      const leaderPoints = poyPointsLeaders[0].poy_points;
+                      const leaderPoints =
+                        poyPointsLeaders[0].net_profit > 0
+                          ? poyPointsLeaders[0].poy_points +
+                            poyPointsLeaders[0].net_profit / 2
+                          : poyPointsLeaders[0].poy_points;
+                      const totalPoints =
+                        data.net_profit > 0
+                          ? data.net_profit / 2 + data.poy_points
+                          : data.poy_points;
                       return (
                         <React.Fragment key={data.member_id + data.poy_points}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
                             {data.first_name}
                           </h3>
                           <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {data.poy_points.toFixed(2)}
+                            {totalPoints.toFixed(2)}
                           </p>
                           <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {data.poy_points - leaderPoints === 0
+                            {totalPoints - leaderPoints === 0
                               ? "-"
-                              : ((data.poy_points - leaderPoints) * -1).toFixed(
-                                  2
-                                )}
+                              : ((totalPoints - leaderPoints) * -1).toFixed(2)}
                           </p>
                         </React.Fragment>
                       );
@@ -155,7 +165,10 @@ function OverviewMobile({ seasonStats }: Props) {
                     </div>
 
                     <p className="font-semibold text-lg md:text-xl">
-                      {data.poy_points.toFixed(2)}
+                      {(data.net_profit > 0
+                        ? data.net_profit / 2 + data.poy_points
+                        : data.poy_points
+                      ).toFixed(2)}
                     </p>
                   </div>
                 ))}

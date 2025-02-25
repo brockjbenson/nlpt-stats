@@ -33,8 +33,6 @@ async function CashGames({ searchParams }: Props) {
       ? season.find((s) => s.year === parseInt(params.year))
       : season.find((s) => s.year === currentYear);
 
-  console.log(year);
-
   return (
     <>
       <AdminCashCarousel

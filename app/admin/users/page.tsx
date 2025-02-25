@@ -22,8 +22,6 @@ async function Page() {
     data: { users },
   } = await adminSupabase.auth.admin.listUsers();
 
-  console.log(users);
-
   return (
     <div className="mx-auto max-w-screen-xl px-2">
       <h2 className="text-xl mb-8 font-semibold">Users</h2>

@@ -58,8 +58,6 @@ async function Member({ params }: EditMemberProps) {
     (data: NLPIData) => data.member_id === id
   )?.current_rank;
 
-  console.log(currentNLPIRank);
-
   const lastTenCashSessions = cashData.slice(0, 10);
   const cumulativeCashNetProfit = cashData.reduce(
     (acc: number, session: any) => acc + session.net_profit,
@@ -72,8 +70,6 @@ async function Member({ params }: EditMemberProps) {
 
   const cumulativeNetProfit =
     cumulativeCashNetProfit + cumulativeTournamentNetProfit;
-
-  console.log(cumulativeNetProfit);
 
   return (
     <>

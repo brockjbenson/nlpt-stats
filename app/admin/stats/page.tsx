@@ -8,8 +8,6 @@ async function StatsAdmin() {
     .select("*")
     .eq("memberId", "12d9a4dd-1989-468b-811b-eec7664a7410");
 
-  console.log(sessions);
-
   return <div>StatsAdmin</div>;
 }
 

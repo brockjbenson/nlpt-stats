@@ -240,8 +240,6 @@ export const addWeeksAction = async (formData: FormData) => {
     week_number: lastWeekNumber + i + 1,
   }));
 
-  console.log(newWeeks);
-
   const { error: insertError } = await supabase.from("week").insert(newWeeks);
 
   if (insertError) {
