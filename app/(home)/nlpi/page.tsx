@@ -30,35 +30,16 @@ async function NLPI() {
     return <p>Error fetching season: {seasonError.message}</p>;
   }
 
-  const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_data", {
-    target_season_id: season.id,
+  const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
+    current_season_id: season.id,
   });
 
   if (nlpiError) {
     return <p>Error fetching NLPI data: {nlpiError.message}</p>;
   }
-  const currentData = nlpiData.map((data: NLPIData) => {
 
-    return {
-      ...data,
-    };
-  });
-
-  const ineligibleMembers = currentData.filter(
+  const ineligibleMembers = nlpiData.filter(
     (data: NLPIData) => data.total_points === 0
-  );
-
-  const lastWeekData = nlpiData.map((data: NLPIData) => {
-    const mostRecentSession = data.used_cash_sessions.slice(0)[0];
-    return {
-      ...data,
-      total_points: data.total_points - mostRecentSession.nlpi_points,
-      cash_points: data.cash_points - mostRecentSession.nlpi_points,
-    };
-  });
-
-  const lastWeekRank = lastWeekData.sort(
-    (a: NLPIData, b: NLPIData) => b.total_points - a.total_points
   );
 
   const getRankChangeInfo = (
@@ -149,45 +130,43 @@ async function NLPI() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentData.map((data: NLPIData) => {
+              {nlpiData.map((data: NLPIData) => {
                 if (data.total_points === 0) {
                   return null;
                 }
-                const lastWeek: any = lastWeekRank.findIndex(
-                  (member: NLPIData) => member.member_id === data.member_id
-                );
                 const changeData = getRankChangeInfo(
-                  data.current_rank,
-                  lastWeek + 1
+                  data.rank,
+                  data.last_week_rank
                 );
                 return (
                   <TableRow key={data.member_id}>
                     <TableCell className="flex items-center gap-2">
-                      {data.current_rank}
+                      {data.rank}
                       <span
                         className={cn(
                           changeData.color,
                           "flex items-center gap-1"
-                        )}
-                      >
+                        )}>
                         {changeData.icon}
                         <span className="text-sm md:text-base">
-                          {displayRankChange(lastWeek + 1, data.current_rank)}
+                          {displayRankChange(data.last_week_rank, data.rank)}
                         </span>
                       </span>
                     </TableCell>
                     <TableCell>
-                      {lastWeek + 1 || (
+                      {data.last_week_rank || (
                         <Minus className="text-foreground" size={14} />
                       )}
                     </TableCell>
                     <TableCell>
-                      {data.end_last_year || (
+                      {data.last_year_rank || (
                         <Minus className="text-foreground" size={14} />
                       )}
                     </TableCell>
                     <TableCell>{data.first_name}</TableCell>
-                    <TableCell>{(data.total_points / 24).toFixed(3)}</TableCell>
+                    <TableCell>
+                      {(data.total_points / data.divisor).toFixed(3)}
+                    </TableCell>
                     <TableCell>{data.total_points.toFixed(3)}</TableCell>
                     <TableCell>{data.cash_points.toFixed(3)}</TableCell>
                     <TableCell>{data.tournament_points.toFixed(3)}</TableCell>
@@ -210,8 +189,7 @@ async function NLPI() {
             return (
               <div
                 key={data.member_id}
-                className="flex items-center justify-between"
-              >
+                className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">{data.first_name}</h3>
               </div>
             );
