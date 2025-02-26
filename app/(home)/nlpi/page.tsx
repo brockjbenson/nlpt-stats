@@ -1,5 +1,4 @@
 import NLPICalculator from "@/components/nlpi/nlpi-calculator";
-import NLPIDatePicker from "@/components/nlpi/nlpi-date-picker";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
@@ -92,7 +91,6 @@ async function NLPI({ searchParams }: props) {
       <div className="w-full animate-in px-2 mt-4 max-w-screen-xl mx-auto">
         <div className="my-4 grid grid-cols-2">
           <NLPICalculator nlpiData={nlpiData} />
-          {/* <NLPIDatePicker seasons={seasons} /> */}
         </div>
         <Card className="w-full mb-8">
           <Table>
