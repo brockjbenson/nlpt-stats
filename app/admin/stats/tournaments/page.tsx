@@ -1,8 +1,9 @@
 import YearCarousel from "@/components/tournament/year-carousel";
 import { createClient } from "@/utils/supabase/server";
-import { Tournament } from "@/utils/types";
+import { MajorsData, Tournament } from "@/utils/types";
 import React from "react";
 import TournamentCard from "@/components/tournament/tournament-card";
+import ErrorHandler from "@/components/error-handler";
 
 interface Props {
   searchParams: Promise<{
@@ -12,51 +13,43 @@ interface Props {
 
 async function Page({ searchParams }: Props) {
   const { year } = await searchParams;
+
   const db = await createClient();
-  const [
-    { data: seasons, error: seasonsError },
-    { data: allTournaments, error: tournamentsError },
-  ] = await Promise.all([
+  const [{ data: seasons, error: seasonsError }] = await Promise.all([
     db.from("season").select("*"),
-    db.from("tournaments").select("*").order("date", { ascending: false }),
   ]);
 
-  const { data: tournamentSessions, error: tournamentSessionsError } = await db
-    .from("tournament_sessions")
-    .select(
-      `
-    *,
-    member:member_id(*)
-  `
-    );
-
-  if (tournamentsError) return <p>Error fetching tournaments</p>;
-  if (seasonsError) return <p>Error fetching members</p>;
-  const tournaments = year
-    ? allTournaments.filter((tournament) => {
-        const tournamentYear = new Date(tournament.date).getFullYear();
-        return tournamentYear === Number(year);
-      })
-    : allTournaments;
-
-  if (tournamentSessionsError)
+  if (seasonsError) {
     return (
-      <>
-        <p>Error Fetching Tournament Sessions</p>
-      </>
+      <ErrorHandler
+        title="Error fetching seasons"
+        errorMessage={seasonsError.message}
+        pageTitle="Tournaments"
+      />
     );
+  }
+
+  const { data: tournamentsData, error: tournamentsDataError } = await db.rpc(
+    "get_majors_data",
+    { target_season_year: year || null } // Ensure it is null if not set
+  );
+
+  if (tournamentsDataError) {
+    return (
+      <ErrorHandler
+        title="Error fetching tournaments"
+        errorMessage={tournamentsDataError.message}
+        pageTitle="Tournaments"
+      />
+    );
+  }
   return (
     <>
       <YearCarousel isAdmin seasons={seasons} year={year} />
       <h2 className="px-2 font-bold text-2xl">{year} Tournaments</h2>
-      <div className="grid grid-cols-1 px-2 mt-4 md:grid-cols-3 gap-4">
-        {tournaments.map((tournament: Tournament) => (
-          <TournamentCard
-            sessions={tournamentSessions}
-            key={tournament.id}
-            tournament={tournament}
-            isAdmin
-          />
+      <div className="grid animate-in grid-cols-1 px-2 md:grid-cols-3 gap-4">
+        {tournamentsData.map((tournament: MajorsData) => (
+          <TournamentCard isAdmin data={tournament} key={tournament.id} />
         ))}
       </div>
     </>

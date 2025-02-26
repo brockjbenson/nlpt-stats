@@ -1,3 +1,4 @@
+import ErrorHandler from "@/components/error-handler";
 import NLPICalculator from "@/components/nlpi/nlpi-calculator";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
@@ -30,7 +31,13 @@ async function NLPI({ searchParams }: props) {
     .select("*");
 
   if (seasonError) {
-    return <p>Error fetching season: {seasonError.message}</p>;
+    return (
+      <ErrorHandler
+        errorMessage={seasonError.message}
+        title="Error fetching seasons"
+        pageTitle="NLPI Rankings"
+      />
+    );
   }
 
   const activeSeason = seasons.find((season) => season.year === currentYear);
@@ -40,7 +47,13 @@ async function NLPI({ searchParams }: props) {
   });
 
   if (nlpiError) {
-    return <p>Error fetching NLPI data: {nlpiError.message}</p>;
+    return (
+      <ErrorHandler
+        errorMessage={nlpiError.message}
+        title="Error fetching NLPI data"
+        pageTitle="NLPI Rankings"
+      />
+    );
   }
 
   const ineligibleMembers = nlpiData.filter(

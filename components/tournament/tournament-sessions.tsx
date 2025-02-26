@@ -1,4 +1,4 @@
-import { Member, TournamentSession } from "@/utils/types";
+import { MajorData } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
 import { Card, CardTitle } from "../ui/card";
@@ -13,18 +13,13 @@ import {
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { PiMedalFill } from "react-icons/pi";
 
-interface SessionsWithMember extends TournamentSession {
-  member: Member;
-  session: TournamentSession;
-}
-
 interface Props {
-  sessions: SessionsWithMember[] | null;
+  data: MajorData;
   isAdmin?: boolean;
-  tournamentId: string;
 }
 
-function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
+function TournamentSessions({ data, isAdmin }: Props) {
+  const sessions = data.sessions;
   if (!sessions || sessions.length === 0) {
     if (isAdmin) {
       return (
@@ -33,7 +28,7 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
             No Tournament Sessions Found
           </p>
           <Link
-            href={`/admin/stats/tournaments/${tournamentId}/sessions/add`}
+            href={`/admin/stats/tournaments/${data.id}/sessions/add`}
             className="px-4 py-2 text-white bg-primary rounded mx-auto">
             Add Sessions
           </Link>
@@ -108,11 +103,11 @@ function TournamentSessions({ sessions, isAdmin, tournamentId }: Props) {
               .sort((a, b) => a.place - b.place)
               .map((session) => {
                 return (
-                  <TableRow key={session.id}>
+                  <TableRow key={session.member_id}>
                     <TableCell className="!relative">
                       {renderPlacementMedal(session.place)}
                     </TableCell>
-                    <TableCell>{session.member.first_name}</TableCell>
+                    <TableCell>{session.first_name}</TableCell>
                     <TableCell>{formatMoney(session.buy_in)}</TableCell>
                     <TableCell>{formatMoney(session.cash_out)}</TableCell>
                     <TableCell>

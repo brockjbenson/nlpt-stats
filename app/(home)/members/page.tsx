@@ -1,3 +1,4 @@
+import ErrorHandler from "@/components/error-handler";
 import MemberCard from "@/components/members/member-card";
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
@@ -12,7 +13,13 @@ async function Members() {
     .order("last_name", { ascending: true });
 
   if (error) {
-    return <p>Error fetching members: {error.message}</p>;
+    return (
+      <ErrorHandler
+        title="Error fetching members"
+        errorMessage={error.message}
+        pageTitle="Members"
+      />
+    );
   }
   const members = data;
   return (

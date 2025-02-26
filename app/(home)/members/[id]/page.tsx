@@ -46,31 +46,6 @@ async function Member({ params }: EditMemberProps) {
     (season: Season) => season.year === currentYear
   )?.id;
 
-  const [{ data: nlpiData, error: nlpiError }] = await Promise.all([
-    db.rpc("get_nlpi_data", {
-      target_season_id: activeSeasonId,
-    }),
-  ]);
-
-  if (nlpiError) return <p>Error fetching nlpi data {nlpiError.message}</p>;
-
-  const currentNLPIRank: NLPIData[] = nlpiData.find(
-    (data: NLPIData) => data.member_id === id
-  )?.current_rank;
-
-  const lastTenCashSessions = cashData.slice(0, 10);
-  const cumulativeCashNetProfit = cashData.reduce(
-    (acc: number, session: any) => acc + session.net_profit,
-    0
-  );
-  const cumulativeTournamentNetProfit = tournamentData.reduce(
-    (acc: number, session: any) => acc + session.net_profit,
-    0
-  );
-
-  const cumulativeNetProfit =
-    cumulativeCashNetProfit + cumulativeTournamentNetProfit;
-
   return (
     <>
       <PageHeader title="Member" />

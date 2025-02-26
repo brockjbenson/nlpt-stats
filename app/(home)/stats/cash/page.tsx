@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import StatsOverview from "@/components/cashgames/overview";
 import OverviewMobile from "@/components/cashgames/overview-mobile";
 import StatsTable from "@/components/cashgames/stats-table";
+import ErrorHandler from "@/components/error-handler";
 
 interface Props {
   searchParams: Promise<{
@@ -28,10 +29,22 @@ async function Page({ searchParams }: Props) {
     db.from("members").select("*").order("first_name", { ascending: true }),
   ]);
   if (seasonError)
-    return <p>Error fetching Season data: {seasonError.message}</p>;
+    return (
+      <ErrorHandler
+        title="Error fetching season"
+        errorMessage={seasonError.message}
+        pageTitle="Cash Stats"
+      />
+    );
 
   if (membersError)
-    return <p>Error fetching Member data: {membersError.message}</p>;
+    return (
+      <ErrorHandler
+        title="Error fetching members"
+        errorMessage={membersError.message}
+        pageTitle="Cash Stats"
+      />
+    );
 
   const activeSeason = seasons.find((season) => season.year === yearNumber);
   const [
@@ -45,10 +58,24 @@ async function Page({ searchParams }: Props) {
       current_season_id: activeSeason.id,
     }),
   ]);
-  if (seasonStatsError)
-    return <p>Error fetching Season data: {seasonStatsError.message}</p>;
 
-  if (poyError) return <p>Error fetching POY data: {poyError.message}</p>;
+  if (seasonStatsError)
+    return (
+      <ErrorHandler
+        title="Error fetching season stats"
+        errorMessage={seasonStatsError.message}
+        pageTitle="Cash Stats"
+      />
+    );
+
+  if (poyError)
+    return (
+      <ErrorHandler
+        title="Error fetching POY data"
+        errorMessage={poyError.message}
+        pageTitle="Cash Stats"
+      />
+    );
 
   return (
     <>

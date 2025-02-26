@@ -1,38 +1,32 @@
 import { cn } from "@/lib/utils";
-import { CashSession, CashSessionWithMember, Member } from "@/utils/types";
-import {
-  formatMoney,
-  getBottomThree,
-  getProfitTextColor,
-  getTopThree,
-} from "@/utils/utils";
+import { CashSessionWeekData } from "@/utils/types";
+import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import React, { memo } from "react";
 import { Card, CardTitle } from "../ui/card";
 import MemberImage from "../members/member-image";
 
-interface ExtendedCashSession extends CashSession {
-  member: Member;
-}
-
 interface Props {
-  sessions: ExtendedCashSession[];
+  data: CashSessionWeekData;
 }
 
-function SessionOverview({ sessions }: Props) {
-  const topEarner = [...sessions].sort(
-    (a, b) => b.nlpi_points - a.nlpi_points
-  )[0];
-  const biggestLoser = [...sessions].sort(
-    (a, b) => a.nlpi_points - b.nlpi_points
-  )[0];
+function SessionOverview({ data }: Props) {
+  const sessions = data.sessions;
+  const topEarner = sessions[0];
+  const biggestLoser = sessions[sessions.length - 1];
+  const sessionDate = new Date(data.date);
   return (
     <div className="grid mt-4 mb-4 grid-cols-1 w-full max-w-screen-xl px-2 mx-auto md:grid-cols-3 gap-4">
       <Card>
-        <CardTitle>Session Info</CardTitle>
+        <div className="flex pb-6 items-center justify-between">
+          <CardTitle className="p-0">Session Info</CardTitle>
+          <p className="text-muted text-xs md:text-sm">
+            {sessionDate.toLocaleDateString()}
+          </p>
+        </div>
         <ul>
           <li className="flex items-center justify-between w-full pb-2">
             <span className="text-muted md:text-base text-xs">
-              Total Player
+              Total Players
             </span>
             <span className="font-semibold text-lg md:text-xl">
               {sessions.length}
@@ -67,11 +61,11 @@ function SessionOverview({ sessions }: Props) {
             <MemberImage
               zoom="1.5"
               className="w-10 h-10 object-bottom rounded-full"
-              src={topEarner.member.portrait_url}
-              alt={`${topEarner.member.first_name} ${topEarner.member.last_name}`}
+              src={topEarner.portrait_url}
+              alt={`${topEarner.first_name} ${topEarner.last_name}`}
             />
             <h3 className="text-lg md:text-2xl font-semibold">
-              {topEarner.member.first_name} {topEarner.member.last_name}
+              {topEarner.first_name} {topEarner.last_name}
             </h3>
           </span>
           <div className="grid grid-cols-4 gap-4 w-full">
@@ -113,11 +107,11 @@ function SessionOverview({ sessions }: Props) {
             <MemberImage
               zoom="1.5"
               className="w-10 h-10 object-bottom rounded-full"
-              src={biggestLoser.member.portrait_url}
-              alt={`${biggestLoser.member.first_name} ${biggestLoser.member.last_name}`}
+              src={biggestLoser.portrait_url}
+              alt={`${biggestLoser.first_name} ${biggestLoser.last_name}`}
             />
             <h3 className="text-lg md:text-2xl font-semibold">
-              {biggestLoser.member.first_name} {biggestLoser.member.last_name}
+              {biggestLoser.first_name} {biggestLoser.last_name}
             </h3>
           </span>
           <div className="grid grid-cols-4 gap-4 w-full">

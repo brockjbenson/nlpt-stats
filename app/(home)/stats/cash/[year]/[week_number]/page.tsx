@@ -11,21 +11,51 @@ interface Props {
 async function Page({ params }: Props) {
   const { year, week_number } = await params;
   const db = await createClient();
-  const { data: season, error: seasonError } = await db
-    .from("season")
-    .select("*")
-    .eq("year", year);
-  const { data: week, error: weekError } = await db
-    .from("week")
-    .select("*")
-    .eq("week_number", week_number);
+
+  const [
+    { data: season, error: seasonError },
+    { data: week, error: weekError },
+  ] = await Promise.all([
+    db.from("season").select("*").eq("year", year),
+    db.from("week").select("*").eq("week_number", week_number),
+  ]);
 
   if (seasonError) {
-    return <p>Error fetching Season data: {seasonError.message}</p>;
+    return (
+      <>
+        <PageHeader title={`Week ${week_number}, ${year}`} />
+        <p className="px-2">
+          Error fetching Season data: {seasonError.message}
+        </p>
+      </>
+    );
   }
 
   if (weekError) {
-    return <p>Error fetching Week data: {weekError.message}</p>;
+    return (
+      <>
+        <PageHeader title={`Week ${week_number}, ${year}`} />
+        <p className="px-2">Error fetching Week data: {weekError.message}</p>;
+      </>
+    );
+  }
+  const { data: sessionData, error: sessionDataError } = await db.rpc(
+    "get_cash_session_info",
+    {
+      current_season_id: season[0].id,
+      current_week_id: week[0].id,
+    }
+  );
+
+  if (sessionDataError) {
+    return (
+      <>
+        <PageHeader title={`Week ${week_number}, ${year}`} />
+        <p className="px-2">
+          Error fetching Session data: {sessionDataError.message}
+        </p>
+      </>
+    );
   }
 
   const { data: sessions, error: sessionError } = await db
@@ -48,8 +78,8 @@ async function Page({ params }: Props) {
         </p>
       ) : (
         <>
-          <SessionOverview sessions={sessions} />
-          <SessionTable sessions={sessions} />
+          <SessionOverview data={sessionData} />
+          <SessionTable data={sessionData} />
         </>
       )}
     </>

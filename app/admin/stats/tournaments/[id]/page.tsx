@@ -1,3 +1,4 @@
+import ErrorHandler from "@/components/error-handler";
 import TournamentInfo from "@/components/tournament/tournament-info-card";
 import TournamentSessions from "@/components/tournament/tournament-sessions";
 import { createClient } from "@/utils/supabase/server";
@@ -10,37 +11,32 @@ interface Props {
 async function Page({ params }: Props) {
   const { id } = await params;
   const db = await createClient();
-  const { data: tournament, error: tournamentError } = await db
-    .from("tournaments")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data: majorData, error: majorError } = await db.rpc(
+    "get_major_data",
+    {
+      target_tournament_id: id,
+    }
+  );
 
-  if (tournamentError) return <p>Error fetching tournament</p>;
-
-  const { data: sessions, error: sessionsError } = await db
-    .from("tournament_sessions")
-    .select(
-      `
-      *,
-      member:member_id(*)
-    `
-    )
-    .eq("tournament_id", id);
-  if (sessionsError)
-    return <p>Error fetching sessions {sessionsError.message}</p>;
+  if (majorError) {
+    return (
+      <ErrorHandler
+        title="Error fetching Tournament data"
+        errorMessage={majorError.message}
+        pageTitle="Tournament"
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-screen-xl mx-auto px-2">
-      <h2 className="text-2xl w-full flex items-center justify-center mb-8">
-        {tournament.name}
-      </h2>
-      <TournamentInfo tournament={tournament} isAdmin sessions={sessions} />
-      <TournamentSessions
-        sessions={sessions}
-        isAdmin
-        tournamentId={tournament.id}
-      />
+      <div className="w-full max-w-screen-xl mx-auto px-2">
+        <h2 className="text-2xl w-full flex items-center justify-center mb-8">
+          {majorData.name}
+        </h2>
+        <TournamentInfo isAdmin data={majorData} />
+        <TournamentSessions isAdmin data={majorData} />
+      </div>
     </div>
   );
 }

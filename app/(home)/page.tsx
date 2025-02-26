@@ -1,34 +1,27 @@
+import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
 import RecentSession from "@/components/recent-session";
-import PullToRefresh from "@/components/refresh-wrapper/refresh-wrapper";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function Home() {
-  const currentYear = new Date().getFullYear();
   const db = await createClient();
 
-  // Fetch season and sessions in parallel to reduce load time
-  const [{ data: sessions, error: sessionError }] = await Promise.all([
-    db
-      .from("cash_session")
-      .select(
-        `
-        *,
-        member:member_id(id, first_name),
-        week:week_id(id, week_number)
-      `
-      )
-      .order("created_at", { ascending: false })
-      .limit(16),
-  ]);
+  const { data: recentSessionData, error: recentSessionDataError } =
+    await db.rpc("get_recent_cash_session_info");
 
-  if (sessionError)
-    return <p>Error fetching Session data: {sessionError.message}</p>;
+  if (recentSessionDataError)
+    return (
+      <ErrorHandler
+        title="Error fetching recent session data"
+        errorMessage={recentSessionDataError.message}
+        pageTitle="Home"
+      />
+    );
 
   return (
     <>
       <PageHeader title="Home" />
-      <RecentSession className="pt-4" sessions={sessions} year={currentYear} />
+      <RecentSession data={recentSessionData} />
     </>
   );
 }

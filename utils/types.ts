@@ -196,3 +196,61 @@ export type POYData = {
   majors_played: number;
   sessions_played: number;
 };
+
+export type CashSessionWeekData = {
+  date: string;
+  week: number;
+  year: number;
+  sessions: {
+    buy_in: number;
+    cash_out: number;
+    net_profit: number;
+    rebuys: number;
+    first_name: string;
+    last_name: string;
+    portrait_url: string;
+    member_id: string;
+    nlpi_points: number;
+    poy_points: number;
+  }[];
+};
+
+export type MajorData = {
+  id: string;
+  name: string;
+  date: string;
+  places_payed: number;
+  total_buy_ins: number;
+  players: number;
+  prize_pool: number;
+  rebuys: number;
+  year: number;
+  sessions: {
+    member_id: string;
+    first_name: string;
+    last_name: string;
+    portrait_url: string;
+    buy_in: number;
+    cash_out: number;
+    net_profit: number;
+    rebuys: number;
+    nlpi_points: number;
+    poy_points: number;
+    place: number;
+  }[];
+};
+
+export type MajorsData = {
+  id: string;
+  date: string;
+  name: string;
+  players: number;
+  prize_pool: number;
+  total_buy_ins: number;
+  winner: {
+    first_name: string;
+    last_name: string;
+    portrait_url: string;
+    member_id: string;
+  };
+};

@@ -1,3 +1,4 @@
+import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
 import POYInfo from "@/components/poy/poy-info";
 import YearCarousel from "@/components/poy/year-carousel";
@@ -29,7 +30,13 @@ async function Page({ searchParams }: Params) {
   ]);
 
   if (seasonError)
-    return <p>Error fetching Season data: {seasonError.message}</p>;
+    return (
+      <ErrorHandler
+        errorMessage={seasonError.message}
+        title="Error fetching seasons"
+        pageTitle="POY Standings"
+      />
+    );
 
   const activeSeason = seasons.find(
     (season) => season.year === Number(currentYear)
@@ -40,7 +47,13 @@ async function Page({ searchParams }: Params) {
   });
 
   if (poyError) {
-    return <p>Error fetching POY data: {poyError.message}</p>;
+    return (
+      <ErrorHandler
+        errorMessage={poyError.message}
+        title="Error fetching POY Data"
+        pageTitle="POY Standings"
+      />
+    );
   }
 
   const getRankChangeInfo = (
@@ -76,25 +89,6 @@ async function Page({ searchParams }: Params) {
           color: "text-theme-red",
           icon: <ArrowDown className="text-theme-red" size={16} />,
         };
-  };
-
-  const displayRankChange = (lastWeek: number | null, current: number) => {
-    if (lastWeek === null) {
-      return;
-    }
-    const change = lastWeek - current;
-
-    if (change === 0) {
-      return;
-    }
-
-    if (change > 0) {
-      return change;
-    }
-
-    if (change < 0) {
-      return change * -1;
-    }
   };
 
   return (

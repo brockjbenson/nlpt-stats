@@ -1,4 +1,4 @@
-import { CashSessionWithMember } from "@/utils/types";
+import { CashSessionWeekData, CashSessionWithMember } from "@/utils/types";
 import React from "react";
 import {
   Table,
@@ -18,11 +18,12 @@ import { cn } from "@/lib/utils";
 import { Card, CardTitle } from "../ui/card";
 
 interface Props {
-  sessions: CashSessionWithMember[];
+  data: CashSessionWeekData;
   className?: string;
 }
 
-function SessionTable({ sessions, className }: Props) {
+function SessionTable({ data, className }: Props) {
+  const sessions = data.sessions;
   return (
     <div className="w-full max-w-screen-xl mx-auto mt-4 px-2">
       <Card className="w-full mb-8">
@@ -42,8 +43,8 @@ function SessionTable({ sessions, className }: Props) {
           <TableBody>
             {sessions.map((session, index) => {
               return (
-                <TableRow key={session.id}>
-                  <TableCell>{session.member.first_name}</TableCell>
+                <TableRow key={session.member_id}>
+                  <TableCell>{session.first_name}</TableCell>
                   <TableCell>{formatMoney(session.buy_in)}</TableCell>
                   <TableCell>{formatMoney(session.cash_out)}</TableCell>
                   <TableCell className={getProfitTextColor(session.net_profit)}>
