@@ -34,14 +34,21 @@ async function Page({ searchParams }: Props) {
     return <p>Error fetching Member data: {membersError.message}</p>;
 
   const activeSeason = seasons.find((season) => season.year === yearNumber);
-  const { data: seasonStats, error: seasonStatsError } = await db.rpc(
-    "get_season_stats",
-    {
+  const [
+    { data: seasonStats, error: seasonStatsError },
+    { data: poyData, error: poyError },
+  ] = await Promise.all([
+    db.rpc("get_season_stats", {
       target_season_id: activeSeason.id,
-    }
-  );
+    }),
+    db.rpc("get_poy_info", {
+      current_season_id: activeSeason.id,
+    }),
+  ]);
   if (seasonStatsError)
     return <p>Error fetching Season data: {seasonStatsError.message}</p>;
+
+  if (poyError) return <p>Error fetching POY data: {poyError.message}</p>;
 
   return (
     <>
@@ -57,8 +64,7 @@ async function Page({ searchParams }: Props) {
                 <Link
                   key={season.id + season.year}
                   className="w-full py-2 pl-2 pr-4"
-                  href={`/stats/cash?year=${season.year}`}
-                >
+                  href={`/stats/cash?year=${season.year}`}>
                   {season.year}
                 </Link>
               ))}
@@ -67,8 +73,16 @@ async function Page({ searchParams }: Props) {
         </Select>
       </PageHeader>
       <div className="animate-in">
-        <StatsOverview seasonStats={seasonStats} />
-        <OverviewMobile seasonStats={seasonStats} />
+        <StatsOverview
+          members={members}
+          poyData={poyData}
+          seasonStats={seasonStats}
+        />
+        <OverviewMobile
+          members={members}
+          poyData={poyData}
+          seasonStats={seasonStats}
+        />
         <div className="pb-8 w-full">
           <StatsTable seasonStats={seasonStats} />
           <CashGameTable

@@ -2,15 +2,17 @@
 import MemberImage from "@/components/members/member-image";
 import { Card, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { SeasonCashStats } from "@/utils/types";
+import { Member, POYData, SeasonCashStats } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import React from "react";
 
 interface Props {
   seasonStats: SeasonCashStats[];
+  poyData: POYData[];
+  members: Member[];
 }
 
-function StatsOverview({ seasonStats }: Props) {
+function StatsOverview({ seasonStats, poyData, members }: Props) {
   const poyPointsLeaders = [...seasonStats].sort(
     (a, b) => b.poy_points - a.poy_points
   );
@@ -34,26 +36,34 @@ function StatsOverview({ seasonStats }: Props) {
         <Card className={cn("w-full")}>
           <CardTitle>POY Points</CardTitle>
           <div className="flex flex-col gap-4">
-            {poyPointsLeaders.slice(0, 3).map((data, index) => (
-              <div
-                className="flex items-center justify-between"
-                key={data.member_id + data.poy_points + index + "poy"}>
-                <div className="flex items-center gap-4">
-                  <MemberImage
-                    className="w-10 h-10"
-                    src={data.portrait_url}
-                    alt={data.first_name}
-                  />
-                  <h3 className="text-base md:text-xl font-medium">
-                    {data.first_name}
-                  </h3>
-                </div>
+            {poyData
+              .sort((a, b) => b.cash_points - a.cash_points)
+              .slice(0, 3)
+              .map((data, index) => {
+                const memberData = members.find(
+                  (member) => member.id === data.member_id
+                );
+                return (
+                  <div
+                    className="flex items-center justify-between"
+                    key={data.member_id + data.cash_points + index + "poy"}>
+                    <div className="flex items-center gap-4">
+                      <MemberImage
+                        className="w-10 h-10"
+                        src={memberData?.portrait_url || ""}
+                        alt={data.first_name}
+                      />
+                      <h3 className="text-base md:text-xl font-medium">
+                        {data.first_name}
+                      </h3>
+                    </div>
 
-                <p className="font-semibold text-lg md:text-xl">
-                  {data.poy_points.toFixed(2)}
-                </p>
-              </div>
-            ))}
+                    <p className="font-semibold text-lg md:text-xl">
+                      {data.cash_points.toFixed(2)}
+                    </p>
+                  </div>
+                );
+              })}
           </div>
         </Card>
         <Card className={cn("w-full")}>

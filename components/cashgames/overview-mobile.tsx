@@ -1,18 +1,17 @@
 "use client";
 
-import { CashSession, Member, SeasonCashStats, Week } from "@/utils/types";
+import {
+  CashSession,
+  Member,
+  POYData,
+  SeasonCashStats,
+  Week,
+} from "@/utils/types";
 import useEmblaCarousel from "embla-carousel-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { EmblaOptionsType } from "embla-carousel";
 import { Card, CardTitle } from "@/components/ui/card";
-import {
-  formatMoney,
-  getCumulativeCashStats,
-  getLargestWins,
-  getNetProfitLeaders,
-  getPOYPointsLeaders,
-  getProfitTextColor,
-} from "@/utils/utils";
+import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import MemberImage from "@/components/members/member-image";
 import { cn } from "@/lib/utils";
 import OverviewThumbs from "./overview-thumbs";
@@ -26,10 +25,12 @@ import {
 
 interface Props {
   seasonStats: SeasonCashStats[];
+  poyData: POYData[];
+  members: Member[];
 }
 const OPTIONS: EmblaOptionsType = {};
 
-function OverviewMobile({ seasonStats }: Props) {
+function OverviewMobile({ seasonStats, poyData, members }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [emblaMainRef, emblaMainApi] = useEmblaCarousel(OPTIONS);
   const [emblaThumbsRef, emblaThumbsApi] = useEmblaCarousel({
@@ -75,6 +76,8 @@ function OverviewMobile({ seasonStats }: Props) {
     (a, b) => b.session_avg - a.session_avg
   );
 
+  console.log(poyData.sort((a, b) => b.cash_points - a.cash_points));
+
   return (
     <div className="w-full pb-4 mx-auto md:hidden block">
       <div className="mb-4 border-b pb-4 border-neutral-500">
@@ -118,60 +121,60 @@ function OverviewMobile({ seasonStats }: Props) {
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Points Behind
                     </span>
-                    {poyPointsLeaders.map((data) => {
-                      const leaderPoints =
-                        poyPointsLeaders[0].net_profit > 0
-                          ? poyPointsLeaders[0].poy_points +
-                            poyPointsLeaders[0].net_profit / 2
-                          : poyPointsLeaders[0].poy_points;
-                      const totalPoints =
-                        data.net_profit > 0
-                          ? data.net_profit / 2 + data.poy_points
-                          : data.poy_points;
-                      return (
-                        <React.Fragment key={data.member_id + data.poy_points}>
-                          <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
-                          </h3>
-                          <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {totalPoints.toFixed(2)}
-                          </p>
-                          <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
-                            {totalPoints - leaderPoints === 0
-                              ? "-"
-                              : ((totalPoints - leaderPoints) * -1).toFixed(2)}
-                          </p>
-                        </React.Fragment>
-                      );
-                    })}
+                    {poyData
+                      .sort((a, b) => b.cash_points - a.cash_points)
+                      .map((data) => {
+                        const leaderPoints = poyData[0].cash_points;
+                        return (
+                          <React.Fragment
+                            key={data.member_id + data.cash_points}>
+                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                              {data.first_name}
+                            </h3>
+                            <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
+                              {data.cash_points.toFixed(2)}
+                            </p>
+                            <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
+                              {leaderPoints - data.cash_points === 0
+                                ? "-"
+                                : (leaderPoints - data.cash_points).toFixed(2)}
+                            </p>
+                          </React.Fragment>
+                        );
+                      })}
                   </div>
                 </SheetContent>
                 <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
-                {poyPointsLeaders.slice(0, 3).map((data, index) => (
-                  <div
-                    className="flex items-center justify-between"
-                    key={data.member_id + data.poy_points + index + "poy"}>
-                    <div className="flex items-center gap-4">
-                      <MemberImage
-                        className="w-10 h-10"
-                        src={data.portrait_url}
-                        alt={data.first_name}
-                      />
-                      <h3 className="text-base md:text-xl font-medium">
-                        {data.first_name}
-                      </h3>
-                    </div>
+                {poyData
+                  .sort((a, b) => b.cash_points - a.cash_points)
+                  .slice(0, 3)
+                  .map((data, index) => {
+                    const memberData = members.find(
+                      (member) => member.id === data.member_id
+                    );
+                    return (
+                      <div
+                        className="flex items-center justify-between"
+                        key={data.member_id + data.cash_points + index + "poy"}>
+                        <div className="flex items-center gap-4">
+                          <MemberImage
+                            className="w-10 h-10"
+                            src={memberData?.portrait_url || ""}
+                            alt={data.first_name}
+                          />
+                          <h3 className="text-base md:text-xl font-medium">
+                            {data.first_name}
+                          </h3>
+                        </div>
 
-                    <p className="font-semibold text-lg md:text-xl">
-                      {(data.net_profit > 0
-                        ? data.net_profit / 2 + data.poy_points
-                        : data.poy_points
-                      ).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                        <p className="font-semibold text-lg md:text-xl">
+                          {data.cash_points.toFixed(2)}
+                        </p>
+                      </div>
+                    );
+                  })}
               </div>
             </Card>
           </div>
