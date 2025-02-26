@@ -178,3 +178,21 @@ export type CareerCashStatsData = {
   poy_points: number;
   member: Member;
 };
+
+export type POYData = {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  last_week_rank: number;
+  rank: number;
+  cash_points: number;
+  prev_cash_points: number;
+  total_points: number;
+  major_points: number;
+  avg_cash_points: number;
+  avg_major_points: number;
+  avg_points: number;
+  cash_played: number;
+  majors_played: number;
+  sessions_played: number;
+};

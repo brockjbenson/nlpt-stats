@@ -42,7 +42,9 @@ function NLPICalculator({ nlpiData }: Props) {
 
   return (
     <Sheet>
-      <SheetTrigger className="underline mb-4">Session Coming Off</SheetTrigger>
+      <SheetTrigger className="underline text-left">
+        Session Coming Off
+      </SheetTrigger>
       <SheetContent className="h-3/5 rounded-t-[20px]" side="bottom">
         <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
           NLPI Session Coming Off

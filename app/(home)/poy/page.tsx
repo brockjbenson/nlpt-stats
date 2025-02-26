@@ -11,33 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { getPOYData, ProcessedPOYData } from "@/utils/poy/utils";
 import { createClient } from "@/utils/supabase/server";
-import {
-  CashSession,
-  CashSessionWithWeek,
-  TournamentSession,
-} from "@/utils/types";
-import {
-  getPOYPointsLeaders,
-  getPOYPointsLeadersWithTournaments,
-} from "@/utils/utils";
+import { POYData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
-
-type POYData = {
-  member_id: string;
-  first_name: string;
-  all_cash_sessions: {
-    poy_points: number;
-    created_at: string;
-    net_profit: number;
-  }[];
-  all_tournament_sessions: {
-    poy_points: number;
-    date: string;
-  }[];
-};
 
 interface Params {
   searchParams: Promise<{ year: string | null }>;
@@ -58,15 +35,13 @@ async function Page({ searchParams }: Params) {
     (season) => season.year === Number(currentYear)
   );
 
-  const { data: poyData, error: poyError } = await db.rpc("get_poy_data", {
-    target_season_id: activeSeason.id,
+  const { data: poyData, error: poyError } = await db.rpc("get_poy_info", {
+    current_season_id: activeSeason.id,
   });
 
   if (poyError) {
     return <p>Error fetching POY data: {poyError.message}</p>;
   }
-
-  const pointsData: ProcessedPOYData[] = getPOYData(poyData);
 
   const getRankChangeInfo = (
     currentRank: number,
@@ -85,7 +60,7 @@ async function Page({ searchParams }: Params) {
         positive: false,
         change: 0,
         color: "text-foreground",
-        icon: <Minus className="text-foreground" size={14} />,
+        icon: <Minus className="text-foreground" size={16} />,
       };
     }
     return currentRank < lastWeekRank
@@ -145,82 +120,81 @@ async function Page({ searchParams }: Params) {
                   Total <br /> Points
                 </TableHead>
                 <TableHead>
+                  Avg <br /> Points
+                </TableHead>
+                <TableHead>
                   Cash <br /> Points
+                </TableHead>
+                <TableHead>
+                  Avg Cash <br /> Points
                 </TableHead>
                 <TableHead>
                   Major <br /> Points
                 </TableHead>
                 <TableHead>
-                  Cash <br /> Played
+                  Avg Major <br /> Points
                 </TableHead>
                 <TableHead>
-                  Avg Cash <br /> Per Week
+                  Cash <br /> Played
                 </TableHead>
                 <TableHead>
                   Majors <br /> Played
                 </TableHead>
-                <TableHead>
-                  Avg Major <br /> Per Tourney
-                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pointsData.map((data) => {
-                if (data.total === 0) {
+              {poyData.map((data: POYData) => {
+                if (data.total_points === 0) {
                   return null;
                 }
                 const changeData = getRankChangeInfo(
                   data.rank,
-                  data.lastWeekRank
+                  data.last_week_rank
                 );
+                const leaderPoints = poyData[0].total_points;
                 return (
                   <TableRow key={data.member_id}>
                     <TableCell>
                       <span className="flex items-center gap-2">
-                        {data.rank}
                         <span
                           className={cn(
                             changeData.color,
                             "flex items-center gap-1"
                           )}>
                           {changeData.icon}
-                          <span className="text-sm md:text-base">
-                            {displayRankChange(data.lastWeekRank, data.rank)}
-                          </span>
                         </span>
+                        {data.rank}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {data.lastWeekRank > 0 ? (
-                        data.lastWeekRank
+                      {data.last_week_rank > 0 ? (
+                        data.last_week_rank
                       ) : (
                         <Minus size={14} />
                       )}
                     </TableCell>
-                    <TableCell>{data.first_name}</TableCell>
                     <TableCell>
-                      {data.pointsBehind === 0 ? (
+                      {data.first_name} {data.last_name}
+                    </TableCell>
+                    <TableCell>
+                      {leaderPoints - data.total_points === 0 ? (
                         <Minus size={14} />
                       ) : (
-                        data.pointsBehind.toFixed(2)
+                        (leaderPoints - data.total_points).toFixed(2)
                       )}
                     </TableCell>
-                    <TableCell>{data.total.toFixed(2)}</TableCell>
-                    <TableCell>{data.cash_points.toFixed(2)}</TableCell>
-                    <TableCell>{data.tournament_points.toFixed(2)}</TableCell>
-                    <TableCell>{data.cashSessionsPlayed}</TableCell>
+                    <TableCell>{data.total_points.toFixed(2)}</TableCell>
+                    <TableCell>{(data.avg_points || 0).toFixed(2)}</TableCell>
+                    <TableCell>{(data.cash_points || 0).toFixed(2)}</TableCell>
                     <TableCell>
-                      {(
-                        data.cash_points / data.cashSessionsPlayed || 0
-                      ).toFixed(2)}
+                      {(data.avg_cash_points || 0).toFixed(2)}
                     </TableCell>
-                    <TableCell>{data.tournamentSessionsPlayed}</TableCell>
+                    <TableCell>{(data.major_points || 0).toFixed(2)}</TableCell>
                     <TableCell>
-                      {(
-                        data.tournament_points /
-                          data.tournamentSessionsPlayed || 0
-                      ).toFixed(2)}
+                      {(data.avg_major_points || 0).toFixed(2)}
                     </TableCell>
+                    <TableCell>{data.cash_played || 0}</TableCell>
+                    <TableCell>{data.majors_played || 0}</TableCell>
                   </TableRow>
                 );
               })}

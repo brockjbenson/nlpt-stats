@@ -1,4 +1,5 @@
 import NLPICalculator from "@/components/nlpi/nlpi-calculator";
+import NLPIDatePicker from "@/components/nlpi/nlpi-date-picker";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
@@ -16,23 +17,27 @@ import { NLPIData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 import React from "react";
 
-async function NLPI() {
+interface props {
+  searchParams: Promise<{ date: string | null }>;
+}
+
+async function NLPI({ searchParams }: props) {
   const db = await createClient();
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
 
-  const { data: season, error: seasonError } = await db
+  const { data: seasons, error: seasonError } = await db
     .from("season")
-    .select("*")
-    .eq("year", currentYear)
-    .single();
+    .select("*");
 
   if (seasonError) {
     return <p>Error fetching season: {seasonError.message}</p>;
   }
 
+  const activeSeason = seasons.find((season) => season.year === currentYear);
+
   const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
-    current_season_id: season.id,
+    current_season_id: activeSeason.id,
   });
 
   if (nlpiError) {
@@ -85,7 +90,10 @@ async function NLPI() {
         <NLPIInfo />
       </PageHeader>
       <div className="w-full animate-in px-2 mt-4 max-w-screen-xl mx-auto">
-        <NLPICalculator nlpiData={nlpiData} />
+        <div className="my-4 grid grid-cols-2">
+          <NLPICalculator nlpiData={nlpiData} />
+          {/* <NLPIDatePicker seasons={seasons} /> */}
+        </div>
         <Card className="w-full mb-8">
           <Table>
             <TableHeader>
@@ -103,6 +111,7 @@ async function NLPI() {
                     <span>{previousYear}</span>
                   </span>
                 </TableHead>
+
                 <TableHead className="pr-0">Member</TableHead>
                 <TableHead>
                   <span className="flex flex-col items-center">
