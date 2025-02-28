@@ -9,6 +9,7 @@ interface Props {
   errorMessage: string;
   title: string;
   pageTitle: string;
+  headerClassName?: string;
 }
 
 function ErrorHandler({
@@ -17,10 +18,11 @@ function ErrorHandler({
   errorMessage,
   title,
   pageTitle,
+  headerClassName,
 }: Props) {
   return (
     <>
-      <PageHeader title={pageTitle} />
+      <PageHeader className={headerClassName} title={pageTitle} />
       <div
         className={cn(
           "w-full max-w-screen-xl flex flex-col gap-8 items-center mx-auto px-2",

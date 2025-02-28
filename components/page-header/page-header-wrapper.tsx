@@ -3,7 +3,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-function PageHeaderWrapper({ children }: { children: React.ReactNode }) {
+function PageHeaderWrapper({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const mainContainer = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -51,7 +57,8 @@ function PageHeaderWrapper({ children }: { children: React.ReactNode }) {
     <div
       id="page-header-wrapper"
       className={cn(
-        "w-full border-b backdrop-blur-md bg-background/40 md:bg-background z-[304958] sticky md:relative top-0 border-neutral-500 mb-4 px-2 pb-4 flex md:hidden items-center transition-all duration-300 justify-between"
+        "w-full border-b backdrop-blur-md bg-background/40 md:bg-background z-[304958] sticky md:relative top-0 border-neutral-500 mb-4 px-2 pb-4 flex md:hidden items-center transition-all duration-300 justify-between",
+        className
       )}
       style={{
         transform: isScrolled ? "translateY(-100%)" : "translateY(0)",

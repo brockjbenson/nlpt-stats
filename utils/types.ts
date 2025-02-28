@@ -254,3 +254,32 @@ export type MajorsData = {
     member_id: string;
   };
 };
+
+export type CareerData = {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  portrait_url: string;
+  cash_gross_profit: number;
+  tournament_gross_profit: number;
+  total_gross_profit: number;
+  cash_gross_losses: number;
+  tournament_gross_losses: number;
+  total_gross_losses: number;
+  cash_net_profit: number;
+  tournament_net_profit: number;
+  total_net_profit: number;
+  cash_wins: number;
+  tournament_wins: number;
+  total_wins: number;
+  cash_losses: number;
+  tournament_in_the_money: number;
+  tournament_out_of_the_money: number;
+  total_cash_rebuys: number;
+  avg_cash_rebuys: number;
+  total_cash_buy_ins: number;
+  avg_cash_buy_ins: number;
+  total_cash_sessions: number;
+  total_tournament_sessions: number;
+  total_sessions: number;
+};

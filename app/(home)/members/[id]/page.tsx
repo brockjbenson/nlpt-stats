@@ -1,4 +1,7 @@
-import MemberOverview from "@/components/members/member-overview";
+import ErrorHandler from "@/components/error-handler";
+import MemberCareerOverview from "@/components/members/member-career-overview";
+import MemberHeader from "@/components/members/member-header";
+import MemberOverview from "@/components/members/member-header";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
@@ -17,38 +20,92 @@ async function Member({ params }: EditMemberProps) {
   const { id } = await params;
   const currentYear = new Date().getFullYear();
   const [
-    { data: cashData, error: cashError },
-    { data: tournamentData, error: tournamentDataError },
     { data: seasons, error: seasonsError },
+    { data: member, error: memberError },
   ] = await Promise.all([
-    db
-      .from("cash_session")
-      .select(
-        `buy_in, cash_out, created_at, id, net_profit, nlpi_points, poy_points, rebuys, week:week_id(id, week_number), member:member_id(*), season:season_id(*)`
-      )
-      .eq("member_id", id)
-      .gt("buy_in", 0)
-      .order("created_at", { ascending: false }),
-    db
-      .from("tournament_sessions")
-      .select("*")
-      .eq("member_id", id)
-      .gt("nlpi_points", 0),
     db.from("season").select("*"),
+    db.from("members").select("*").eq("id", id).single(),
+  ]);
+  if (seasonsError) {
+    return (
+      <ErrorHandler
+        errorMessage={seasonsError.message}
+        title="Error fetching seasons"
+        pageTitle="Member"
+      />
+    );
+  }
+  if (memberError) {
+    return (
+      <ErrorHandler
+        errorMessage={memberError.message}
+        title="Error fetching member info"
+        pageTitle="Member"
+      />
+    );
+  }
+
+  const currentSeasonId = seasons.find(
+    (season: Season) => season.year === currentYear
+  ).id;
+  const [
+    { data: nlpiData, error: nlpiError },
+    { data: poyData, error: poyError },
+    { data: careerStats, error: careerStatsError },
+  ] = await Promise.all([
+    db.rpc("get_nlpi_info", {
+      current_season_id: currentSeasonId,
+      target_filter_date: null, // Use null if no date filtering is needed
+      target_member_id: id,
+    }),
+    db.rpc("get_poy_info", {
+      target_member_id: id,
+      current_season_id: currentSeasonId,
+    }),
+    db.rpc("get_career_data", {
+      target_member_id: member.id,
+    }),
   ]);
 
-  if (cashError) return <p>Error fetching cash data {cashError.message}</p>;
-  if (tournamentDataError)
-    return <p>Error fetching tournament data {tournamentDataError.message}</p>;
-  if (seasonsError) return <p>Error fetching seasons {seasonsError.message}</p>;
+  if (nlpiError) {
+    return (
+      <ErrorHandler
+        errorMessage={nlpiError.message}
+        title="Error fetching NLPI data"
+        pageTitle="Member"
+      />
+    );
+  }
 
-  const activeSeasonId = seasons.find(
-    (season: Season) => season.year === currentYear
-  )?.id;
+  if (poyError) {
+    return (
+      <ErrorHandler
+        errorMessage={poyError.message}
+        title="Error fetching POY data"
+        pageTitle="Member"
+      />
+    );
+  }
+
+  if (careerStatsError) {
+    return (
+      <ErrorHandler
+        errorMessage={careerStatsError.message}
+        title="Error fetching career stats"
+        pageTitle="Member"
+      />
+    );
+  }
 
   return (
     <>
-      <PageHeader title="Member" />
+      <PageHeader className="mb-0" title="Member" />
+      <MemberHeader member={member} />
+      <MemberCareerOverview
+        nlpiData={nlpiData}
+        poyData={poyData}
+        careerData={careerStats}
+      />
     </>
   );
 }
