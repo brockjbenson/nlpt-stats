@@ -101,7 +101,7 @@ async function NLPI({ searchParams }: props) {
       <PageHeader>
         <NLPIInfo />
       </PageHeader>
-      <div className="w-full animate-in px-2 mt-4 max-w-screen-xl mx-auto">
+      <div className="w-full  px-2 mt-4 max-w-screen-xl mx-auto">
         <div className="my-4 grid grid-cols-2">
           <NLPICalculator nlpiData={nlpiData} />
         </div>

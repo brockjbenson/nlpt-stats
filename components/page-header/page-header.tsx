@@ -4,6 +4,7 @@ import HeaderAuth from "@/components/header-auth";
 import PageHeaderWrapper from "./page-header-wrapper";
 import Link from "next/link";
 import Image from "next/image";
+import { Skeleton } from "../ui/skeleton";
 
 interface props {
   children?: React.ReactNode;
@@ -15,10 +16,10 @@ function PageHeader({ children, skeleton = false, title }: props) {
   if (skeleton) {
     return (
       <PageHeaderWrapper>
-        <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 w-full">
-          <div className="h-[32px] bg-neutral-700 rounded w-16"></div>
-          <div className="bg-neutral-700 mx-auto rounded w-32 h-[36px] "></div>
-          <div className="bg-neutral-700 h-[32px] rounded-full w-16 aspect-square "></div>
+        <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
+          <Skeleton className="w-10 h-10 mr-auto rounded" />
+          <Skeleton className="w-40 mx-auto h-8 rounded" />
+          <Skeleton className="w-10 h-10 ml-auto rounded" />
         </div>
       </PageHeaderWrapper>
     );

@@ -97,7 +97,7 @@ async function Page({ searchParams }: Params) {
         <POYInfo />
       </PageHeader>
       <YearCarousel seasons={seasons} year={year || currentYear.toString()} />
-      <div className="w-full animate-in mt-4 mb-8 max-w-screen-xl mx-auto px-2">
+      <div className="w-full  mt-4 mb-8 max-w-screen-xl mx-auto px-2">
         <Card className="w-full">
           <Table>
             <TableHeader>

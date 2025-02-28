@@ -47,7 +47,7 @@ async function Page({ searchParams }: Props) {
     <>
       <YearCarousel isAdmin seasons={seasons} year={year} />
       <h2 className="px-2 font-bold text-2xl">{year} Tournaments</h2>
-      <div className="grid animate-in grid-cols-1 px-2 md:grid-cols-3 gap-4">
+      <div className="grid  grid-cols-1 px-2 md:grid-cols-3 gap-4">
         {tournamentsData.map((tournament: MajorsData) => (
           <TournamentCard isAdmin data={tournament} key={tournament.id} />
         ))}

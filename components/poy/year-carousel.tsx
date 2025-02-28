@@ -19,9 +19,8 @@ function YearCarousel({ seasons, year }: Props) {
 
   return (
     <div
-      className="mb-4 border-b block md:hidden animate-in pb-4 border-neutral-500 px-2 overflow-hidden"
-      ref={emblaMainRef}
-    >
+      className="mb-4 border-b block md:hidden  pb-4 border-neutral-500 px-2 overflow-hidden"
+      ref={emblaMainRef}>
       <div className="flex touch-pan-y -ml-4">
         {seasons.map((season) => (
           <Link
@@ -32,14 +31,12 @@ function YearCarousel({ seasons, year }: Props) {
               "flex-[0_0_20%] flex items-center justify-center font-semibold min-w-0 pl-4"
             )}
             href={`/poy?year=${season.year}`}
-            key={season.id + season.year}
-          >
+            key={season.id + season.year}>
             <span
               className={cn(
                 year === season.year.toString() &&
                   "bg-primary px-3 py-1 text-white rounded"
-              )}
-            >
+              )}>
               {season.year}
             </span>
           </Link>

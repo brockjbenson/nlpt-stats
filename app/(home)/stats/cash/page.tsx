@@ -99,7 +99,7 @@ async function Page({ searchParams }: Props) {
           </SelectContent>
         </Select>
       </PageHeader>
-      <div className="animate-in">
+      <div className="">
         <StatsOverview
           members={members}
           poyData={poyData}
@@ -110,7 +110,7 @@ async function Page({ searchParams }: Props) {
           poyData={poyData}
           seasonStats={seasonStats}
         />
-        <div className="pb-8 w-full">
+        <div className="pb-4 w-full">
           <StatsTable seasonStats={seasonStats} />
           <CashGameTable
             members={members}

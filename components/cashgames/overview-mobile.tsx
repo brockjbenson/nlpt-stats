@@ -76,8 +76,6 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
     (a, b) => b.session_avg - a.session_avg
   );
 
-  console.log(poyData.sort((a, b) => b.cash_points - a.cash_points));
-
   return (
     <div className="w-full pb-4 mx-auto md:hidden block">
       <div className="mb-4 border-b pb-4 border-neutral-500">
