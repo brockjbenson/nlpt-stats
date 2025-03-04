@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { POYData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 interface Params {
@@ -168,7 +169,9 @@ async function Page({ searchParams }: Params) {
                       )}
                     </TableCell>
                     <TableCell>
-                      {data.first_name} {data.last_name}
+                      <Link href={`/members/${data.member_id}`}>
+                        {data.first_name} {data.last_name}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       {leaderPoints - data.total_points === 0 ? (

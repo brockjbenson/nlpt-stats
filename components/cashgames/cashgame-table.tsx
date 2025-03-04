@@ -111,13 +111,13 @@ async function CashGameTable({
               {weeks.map((week) => (
                 <TableHead className="whitespace-nowrap" key={week.id}>
                   <Link
+                    scroll={true}
                     className="underline"
                     href={
                       isAdmin
                         ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
                         : `/stats/cash/${year}/${week.week_number}`
-                    }
-                  >
+                    }>
                     Week {week.week_number}
                   </Link>
                 </TableHead>

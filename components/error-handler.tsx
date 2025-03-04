@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface Props {
   children?: React.ReactNode;
   className?: string;
-  errorMessage: string;
+  errorMessage?: string;
   title: string;
   pageTitle: string;
   headerClassName?: string;

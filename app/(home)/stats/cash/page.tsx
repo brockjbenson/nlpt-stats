@@ -1,14 +1,16 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
-import { ChevronDown } from "lucide-react";
-import Link from "next/link";
 import React from "react";
-import CashGameTable from "@/components/cashgames/cashgame-table";
-import { Select, SelectContent, SelectTrigger } from "@/components/ui/select";
 import StatsOverview from "@/components/cashgames/overview";
 import OverviewMobile from "@/components/cashgames/overview-mobile";
 import StatsTable from "@/components/cashgames/stats-table";
 import ErrorHandler from "@/components/error-handler";
+import CashYearSelector from "@/components/cashgames/cash-year-selector";
+import dynamic from "next/dynamic";
+import { Member, POYData, Season, SeasonCashStats } from "@/utils/types";
+const LazyCashGameTable = dynamic(
+  () => import("@/components/cashgames/cashgame-table")
+);
 
 interface Props {
   searchParams: Promise<{
@@ -18,86 +20,52 @@ interface Props {
 
 async function Page({ searchParams }: Props) {
   const db = await createClient();
-
   const { year } = await searchParams;
   const yearNumber = Number(year);
-  const [
-    { data: seasons, error: seasonError },
-    { data: members, error: membersError },
-  ] = await Promise.all([
-    db.from("season").select("*"),
-    db.from("members").select("*").order("first_name", { ascending: true }),
-  ]);
-  if (seasonError)
+  const { data, error } = await db.rpc("get_seasons_and_members");
+
+  if (error) {
     return (
       <ErrorHandler
-        title="Error fetching season"
-        errorMessage={seasonError.message}
+        title="Error fetching data"
+        errorMessage={error.message}
         pageTitle="Cash Stats"
       />
     );
+  }
 
-  if (membersError)
-    return (
-      <ErrorHandler
-        title="Error fetching members"
-        errorMessage={membersError.message}
-        pageTitle="Cash Stats"
-      />
-    );
+  const seasons: Season[] = data.seasons;
+  const members: Member[] = data.members;
 
-  const activeSeason = seasons.find((season) => season.year === yearNumber);
-  const [
-    { data: seasonStats, error: seasonStatsError },
-    { data: poyData, error: poyError },
-  ] = await Promise.all([
-    db.rpc("get_season_stats", {
-      target_season_id: activeSeason.id,
-    }),
-    db.rpc("get_poy_info", {
-      current_season_id: activeSeason.id,
-    }),
+  const activeSeason =
+    seasons.find(({ year }) => year === yearNumber) || seasons[0];
+
+  const [seasonStatsResponse, poyDataResponse] = await Promise.all([
+    db.rpc("get_season_stats", { target_season_id: activeSeason.id }),
+    db.rpc("get_poy_info", { current_season_id: activeSeason.id }),
   ]);
 
-  if (seasonStatsError)
+  if (seasonStatsResponse.error || poyDataResponse.error) {
     return (
       <ErrorHandler
         title="Error fetching season stats"
-        errorMessage={seasonStatsError.message}
+        errorMessage={
+          seasonStatsResponse.error?.message ||
+          poyDataResponse.error?.message ||
+          "Unknown error"
+        }
         pageTitle="Cash Stats"
       />
     );
+  }
 
-  if (poyError)
-    return (
-      <ErrorHandler
-        title="Error fetching POY data"
-        errorMessage={poyError.message}
-        pageTitle="Cash Stats"
-      />
-    );
+  const seasonStats: SeasonCashStats[] = seasonStatsResponse.data;
+  const poyData: POYData[] = poyDataResponse.data;
 
   return (
     <>
       <PageHeader>
-        <Select>
-          <SelectTrigger className="border-none bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
-            {activeSeason.year} Stats
-            <ChevronDown className="w-6 h-6 ml-2" />
-          </SelectTrigger>
-          <SelectContent>
-            <div key={activeSeason.id} className="flex w-full flex-col">
-              {seasons.map((season) => (
-                <Link
-                  key={season.id + season.year}
-                  className="w-full py-2 pl-2 pr-4"
-                  href={`/stats/cash?year=${season.year}`}>
-                  {season.year}
-                </Link>
-              ))}
-            </div>
-          </SelectContent>
-        </Select>
+        <CashYearSelector seasons={seasons} activeSeason={activeSeason} />
       </PageHeader>
       <div className="">
         <StatsOverview
@@ -112,7 +80,7 @@ async function Page({ searchParams }: Props) {
         />
         <div className="pb-4 w-full">
           <StatsTable seasonStats={seasonStats} />
-          <CashGameTable
+          <LazyCashGameTable
             members={members}
             year={activeSeason.year}
             seasonId={activeSeason.id}

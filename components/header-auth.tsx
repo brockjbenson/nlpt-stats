@@ -58,7 +58,7 @@ export default async function AuthButton() {
               <Link href="/stats/tournaments">Tournaments</Link>
             </li>
             <li>
-              <Link href="/stats/cash">Cash</Link>
+              <Link href="/stats/cash?year=2025">Cash</Link>
             </li>
             <li>
               <Link href="/members">Members</Link>

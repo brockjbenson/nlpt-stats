@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FaTrophy, FaMoneyBill, FaChartArea } from "react-icons/fa";
+import { FaTrophy, FaMoneyBill, FaChartArea, FaUsers } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { TbWorldStar } from "react-icons/tb";
@@ -21,6 +21,7 @@ function MobileNav() {
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
+            scroll={true}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
               pathname.includes("cash") && "text-primary"
@@ -32,6 +33,7 @@ function MobileNav() {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
+            scroll={true}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
               pathname.includes("tournament") && "text-primary"
@@ -43,17 +45,19 @@ function MobileNav() {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
+            scroll={true}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
-              pathname.includes("career") && "text-primary"
+              pathname.includes("members") && "text-primary"
             )}
-            href="/stats/career">
-            <FaChartArea className="w-6 h-6" />
-            Career
+            href="/members">
+            <FaUsers className="w-6 h-6" />
+            Members
           </Link>
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
+            scroll={true}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
               pathname.includes("poy") && "text-primary"
@@ -65,6 +69,7 @@ function MobileNav() {
         </li>
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">
           <Link
+            scroll={true}
             className={cn(
               "flex flex-col items-center justify-center gap-1 text-sm font-semibold",
               pathname.includes("nlpi") && "text-primary"

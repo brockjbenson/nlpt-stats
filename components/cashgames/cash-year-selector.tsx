@@ -1,0 +1,46 @@
+"use client";
+
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { Season } from "@/utils/types";
+import { ChevronDown } from "lucide-react";
+import Link from "next/link";
+
+interface Props {
+  activeSeason: Season;
+  seasons: Season[];
+}
+
+function CashYearSelector({ activeSeason, seasons }: Props) {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <Select onOpenChange={setOpen} open={open}>
+      <SelectTrigger className="border-none bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
+        {activeSeason.year} Stats
+        <ChevronDown className="w-6 h-6 ml-2" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup className="flex w-full flex-col">
+          <div key={activeSeason.id} className="flex w-full flex-col">
+            {seasons.map((season) => (
+              <Link
+                onClick={() => setOpen(false)}
+                key={season.id + season.year}
+                className="w-full py-2 pl-2 pr-4"
+                href={`/stats/cash?year=${season.year}`}>
+                {season.year}
+              </Link>
+            ))}
+          </div>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+  );
+}
+
+export default CashYearSelector;

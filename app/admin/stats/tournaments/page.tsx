@@ -4,6 +4,7 @@ import { MajorsData, Tournament } from "@/utils/types";
 import React from "react";
 import TournamentCard from "@/components/tournament/tournament-card";
 import ErrorHandler from "@/components/error-handler";
+import TournamentsMain from "@/components/tournament/tournaments-main";
 
 interface Props {
   searchParams: Promise<{
@@ -45,13 +46,7 @@ async function Page({ searchParams }: Props) {
   }
   return (
     <>
-      <YearCarousel isAdmin seasons={seasons} year={year} />
-      <h2 className="px-2 font-bold text-2xl">{year} Tournaments</h2>
-      <div className="grid  grid-cols-1 px-2 md:grid-cols-3 gap-4">
-        {tournamentsData.map((tournament: MajorsData) => (
-          <TournamentCard isAdmin data={tournament} key={tournament.id} />
-        ))}
-      </div>
+      <TournamentsMain tournamentsData={tournamentsData} seasons={seasons} />
     </>
   );
 }

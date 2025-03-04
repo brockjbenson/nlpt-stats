@@ -104,6 +104,7 @@ function StatsTable({ seasonStats }: Props) {
                 <TableRow key={stats.member_id}>
                   <TableCell className="font-bold">
                     <Link
+                      scroll={true}
                       className="hover:text-primary underline"
                       href={`/members/${stats.member_id}`}>
                       {stats.first_name}

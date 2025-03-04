@@ -29,16 +29,24 @@ function MemberMain({
   const [view, setView] = React.useState<string>("overview");
   return (
     <>
-      <MemberHeader member={member} />
-      <MemberViewCarousel setView={setView} view={view} />
-      <MemberOverview
-        view={view}
-        currentYear={currentYear}
-        nlpiData={nlpiData}
-        poyData={poyData}
-        careerStats={careerStats}
-      />
-      <MemberAllStats seasons={seasons} view={view} careerStats={careerStats} />
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+        <MemberHeader member={member} />
+        <div>
+          <MemberViewCarousel setView={setView} view={view} />
+          <MemberOverview
+            view={view}
+            currentYear={currentYear}
+            nlpiData={nlpiData}
+            poyData={poyData}
+            careerStats={careerStats}
+          />
+        </div>
+        <MemberAllStats
+          seasons={seasons}
+          view={view}
+          careerStats={careerStats}
+        />
+      </div>
     </>
   );
 }

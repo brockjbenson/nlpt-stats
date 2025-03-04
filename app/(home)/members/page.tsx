@@ -29,7 +29,7 @@ async function Members() {
         <ul className="w-full grid grid-cols-1 md:grid-cols-3 gap-x-12">
           {members.map((member) => (
             <li key={member.id}>
-              <Link href={`/members/${member.id}`}>
+              <Link scroll={true} href={`/members/${member.id}`}>
                 <MemberCard member={member} />
               </Link>
             </li>

@@ -224,6 +224,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     key={data.wins + data.member_id + index + "wins"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
+                        loading="lazy"
                         className="w-10 h-10"
                         src={data.portrait_url}
                         alt={data.first_name}
@@ -293,6 +294,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     key={data.member_id + data.net_profit + index + "net"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
+                        loading="lazy"
                         className="w-10 h-10"
                         src={data.portrait_url}
                         alt={data.first_name}
@@ -367,6 +369,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     key={data.gross_profit + data.member_id + index + "gross"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
+                        loading="lazy"
                         className="w-10 h-10"
                         src={data.portrait_url}
                         alt={data.first_name}
@@ -449,6 +452,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     key={data.win_percentage + data.member_id + index + "win%"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
+                        loading="lazy"
                         className="w-10 h-10"
                         src={data.portrait_url}
                         alt={data.first_name}
@@ -527,6 +531,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     key={data.session_avg + data.member_id + index + "avg_win"}>
                     <div className="flex items-center gap-4">
                       <MemberImage
+                        loading="lazy"
                         className="w-10 h-10"
                         src={data.portrait_url}
                         alt={data.first_name}

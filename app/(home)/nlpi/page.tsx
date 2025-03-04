@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { NLPIData } from "@/utils/types";
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 interface props {
@@ -197,7 +198,9 @@ async function NLPI({ searchParams }: props) {
                       </span>
                     </TableCell>
                     <TableCell className="md:pr-0">
-                      {data.first_name} {data.last_name}
+                      <Link href={`/members/${data.member_id}`}>
+                        {data.first_name} {data.last_name}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <span className="flex justify-center">
