@@ -1,12 +1,12 @@
 import ErrorHandler from "@/components/error-handler";
-import MemberCareerOverview from "@/components/members/member-career-overview";
+import MemberAllStats from "@/components/members/member-all-stats";
+import MemberOverview from "@/components/members/member-career-overview";
 import MemberHeader from "@/components/members/member-header";
-import MemberOverview from "@/components/members/member-header";
+import MemberMain from "@/components/members/member-main";
+import MemberViewCarousel from "@/components/members/member-view-carousel";
 import PageHeader from "@/components/page-header/page-header";
-import { Card } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
-import { NLPIData, Season } from "@/utils/types";
-import Image from "next/image";
+import { Season } from "@/utils/types";
 import React from "react";
 
 interface EditMemberProps {
@@ -18,6 +18,7 @@ interface EditMemberProps {
 async function Member({ params }: EditMemberProps) {
   const db = await createClient();
   const { id } = await params;
+
   const currentYear = new Date().getFullYear();
   const [
     { data: seasons, error: seasonsError },
@@ -64,6 +65,7 @@ async function Member({ params }: EditMemberProps) {
     }),
     db.rpc("get_career_data", {
       target_member_id: member.id,
+      current_season_id: currentSeasonId,
     }),
   ]);
 
@@ -100,11 +102,14 @@ async function Member({ params }: EditMemberProps) {
   return (
     <>
       <PageHeader className="mb-0" title="Member" />
-      <MemberHeader member={member} />
-      <MemberCareerOverview
+      <MemberMain
+        id={id}
+        member={member}
+        currentYear={currentYear}
         nlpiData={nlpiData}
         poyData={poyData}
-        careerData={careerStats}
+        careerStats={careerStats}
+        seasons={seasons}
       />
     </>
   );
