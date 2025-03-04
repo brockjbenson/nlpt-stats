@@ -5,17 +5,19 @@ import PageHeaderWrapper from "./page-header-wrapper";
 import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
+import { cn } from "@/lib/utils";
 
 interface props {
   children?: React.ReactNode;
   skeleton?: boolean;
   title?: string;
+  className?: string;
 }
 
-function PageHeader({ children, skeleton = false, title }: props) {
+function PageHeader({ className, children, skeleton = false, title }: props) {
   if (skeleton) {
     return (
-      <PageHeaderWrapper>
+      <PageHeaderWrapper className={cn(className)}>
         <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
           <Skeleton className="w-10 h-10 mr-auto rounded" />
           <Skeleton className="w-40 mx-auto h-8 rounded" />
@@ -25,7 +27,7 @@ function PageHeader({ children, skeleton = false, title }: props) {
     );
   }
   return (
-    <PageHeaderWrapper>
+    <PageHeaderWrapper className={cn(className)}>
       <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
         <Link href="/">
           <Image

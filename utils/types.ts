@@ -254,3 +254,93 @@ export type MajorsData = {
     member_id: string;
   };
 };
+
+export type CareerData = {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  portrait_url: string;
+  career_stats: {
+    total_gross_profit: number;
+    total_gross_losses: number;
+    total_net_profit: number;
+    total_wins: number;
+    total_sessions: number;
+  };
+  cash_stats: {
+    gross_profit: number;
+    gross_losses: number;
+    net_profit: number;
+    wins: number;
+    losses: number;
+    sessions: number;
+    total_buy_ins: number;
+    total_rebuys: number;
+    season_stats: SeasonStatsCash[];
+    largest_win: largestWin;
+    largest_loss: largestWin;
+    longest_win_streak: number;
+    longest_loss_streak: number;
+    best_month: bestMonth;
+    most_profitable_month: bestMonth;
+  };
+  tournament_stats: {
+    gross_profit: number;
+    gross_losses: number;
+    net_profit: number;
+    wins: number;
+    sessions: number;
+    season_stats: SeasonStatsMajor[];
+    top_three: number;
+    in_the_money: number;
+    out_of_the_money: number;
+    best_finish: number;
+    total_buy_ins: number;
+    total_rebuys: number;
+    avg_finish: number;
+  };
+};
+
+type SeasonStatsCash = {
+  season_id: string;
+  season_year: number;
+  gross_profit: number;
+  gross_losses: number;
+  net_profit: number;
+  wins: number;
+  losses: number; // Losses are only present in cash_stats
+  sessions: number;
+  largest_win: largestWin;
+  largest_loss: largestWin;
+  total_buy_ins: number;
+  total_rebuys: number;
+  longest_win_streak: number;
+  longest_loss_streak: number;
+};
+type SeasonStatsMajor = {
+  season_id: string;
+  season_year: number;
+  gross_profit: number;
+  gross_losses: number;
+  net_profit: number;
+  wins: number;
+  sessions: number;
+  top_three: number; // Top three are only present in tournament_stats
+  in_the_money: number;
+  out_of_the_money: number;
+  best_finish: number;
+  total_buy_ins: number;
+  total_rebuys: number;
+  avg_finish: number;
+};
+type bestMonth = {
+  month: string;
+  net_profit: number;
+};
+
+type largestWin = {
+  season_year: number;
+  week_number: number;
+  net_profit: number;
+  created_at: string;
+};

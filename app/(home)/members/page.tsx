@@ -10,7 +10,7 @@ async function Members() {
   const { data, error } = await db
     .from("members")
     .select("*")
-    .order("last_name", { ascending: true });
+    .order("first_name", { ascending: true });
 
   if (error) {
     return (
