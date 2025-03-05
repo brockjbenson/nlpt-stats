@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatMoney } from "@/utils/utils";
 import { MajorsData } from "@/utils/types";
 import MemberImage from "../members/member-image";
+import NLPTCurrency from "../nlpt-currency-svg";
 
 interface Props {
   isAdmin?: boolean;

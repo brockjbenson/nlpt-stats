@@ -44,8 +44,8 @@ export function getRankTextColor(rank: number) {
 
 export function formatMoney(amount: number) {
   return amount >= 0
-    ? `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : `$(${Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+    ? `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `(${Math.abs(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
 }
 
 export function getBottomThree(sessions: CashSessionWithMember[]) {
