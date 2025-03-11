@@ -82,7 +82,7 @@ function SessionOverview({ data }: Props) {
             <span className="flex flex-col gap-1 items-center justify-end w-full">
               <p className="text-muted md:text-base text-xs">Rebuys</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
-                {topEarner.rebuys}
+                {topEarner.rebuys - 1}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">
@@ -128,7 +128,7 @@ function SessionOverview({ data }: Props) {
             <span className="flex flex-col gap-1 items-center justify-end w-full">
               <p className="text-muted md:text-base text-xs">Rebuys</p>
               <p className={cn("font-semibold text-lg md:text-xl")}>
-                {biggestLoser.rebuys}
+                {biggestLoser.rebuys - 1}
               </p>
             </span>
             <span className="flex flex-col gap-1 items-center justify-end w-full">

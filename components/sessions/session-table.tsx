@@ -50,7 +50,7 @@ function SessionTable({ data, className }: Props) {
                   <TableCell className={getProfitTextColor(session.net_profit)}>
                     {formatMoney(session.net_profit)}
                   </TableCell>
-                  <TableCell>{session.rebuys}</TableCell>
+                  <TableCell>{session.rebuys - 1}</TableCell>
                   <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
                   <TableCell>{session.poy_points.toFixed(2)}</TableCell>
                 </TableRow>

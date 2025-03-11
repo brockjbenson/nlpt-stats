@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { CashSessionNoId, Member, Season, Week } from "@/utils/types";
-import { User2, X } from "lucide-react";
+import { Pencil, User2, X } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
@@ -42,8 +42,7 @@ function SessionsList({
         return (
           <div
             className="grid py-3 relative md:py-8 border-b first:border-t border-neutral-500 md:grid-cols-[60px_1fr_min-content] gap-4"
-            key={`${session.member_id}_${index}`}
-          >
+            key={`${session.member_id}_${index}`}>
             {member?.portrait_url ? (
               <div className="rounded-full hidden overflow-hidden w-full aspect-square md:flex items-center justify-center">
                 <Image
@@ -92,8 +91,7 @@ function SessionsList({
                       session.net_profit > 0
                         ? "text-green-600"
                         : "text-theme-red"
-                    )}
-                  >
+                    )}>
                     ${session.net_profit.toFixed(2)}
                   </span>
                 </li>
@@ -124,9 +122,13 @@ function SessionsList({
               </ul>
             </div>
             <button
+              className="w-8 h-8 max-md:absolute max-md:top-3 max-md:right-10 flex md:self-center items-center justify-center rounded-full border border-transparent hover:border-primary group"
+              onClick={() => removeSessionFromList(index)}>
+              <Pencil className="w-4 h-4 group-hover:fill-primary" />
+            </button>
+            <button
               className="w-8 h-8 max-md:absolute max-md:top-3 max-md:right-2 flex md:self-center items-center justify-center rounded-full border border-transparent hover:border-primary group"
-              onClick={() => removeSessionFromList(index)}
-            >
+              onClick={() => removeSessionFromList(index)}>
               <X className="w-6 h-6 group-hover:fill-primary" />
             </button>
           </div>

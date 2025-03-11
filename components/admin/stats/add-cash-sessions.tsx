@@ -32,6 +32,22 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
   const [sessionsToAdd, setSessionsToAdd] = React.useState<CashSessionNoId[]>(
     []
   );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSessions = localStorage.getItem("sessionsToAdd");
+      if (storedSessions) {
+        setSessionsToAdd(JSON.parse(storedSessions));
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionsToAdd.length > 0) {
+      localStorage.setItem("sessionsToAdd", JSON.stringify(sessionsToAdd));
+    }
+  }, [sessionsToAdd]);
+
   const databaseState = {
     members,
     seasons,
@@ -59,13 +75,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       calculateNetProfit();
     }
   }, [formState.cash_out, formState.buy_in]);
-
-  useEffect(() => {
-    window.onbeforeunload = () => true;
-    return () => {
-      window.onbeforeunload = null;
-    };
-  }, []);
 
   const handleFormChange = (field: string, value: string | number) => {
     setFormState((prevState) => {
@@ -99,7 +108,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       poy_points: 0,
     };
 
-    setSessionsToAdd([...sessionsToAdd, newSession]);
+    setSessionsToAdd((prevSessions) => [...prevSessions, newSession]);
+
     setFormState({
       ...formState,
       member_id: "",
@@ -114,14 +124,12 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
   };
 
   const removeSessionFromList = (index: number) => {
-    // Get the session being removed
     const sessionToRemove = sessionsToAdd[index];
 
-    // Update sessionsToAdd
     const updatedSessionsToAdd = sessionsToAdd.filter((_, i) => i !== index);
     setSessionsToAdd(updatedSessionsToAdd);
+    localStorage.setItem("sessionsToAdd", JSON.stringify(updatedSessionsToAdd));
 
-    // Remove the session from finalSessions
     setFinalSessions((prev) =>
       prev.filter(
         (session) =>
@@ -133,11 +141,10 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
   };
 
   const addSessions = async () => {
-    // Group sessions by weekId and seasonId
     const groupedSessions = sessionsToAdd.reduce<
       Record<string, CashSessionNoId[]>
     >((acc, session) => {
-      const key = `${session.week_id}_${session.season_id}`; // Combine full UUIDs as-is
+      const key = `${session.week_id}_${session.season_id}`;
       if (!acc[key]) acc[key] = [];
       acc[key].push(session);
       return acc;
@@ -145,17 +152,13 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
     let allNewSessions: CashSessionNoId[] = [];
 
-    // Iterate over each group of sessions
     Object.entries(groupedSessions).forEach(([key, currentSessions]) => {
-      // Extract full UUIDs for weekId and seasonId from the key
-      const [week_id, season_id] = key.split("_"); // This keeps the UUIDs intact
+      const [week_id, season_id] = key.split("_");
 
-      // Get member IDs that already have sessions for this week and season
       const memberIdsWithSessions = new Set(
         currentSessions.map((session) => session.member_id)
       );
 
-      // Add missing sessions for members without entries in the current week and season
       const missingSessions = members
         .filter((member) => !memberIdsWithSessions.has(member.id))
         .map((member) => ({
@@ -170,7 +173,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           poy_points: 0,
         }));
 
-      // Rank and calculate points for existing sessions
       const sortedSessions = rankSessions(currentSessions);
 
       const sessionsWithPoints = sortedSessions.map((session) => ({
@@ -185,7 +187,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         poy_points: calculatePOYPoints(session.net_profit),
       }));
 
-      // Combine the sessions with points and missing sessions
       allNewSessions = [
         ...allNewSessions,
         ...sessionsWithPoints,
@@ -193,7 +194,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       ];
     });
 
-    // Update final sessions
     setFinalSessions((prev) => [...prev, ...allNewSessions]);
 
     const allSessions = [...finalSessions, ...allNewSessions];
@@ -220,6 +220,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           rebuys: 1,
         });
         setFinalSessions([]);
+        localStorage.removeItem("sessionsToAdd");
         setSelectWeeks([]);
       }
     } catch (error) {
@@ -231,14 +232,14 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex sticky px-2 max-w-screen-lg mx-auto top-0 py-4 bg-background z-10 items-center justify-between">
+      <div className="flex sticky px-2 max-w-screen-lg mx-auto top-0 pb-4 bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>
         {sessionsToAdd.length > 0 && (
           <button
             onClick={() => setConfirmAdd(true)}
-            className="flex items-center justify-center px-6 h-12 text-white bg-primary hover:bg-primary-hover rounded font-medium">
+            className="flex text-sm md:text-base items-center justify-center px-3 h-10 text-white bg-primary hover:bg-primary-hover rounded font-medium">
             Add Sessions
           </button>
         )}

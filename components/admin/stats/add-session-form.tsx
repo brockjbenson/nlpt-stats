@@ -59,14 +59,16 @@ function AddSessionForm({
   return (
     <div
       ref={formRef}
-      className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12 items-center">
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="buyIn">Buy In</Label>
+      className="grid grid-cols-4 gap-2 md:gap-4 gap-y-4 mb-12 items-center">
+      <fieldset className="flex flex-col gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="buyIn">
+          Buy In
+        </Label>
         <span className="relative flex items-center">
-          <span className="absolute left-2">$</span>
+          <span className="absolute left-2 text-sm">$</span>
           <Input
             ref={buyInRef}
-            className="pl-6 text-base"
+            className="pl-5 text-sm md:text-base"
             type="number"
             id="buyIn"
             step={0.05}
@@ -75,12 +77,14 @@ function AddSessionForm({
           />
         </span>
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="cashOut">Cash Out</Label>
+      <fieldset className="flex flex-col gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="cashOut">
+          Cash Out
+        </Label>
         <span className="relative flex items-center">
-          <span className="absolute left-2">$ </span>
+          <span className="absolute left-2 text-sm">$ </span>
           <Input
-            className="pl-6 text-base"
+            className="pl-5 text-sm md:text-base"
             type="number"
             id="cashOut"
             step={0.05}
@@ -91,12 +95,14 @@ function AddSessionForm({
           />
         </span>
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="netProfit">Net Profit</Label>
+      <fieldset className="flex flex-col gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="netProfit">
+          Net Profit
+        </Label>
         <span className="relative flex items-center">
-          <span className="absolute left-2">$ </span>
+          <span className="absolute left-2 text-sm">$ </span>
           <Input
-            className="pl-6 text-base"
+            className="pl-5 text-sm md:text-base"
             type="number"
             id="netProfit"
             value={formState.net_profit.toFixed(2)}
@@ -107,18 +113,22 @@ function AddSessionForm({
           />
         </span>
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="rebuys">Rebuys</Label>
+      <fieldset className="flex flex-col gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="rebuys">
+          Rebuys
+        </Label>
         <Input
-          className="text-base"
+          className="text-sm md:text-base"
           type="number"
           id="rebuys"
           value={formState.rebuys}
           onChange={(e) => handleFormChange("rebuys", Number(e.target.value))}
         />
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="member">Member</Label>
+      <fieldset className="flex flex-col max-md:col-span-2 gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="member">
+          Member
+        </Label>
         <Select onValueChange={(value) => handleFormChange("member_id", value)}>
           <SelectTrigger id="member">
             <SelectValue placeholder="Select member" />
@@ -134,8 +144,10 @@ function AddSessionForm({
           </SelectContent>
         </Select>
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="season">Season</Label>
+      <fieldset className="flex flex-col max-md:col-span-2 gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="season">
+          Season
+        </Label>
         <Select
           value={formState.season_id}
           onValueChange={(value) => {
@@ -156,8 +168,10 @@ function AddSessionForm({
           </SelectContent>
         </Select>
       </fieldset>
-      <fieldset className="flex flex-col gap-4 grow">
-        <Label htmlFor="week">Week</Label>
+      <fieldset className="flex flex-col max-md:col-span-2 gap-2 grow">
+        <Label className="text-xs md:text-base" htmlFor="week">
+          Week
+        </Label>
         <Select onValueChange={(value) => handleFormChange("week_id", value)}>
           <SelectTrigger disabled={selectWeeks.length === 0} id="week">
             <SelectValue placeholder="Select a week" />
@@ -175,7 +189,7 @@ function AddSessionForm({
       </fieldset>
       <button
         onClick={addSessionToList}
-        className="h-12 w-full rounded bg-primary text-sm self-end text-white border border-primary">
+        className="h-12 w-full rounded max-md:col-span-2 bg-primary text-sm self-end text-white border border-primary">
         Add
       </button>
     </div>

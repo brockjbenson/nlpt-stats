@@ -1,5 +1,6 @@
 import Header from "@/components/header";
 import MobileNav from "@/components/header/mobile-nav";
+import MainWrapper from "@/components/main-wrapper";
 import PageHeader from "@/components/page-header/page-header";
 
 export default async function Layout({
@@ -10,14 +11,12 @@ export default async function Layout({
   return (
     <>
       <Header />
-      <main
-        id="main-wrapper"
-        className="flex flex-col mx-auto w-full lg:px-4 items-center">
+      <MainWrapper>
         <div className="max-w-screen-xl mx-auto w-full">
           <PageHeader title="Admin" />
           {children}
         </div>
-      </main>
+      </MainWrapper>
       <MobileNav />
     </>
   );

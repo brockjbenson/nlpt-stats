@@ -59,6 +59,7 @@ function EditSessionForm({ sessions }: Props) {
   const [sessionsToRemove, setSessionsToRemove] = useState<
     ExtendedCashSession[]
   >([]);
+  const [editedSessionIds, setEditedSessionIds] = useState<string[]>([]);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [removeSessionId, setRemoveSessionId] = useState<string>("");
   const [hasEdits, setHasEdits] = useState<boolean>(false);
@@ -184,6 +185,7 @@ function EditSessionForm({ sessions }: Props) {
           title: "Sessions Edited Successfully",
         });
         setHasEdits(false);
+        setEditedSessionIds([]);
         setLoading(false);
         setFormState({
           buy_in: 0,
@@ -206,205 +208,215 @@ function EditSessionForm({ sessions }: Props) {
   };
   return (
     <>
-      <h2 className="mb-4">Edit Sessions ({currentSessions.length})</h2>
-      <div className="relative">
+      <div className="flex mb-4 px-2 items-center justify-between">
+        <h2 className="">Edit Sessions ({currentSessions.length})</h2>
         {hasEdits && (
           <Button
             onClick={saveEdits}
-            className="absolute -top-16 right-0"
-            variant={"default"}
-          >
+            className="w-fit px-3 py-2 font-semibold"
+            variant={"default"}>
             Save Edits
           </Button>
         )}
-        <ul className="flex flex-col m-0 p-0 w-full">
+      </div>
+      <div className="relative px-2">
+        <ul className="flex flex-col m-0 pb-12 w-full">
           {currentSessions.map((session, index) => {
+            const isEdited = editedSessionIds.includes(session.id);
+            console.log("isEdited", isEdited);
+
             return (
               <li
-                className="w-full py-4 border-b border-muted first:border-t grid grid-cols-[100px_1fr_1.5rem_1.5rem] gap-8"
-                key={session.member_id + index}
-              >
-                <MemberImage
-                  src={session.member.portrait_url}
-                  alt={`${session.member.first_name}_${session.member.last_name}`}
-                />
-                <div className="w-full flex items-center justify-between gap-4">
-                  <h2 className="text-base md:text-2xl font-semibold flex flex-col gap-1">
+                className={cn(
+                  "w-full py-4 border-b border-muted first:border-t grid grid-cols-[1fr_min-content] gap-2",
+                  isEdited ? "bg-primary/25" : ""
+                )}
+                key={session.member_id + index}>
+                <div className="flex items-center gap-2">
+                  <MemberImage
+                    className="w-12 h-auto aspect-square"
+                    src={session.member.portrait_url}
+                    alt={`${session.member.first_name}_${session.member.last_name}`}
+                  />
+                  <h2 className="text-base md:text-2xl font-semibold flex md:flex-col gap-1">
                     <span>{session.member.first_name}</span>
                     <span>{session.member.last_name}</span>
                   </h2>
-                  <div className="flex gap-4 items-center">
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Net Profit</span>
-                      <p
-                        className={cn(
-                          "text-base md:text-lg font-semibold",
-                          getProfitTextColor(session.net_profit)
-                        )}
-                      >
-                        {formatMoney(session.net_profit)}
-                      </p>
-                    </span>
-
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Buy In</span>
-                      <p className={cn("text-base md:text-lg font-semibold")}>
-                        {formatMoney(session.buy_in)}
-                      </p>
-                    </span>
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Cash Out</span>
-                      <p className={cn("text-base md:text-lg font-semibold")}>
-                        {formatMoney(session.cash_out)}
-                      </p>
-                    </span>
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Rebuys</span>
-                      <p className={cn("text-base md:text-lg font-semibold")}>
-                        {session.rebuys}
-                      </p>
-                    </span>
-
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Season</span>
-                      <p className={cn("text-base md:text-lg font-semibold")}>
-                        {session.season.year}
-                      </p>
-                    </span>
-                    <span className="flex flex-col gap-1 items-start">
-                      <span className="text-sm">Week</span>
-                      <p className={cn("text-base md:text-lg font-semibold")}>
-                        {session.week.week_number}
-                      </p>
-                    </span>
-                  </div>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button
-                      onClick={() => {
-                        setFormState(session);
-                      }}
-                      title="Edit Session"
+                <div className="w-full col-span-2 grid grid-cols-6 gap-2">
+                  <span className="flex flex-col gap-1 items-start">
+                    <span className="text-xs md:text-sm">Net Profit</span>
+                    <p
                       className={cn(
-                        "w-full group h-auto aspect-square my-auto flex items-center justify-center border border-transparent rounded-full"
-                      )}
-                    >
-                      <Pencil className={cn("w-3 h-3 text-white")} />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogTitle>Edit Session</DialogTitle>
+                        "text-base md:text-lg font-semibold",
+                        getProfitTextColor(session.net_profit)
+                      )}>
+                      {formatMoney(session.net_profit)}
+                    </p>
+                  </span>
+                  <span className="flex flex-col gap-1 items-center">
+                    <span className="text-xs md:text-sm">Buy In</span>
+                    <p className={cn("text-base md:text-lg font-semibold")}>
+                      {formatMoney(session.buy_in)}
+                    </p>
+                  </span>
+                  <span className="flex flex-col gap-1 items-center">
+                    <span className="text-xs md:text-sm">Cash Out</span>
+                    <p className={cn("text-base md:text-lg font-semibold")}>
+                      {formatMoney(session.cash_out)}
+                    </p>
+                  </span>
+                  <span className="flex flex-col gap-1 items-center">
+                    <span className="text-xs md:text-sm">Rebuys</span>
+                    <p className={cn("text-base md:text-lg font-semibold")}>
+                      {session.rebuys}
+                    </p>
+                  </span>
 
-                    <div className="flex mt-4 flex-col gap-4">
-                      <fieldset className="flex flex-col gap-2 items-start">
-                        <Label htmlFor="buy_in" className="text-sm">
-                          Buy In
-                        </Label>
-                        <Input
-                          id="buy_in"
-                          type="number"
-                          value={formState.buy_in}
-                          onChange={(e) => {
-                            setFormState({
-                              ...formState,
-                              buy_in: Number(e.target.value),
-                              net_profit:
-                                formState.cash_out - Number(e.target.value),
-                            });
-                          }}
-                          className={cn("text-base md:text-lg font-semibold")}
-                        />
-                      </fieldset>
-                      <fieldset className="flex flex-col gap-2 items-start">
-                        <Label className="text-sm">Cash Out</Label>
-                        <Input
-                          id="buy_in"
-                          type="number"
-                          value={formState.cash_out}
-                          onChange={(e) => {
-                            setFormState({
-                              ...formState,
-                              cash_out: Number(e.target.value),
-                              net_profit:
-                                Number(e.target.value) - formState.buy_in,
-                            });
-                          }}
-                          className={cn("text-base md:text-lg font-semibold")}
-                        />
-                      </fieldset>
-                      <fieldset className="flex flex-col gap-2 items-start">
-                        <Label className="text-sm">Net Profit</Label>
-                        <Input
-                          id="buy_in"
-                          type="number"
-                          value={formState.net_profit}
-                          readOnly
-                          className={cn("text-base md:text-lg font-semibold")}
-                        />
-                      </fieldset>
-                      <fieldset className="flex flex-col gap-2 items-start">
-                        <Label className="text-sm">Rebuys</Label>
-                        <Input
-                          id="buy_in"
-                          type="number"
-                          value={formState.rebuys}
-                          onChange={(e) => {
-                            setFormState({
-                              ...formState,
-                              rebuys: Number(e.target.value),
-                            });
-                          }}
-                          className={cn("text-base md:text-lg font-semibold")}
-                        />
-                      </fieldset>
-                      <div className="grid grid-cols-2 gap-4">
-                        <DialogClose
-                          className="bg-muted h-12 text-white rounded"
-                          onClick={() => {
-                            setFormState({
-                              buy_in: 0,
-                              cash_out: 0,
-                              id: "",
-                              member_id: "",
-                              net_profit: 0,
-                              rebuys: 0,
-                              week_id: "",
-                              nlpi_points: 0,
-                              poy_points: 0,
-                              season_id: "",
-                            });
-                          }}
-                        >
-                          Cancel
-                        </DialogClose>
-                        <DialogClose
-                          className="bg-primary h-12 text-white rounded"
-                          onClick={() =>
-                            saveSessionEdit(
-                              session.member,
-                              session.week,
-                              session.season
-                            )
-                          }
-                        >
-                          Save
-                        </DialogClose>
+                  <span className="flex flex-col gap-1 items-center">
+                    <span className="text-xs md:text-sm">Season</span>
+                    <p className={cn("text-base md:text-lg font-semibold")}>
+                      {session.season.year}
+                    </p>
+                  </span>
+                  <span className="flex flex-col gap-1 items-end">
+                    <span className="text-xs md:text-sm">Week</span>
+                    <p className={cn("text-base md:text-lg font-semibold")}>
+                      {session.week.week_number}
+                    </p>
+                  </span>
+                </div>
+                <div className="flex col-span-1 col-start-2 row-start-1 items-center gap-4">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <button
+                        onClick={() => {
+                          setFormState(session);
+                        }}
+                        title="Edit Session"
+                        className={cn(
+                          "w-6 group h-auto aspect-square my-auto flex items-center justify-center border border-transparent rounded-full"
+                        )}>
+                        <Pencil className={cn("w-4 h-4 text-white")} />
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="w-full">
+                      <DialogTitle>Edit Session</DialogTitle>
+
+                      <div className="flex mt-4 flex-col gap-4">
+                        <fieldset className="flex flex-col gap-2 items-start">
+                          <Label
+                            htmlFor="buy_in"
+                            className="text-xs md:text-sm">
+                            Buy In
+                          </Label>
+                          <Input
+                            id="buy_in"
+                            type="number"
+                            value={formState.buy_in}
+                            onChange={(e) => {
+                              setFormState({
+                                ...formState,
+                                buy_in: Number(e.target.value),
+                                net_profit:
+                                  formState.cash_out - Number(e.target.value),
+                              });
+                            }}
+                            className={cn("text-base md:text-lg font-semibold")}
+                          />
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2 items-start">
+                          <Label className="text-xs md:text-sm">Cash Out</Label>
+                          <Input
+                            id="buy_in"
+                            type="number"
+                            value={formState.cash_out}
+                            onChange={(e) => {
+                              setFormState({
+                                ...formState,
+                                cash_out: Number(e.target.value),
+                                net_profit:
+                                  Number(e.target.value) - formState.buy_in,
+                              });
+                            }}
+                            className={cn("text-base md:text-lg font-semibold")}
+                          />
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2 items-start">
+                          <Label className="text-xs md:text-sm">
+                            Net Profit
+                          </Label>
+                          <Input
+                            id="buy_in"
+                            type="number"
+                            value={formState.net_profit}
+                            readOnly
+                            className={cn("text-base md:text-lg font-semibold")}
+                          />
+                        </fieldset>
+                        <fieldset className="flex flex-col gap-2 items-start">
+                          <Label className="text-xs md:text-sm">Rebuys</Label>
+                          <Input
+                            id="buy_in"
+                            type="number"
+                            value={formState.rebuys}
+                            onChange={(e) => {
+                              setFormState({
+                                ...formState,
+                                rebuys: Number(e.target.value),
+                              });
+                            }}
+                            className={cn("text-base md:text-lg font-semibold")}
+                          />
+                        </fieldset>
+                        <div className="grid grid-cols-2 gap-4">
+                          <DialogClose
+                            className="bg-muted h-12 text-white rounded"
+                            onClick={() => {
+                              setFormState({
+                                buy_in: 0,
+                                cash_out: 0,
+                                id: "",
+                                member_id: "",
+                                net_profit: 0,
+                                rebuys: 0,
+                                week_id: "",
+                                nlpi_points: 0,
+                                poy_points: 0,
+                                season_id: "",
+                              });
+                            }}>
+                            Cancel
+                          </DialogClose>
+                          <DialogClose
+                            className="bg-primary h-12 text-white rounded"
+                            onClick={() => {
+                              saveSessionEdit(
+                                session.member,
+                                session.week,
+                                session.season
+                              );
+                              setEditedSessionIds((prev) => [
+                                ...prev,
+                                session.id,
+                              ]);
+                            }}>
+                            Save
+                          </DialogClose>
+                        </div>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <button
-                  onClick={() => {
-                    setConfirmDeleteOpen(true);
-                    setRemoveSessionId(session.id);
-                  }}
-                  title="Remove Session"
-                  className="w-full group h-auto aspect-square my-auto flex items-center justify-center border border-transparent hover:border-primary rounded-full"
-                >
-                  <X className="w-4 h-4 group-hover:text-primary" />
-                </button>
+                    </DialogContent>
+                  </Dialog>
+                  <button
+                    onClick={() => {
+                      setConfirmDeleteOpen(true);
+                      setRemoveSessionId(session.id);
+                    }}
+                    title="Remove Session"
+                    className="w-6 group h-auto aspect-square my-auto flex items-center justify-center border border-transparent hover:border-primary rounded-full">
+                    <X className="w-5 h-5 group-hover:text-primary" />
+                  </button>{" "}
+                </div>
               </li>
             );
           })}
@@ -413,8 +425,7 @@ function EditSessionForm({ sessions }: Props) {
 
       <AlertDialog
         open={confirmDeleteOpen}
-        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}
-      >
+        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}>
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>
@@ -432,8 +443,7 @@ function EditSessionForm({ sessions }: Props) {
               onClick={() => {
                 setConfirmDeleteOpen(false);
                 removeSession();
-              }}
-            >
+              }}>
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -443,8 +453,7 @@ function EditSessionForm({ sessions }: Props) {
         open={
           !!error &&
           (typeof error === "string" ? error.trim() !== "" : error.length > 0)
-        }
-      >
+        }>
         <AlertDialogContent className="border-red-500">
           <XCircle className="w-16 h-16  mx-auto text-theme-red" />
           <AlertDialogTitle>Error Saving Session Edits</AlertDialogTitle>
@@ -454,8 +463,7 @@ function EditSessionForm({ sessions }: Props) {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError("")}
-            >
+              onClick={() => setError("")}>
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>
