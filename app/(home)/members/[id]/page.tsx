@@ -53,6 +53,7 @@ async function Member({ params }: EditMemberProps) {
     { data: nlpiData, error: nlpiError },
     { data: poyData, error: poyError },
     { data: careerStats, error: careerStatsError },
+    { data: joinDate, error: joinDateError },
   ] = await Promise.all([
     db.rpc("get_nlpi_info", {
       current_season_id: currentSeasonId,
@@ -66,6 +67,9 @@ async function Member({ params }: EditMemberProps) {
     db.rpc("get_career_data", {
       target_member_id: member.id,
       current_season_id: currentSeasonId,
+    }),
+    db.rpc("get_member_debut_date", {
+      target_member_id: id,
     }),
   ]);
 
@@ -99,6 +103,18 @@ async function Member({ params }: EditMemberProps) {
     );
   }
 
+  if (joinDateError) {
+    return (
+      <ErrorHandler
+        errorMessage={joinDateError.message}
+        title="Error fetching member info"
+        pageTitle="Member"
+      />
+    );
+  }
+
+  console.log("joinDate", joinDate);
+
   return (
     <>
       <PageHeader className="mb-0" title="Member" />
@@ -110,6 +126,7 @@ async function Member({ params }: EditMemberProps) {
         poyData={poyData}
         careerStats={careerStats}
         seasons={seasons}
+        joinDate={joinDate[0].created_at}
       />
     </>
   );

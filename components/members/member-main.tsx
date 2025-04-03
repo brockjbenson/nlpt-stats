@@ -15,6 +15,7 @@ interface Props {
   poyData: POYData[];
   careerStats: CareerData;
   seasons: Season[];
+  joinDate: string;
 }
 
 function MemberMain({
@@ -25,12 +26,13 @@ function MemberMain({
   poyData,
   careerStats,
   seasons,
+  joinDate,
 }: Props) {
   const [view, setView] = React.useState<string>("overview");
   return (
     <>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-        <MemberHeader member={member} />
+        <MemberHeader member={member} joinDate={joinDate} />
         <div>
           <MemberViewCarousel setView={setView} view={view} />
           <MemberOverview
