@@ -4,6 +4,7 @@ import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import React, { memo } from "react";
 import { Card, CardTitle } from "../ui/card";
 import MemberImage from "../members/member-image";
+import Link from "next/link";
 
 interface Props {
   data: CashSessionWeekData;
@@ -57,7 +58,9 @@ function SessionOverview({ data }: Props) {
       <Card>
         <CardTitle>Top Earner</CardTitle>
         <div className="flex flex-col gap-4">
-          <span className="flex items-center gap-4">
+          <Link
+            href={`/members/${topEarner.member_id}`}
+            className="flex items-center gap-4">
             <MemberImage
               zoom="1.5"
               className="w-10 h-10 object-bottom rounded-full"
@@ -67,7 +70,7 @@ function SessionOverview({ data }: Props) {
             <h3 className="text-lg md:text-2xl font-semibold">
               {topEarner.first_name} {topEarner.last_name}
             </h3>
-          </span>
+          </Link>
           <div className="grid grid-cols-4 gap-4 w-full">
             <span className="flex flex-col gap-1 items-start w-full">
               <p className="text-muted md:text-base text-xs">Net Profit</p>
@@ -103,7 +106,9 @@ function SessionOverview({ data }: Props) {
       <Card>
         <CardTitle>Biggest Loser</CardTitle>
         <div className="flex flex-col gap-4">
-          <span className="flex items-center gap-4">
+          <Link
+            href={`/members/${biggestLoser.member_id}`}
+            className="flex items-center gap-4">
             <MemberImage
               zoom="1.5"
               className="w-10 h-10 object-bottom rounded-full"
@@ -113,7 +118,7 @@ function SessionOverview({ data }: Props) {
             <h3 className="text-lg md:text-2xl font-semibold">
               {biggestLoser.first_name} {biggestLoser.last_name}
             </h3>
-          </span>
+          </Link>
           <div className="grid grid-cols-4 gap-4 w-full">
             <span className="flex flex-col gap-1 items-start w-full">
               <p className="text-muted md:text-base text-xs">Net Profit</p>

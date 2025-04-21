@@ -87,8 +87,12 @@ function TournamentSessions({ data, isAdmin }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="!relative">Place</TableHead>
-              <TableHead>Member</TableHead>
+              <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                Place
+              </TableHead>
+              <TableHead className="sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+                Member
+              </TableHead>
               <TableHead>Buy in</TableHead>
               <TableHead>Cash out</TableHead>
               <TableHead>Net Profit</TableHead>
@@ -104,10 +108,16 @@ function TournamentSessions({ data, isAdmin }: Props) {
               .map((session) => {
                 return (
                   <TableRow key={session.member_id}>
-                    <TableCell className="!relative">
+                    <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
                       {renderPlacementMedal(session.place)}
                     </TableCell>
-                    <TableCell>{session.first_name}</TableCell>
+                    <TableCell className="font-bold sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+                      <Link
+                        className="underline"
+                        href={`/members/${session.member_id}`}>
+                        {session.first_name}
+                      </Link>
+                    </TableCell>
                     <TableCell>{formatMoney(session.buy_in)}</TableCell>
                     <TableCell>{formatMoney(session.cash_out)}</TableCell>
                     <TableCell>

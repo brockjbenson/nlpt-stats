@@ -4,6 +4,7 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Member, POYData, SeasonCashStats } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
+import Link from "next/link";
 import React from "react";
 
 interface Props {
@@ -47,7 +48,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.member_id + data.cash_points + index + "poy"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${memberData?.id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         className="w-10 h-10"
                         src={memberData?.portrait_url || ""}
@@ -56,7 +59,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p className="font-semibold text-lg md:text-xl">
                       {data.cash_points.toFixed(2)}
@@ -73,7 +76,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
               <div
                 className="flex items-center justify-between"
                 key={data.member_id + data.net_profit + index + "net"}>
-                <div className="flex items-center gap-4">
+                <Link
+                  href={`/members/${data.member_id}`}
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
@@ -82,7 +87,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <h3 className="text-base md:text-xl font-medium">
                     {data.first_name}
                   </h3>
-                </div>
+                </Link>
 
                 <p
                   className={cn(
@@ -102,7 +107,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
               <div
                 className="flex items-center justify-between"
                 key={data.wins + data.member_id + index + "wins"}>
-                <div className="flex items-center gap-4">
+                <Link
+                  href={`/members/${data.member_id}`}
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
@@ -111,7 +118,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <h3 className="text-base md:text-xl font-medium">
                     {data.first_name}
                   </h3>
-                </div>
+                </Link>
 
                 <p className="font-semibold text-lg md:text-xl">{data.wins}</p>
               </div>
@@ -125,7 +132,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
               <div
                 className="flex items-center justify-between"
                 key={data.gross_profit + data.member_id + index + "gross"}>
-                <div className="flex items-center gap-4">
+                <Link
+                  href={`/members/${data.member_id}`}
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
@@ -134,7 +143,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <h3 className="text-base md:text-xl font-medium">
                     {data.first_name}
                   </h3>
-                </div>
+                </Link>
 
                 <p
                   className={cn(
@@ -154,7 +163,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
               <div
                 className="flex items-center justify-between"
                 key={data.win_percentage + data.member_id + index + "gross"}>
-                <div className="flex items-center gap-4">
+                <Link
+                  href={`/members/${data.member_id}`}
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
@@ -163,7 +174,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <h3 className="text-base md:text-xl font-medium">
                     {data.first_name}
                   </h3>
-                </div>
+                </Link>
 
                 <p className={cn("font-semibold text-lg md:text-xl")}>
                   {data.win_percentage.toFixed(2)}%
@@ -179,7 +190,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
               <div
                 className="flex items-center justify-between"
                 key={data.session_avg + data.member_id + index + "gross"}>
-                <div className="flex items-center gap-4">
+                <Link
+                  href={`/members/${data.member_id}`}
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
@@ -188,7 +201,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                   <h3 className="text-base md:text-xl font-medium">
                     {data.first_name}
                   </h3>
-                </div>
+                </Link>
 
                 <p
                   className={cn(

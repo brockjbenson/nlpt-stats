@@ -103,11 +103,15 @@ async function Page({ searchParams }: Params) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rank</TableHead>
-                <TableHead>
+                <TableHead className="md:pr-0 pr-4 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Rank
+                </TableHead>
+                <TableHead className="pl-3">
                   Last <br /> Week
                 </TableHead>
-                <TableHead>Member</TableHead>
+                <TableHead className="md:pr-0 pr-2 sticky left-[45px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Member
+                </TableHead>
                 <TableHead>
                   Points <br /> Behind
                 </TableHead>
@@ -149,7 +153,7 @@ async function Page({ searchParams }: Params) {
                 const leaderPoints = poyData[0].total_points;
                 return (
                   <TableRow key={data.member_id}>
-                    <TableCell>
+                    <TableCell className="md:pr-0 pr-2 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
                       <span className="flex items-center gap-2">
                         <span
                           className={cn(
@@ -161,16 +165,16 @@ async function Page({ searchParams }: Params) {
                         {data.rank}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="pl-3 text-center">
                       {data.last_week_rank > 0 ? (
                         data.last_week_rank
                       ) : (
                         <Minus size={14} />
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="md:pr-0 pr-2 sticky left-[45px] z-10 bg-card border-b-[1.7px] border-neutral-600">
                       <Link href={`/members/${data.member_id}`}>
-                        {data.first_name} {data.last_name}
+                        {data.first_name} {data.last_name.slice(0, 1)}.
                       </Link>
                     </TableCell>
                     <TableCell>

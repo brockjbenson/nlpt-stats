@@ -110,21 +110,25 @@ async function NLPI({ searchParams }: props) {
           <Table>
             <TableHeader>
               <TableRow className="uppercase">
-                <TableHead className="md:pr-0">Ranking</TableHead>
-                <TableHead>
+                <TableHead className="md:pr-0 pr-4 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Ranking
+                </TableHead>
+                <TableHead className="pr-4">
                   <span className="flex flex-col items-center">
                     <span>Last</span>
                     <span>Week</span>
                   </span>
                 </TableHead>
-                <TableHead className="pr-8">
+                <TableHead className="pr-4">
                   <span className="flex flex-col items-center">
                     <span>End</span>
                     <span>{previousYear}</span>
                   </span>
                 </TableHead>
 
-                <TableHead className="pr-0">Member</TableHead>
+                <TableHead className="pr-0 sticky left-[69px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Member
+                </TableHead>
                 <TableHead>
                   <span className="flex flex-col items-center">
                     <span>Avg</span>
@@ -174,8 +178,8 @@ async function NLPI({ searchParams }: props) {
                 );
                 return (
                   <TableRow key={data.member_id}>
-                    <TableCell>
-                      <span className="flex gap-2 items-center justify-center">
+                    <TableCell className="md:pr-0 pr-2 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                      <span className="flex gap-2 items-center relative right-2 justify-center">
                         <span
                           className={cn(changeData.color, "flex items-center")}>
                           {changeData.icon}
@@ -197,9 +201,9 @@ async function NLPI({ searchParams }: props) {
                         )}
                       </span>
                     </TableCell>
-                    <TableCell className="md:pr-0">
+                    <TableCell className="pr-3 md:pr-0 sticky left-[69px] z-10 bg-card border-b-[1.7px] border-neutral-600">
                       <Link href={`/members/${data.member_id}`}>
-                        {data.first_name} {data.last_name}
+                        {data.first_name} {data.last_name.slice(0, 1)}.
                       </Link>
                     </TableCell>
                     <TableCell>

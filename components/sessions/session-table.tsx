@@ -16,6 +16,7 @@ import {
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
 import { cn } from "@/lib/utils";
 import { Card, CardTitle } from "../ui/card";
+import Link from "next/link";
 
 interface Props {
   data: CashSessionWeekData;
@@ -31,7 +32,9 @@ function SessionTable({ data, className }: Props) {
         <Table className={cn(className)}>
           <TableHeader>
             <TableRow>
-              <TableHead>Member</TableHead>
+              <TableHead className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                Member
+              </TableHead>
               <TableHead>Buy-In</TableHead>
               <TableHead>Cash-Out</TableHead>
               <TableHead>Net Profit</TableHead>
@@ -44,7 +47,14 @@ function SessionTable({ data, className }: Props) {
             {sessions.map((session, index) => {
               return (
                 <TableRow key={session.member_id}>
-                  <TableCell>{session.first_name}</TableCell>
+                  <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                    <Link
+                      scroll={true}
+                      className="hover:text-primary underline"
+                      href={`/members/${session.member_id}`}>
+                      {session.first_name}
+                    </Link>
+                  </TableCell>
                   <TableCell>{formatMoney(session.buy_in)}</TableCell>
                   <TableCell>{formatMoney(session.cash_out)}</TableCell>
                   <TableCell className={getProfitTextColor(session.net_profit)}>

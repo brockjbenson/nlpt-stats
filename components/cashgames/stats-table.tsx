@@ -25,7 +25,9 @@ function StatsTable({ seasonStats }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Member</TableHead>
+              <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                Member
+              </TableHead>
               <TableHead>
                 <span className="w-full flex flex-col gap-1 items-center justify-center">
                   <span>Net</span>
@@ -102,7 +104,7 @@ function StatsTable({ seasonStats }: Props) {
             {seasonStats.map((stats) => {
               return (
                 <TableRow key={stats.member_id}>
-                  <TableCell className="font-bold">
+                  <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
                     <Link
                       scroll={true}
                       className="hover:text-primary underline"

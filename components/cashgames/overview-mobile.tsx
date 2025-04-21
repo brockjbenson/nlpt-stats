@@ -22,6 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import Link from "next/link";
 
 interface Props {
   seasonStats: SeasonCashStats[];
@@ -110,13 +111,13 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                     </span>
                   </SheetTitle>
                   <div className="grid mt-4 w-full grid-cols-3">
-                    <span className="pb-2 border-b border-neutral-600 w-full text-muted">
+                    <span className="pb-2 border-b text-sm md:text-base border-neutral-600 w-full text-muted">
                       Name
                     </span>
-                    <span className="pb-2 border-b border-neutral-600 w-full text-muted">
+                    <span className="pb-2 border-b text-sm md:text-base border-neutral-600 w-full text-muted">
                       Total
                     </span>
-                    <span className="pb-2 border-b border-neutral-600 w-full text-muted">
+                    <span className="pb-2 border-b text-sm md:text-base border-neutral-600 w-full text-muted">
                       Points Behind
                     </span>
                     {poyData
@@ -126,13 +127,15 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                         return (
                           <React.Fragment
                             key={data.member_id + data.cash_points}>
-                            <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                              {data.first_name}
+                            <h3 className="text-sm font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
+                              <Link href={`/members/${data.member_id}`}>
+                                {data.first_name}
+                              </Link>
                             </h3>
-                            <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
+                            <p className="font-semibold text-sm md:text-lg py-2 border-b border-neutral-600 w-full">
                               {data.cash_points.toFixed(2)}
                             </p>
-                            <p className="font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full">
+                            <p className="font-semibold text-sm md:text-lg py-2 border-b border-neutral-600 w-full">
                               {leaderPoints - data.cash_points === 0
                                 ? "-"
                                 : (leaderPoints - data.cash_points).toFixed(2)}
@@ -156,7 +159,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <div
                         className="flex items-center justify-between"
                         key={data.member_id + data.cash_points + index + "poy"}>
-                        <div className="flex items-center gap-4">
+                        <Link
+                          href={`/members/${data.member_id}`}
+                          className="flex items-center gap-4">
                           <MemberImage
                             className="w-10 h-10"
                             src={memberData?.portrait_url || ""}
@@ -165,7 +170,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                           <h3 className="text-base md:text-xl font-medium">
                             {data.first_name}
                           </h3>
-                        </div>
+                        </Link>
 
                         <p className="font-semibold text-lg md:text-xl">
                           {data.cash_points.toFixed(2)}
@@ -205,7 +210,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       return (
                         <React.Fragment key={data.member_id + data.wins}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
+                            <Link href={`/members/${data.member_id}`}>
+                              {data.first_name}
+                            </Link>
                           </h3>
                           <p className="font-semibold flex items-center justify-end text-base md:text-lg py-2 border-b border-neutral-600 w-full">
                             {data.wins}
@@ -222,7 +229,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.wins + data.member_id + index + "wins"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         loading="lazy"
                         className="w-10 h-10"
@@ -232,7 +241,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p className="font-semibold text-lg md:text-xl">
                       {data.wins}
@@ -271,7 +280,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       return (
                         <React.Fragment key={data.member_id + data.net_profit}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
+                            <Link href={`/members/${data.member_id}`}>
+                              {data.first_name}
+                            </Link>
                           </h3>
                           <p
                             className={cn(
@@ -292,7 +303,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.member_id + data.net_profit + index + "net"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         loading="lazy"
                         className="w-10 h-10"
@@ -302,7 +315,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p
                       className={cn(
@@ -346,7 +359,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                         <React.Fragment
                           key={data.member_id + data.gross_profit}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
+                            <Link href={`/members/${data.member_id}`}>
+                              {data.first_name}
+                            </Link>
                           </h3>
                           <p
                             className={cn(
@@ -367,7 +382,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.gross_profit + data.member_id + index + "gross"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         loading="lazy"
                         className="w-10 h-10"
@@ -377,7 +394,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p
                       className={cn(
@@ -424,7 +441,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                         <React.Fragment
                           key={data.member_id + data.win_percentage}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
+                            <Link href={`/members/${data.member_id}`}>
+                              {data.first_name}
+                            </Link>
                           </h3>
                           <p
                             className={cn(
@@ -450,7 +469,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.win_percentage + data.member_id + index + "win%"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         loading="lazy"
                         className="w-10 h-10"
@@ -460,7 +481,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p className={cn("font-semibold text-lg md:text-xl")}>
                       {data.win_percentage.toFixed(2)}%
@@ -502,7 +523,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       return (
                         <React.Fragment key={data.session_avg + data.member_id}>
                           <h3 className="text-base font-semibold md:text-xl py-2 border-b border-neutral-600 w-full">
-                            {data.first_name}
+                            <Link href={`/members/${data.member_id}`}>
+                              {data.first_name}
+                            </Link>
                           </h3>
                           <p
                             className={cn(
@@ -529,7 +552,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                   <div
                     className="flex items-center justify-between"
                     key={data.session_avg + data.member_id + index + "avg_win"}>
-                    <div className="flex items-center gap-4">
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="flex items-center gap-4">
                       <MemberImage
                         loading="lazy"
                         className="w-10 h-10"
@@ -539,7 +564,7 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       <h3 className="text-base md:text-xl font-medium">
                         {data.first_name}
                       </h3>
-                    </div>
+                    </Link>
 
                     <p
                       className={cn(

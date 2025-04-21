@@ -33,7 +33,9 @@ function TournamentCard({ data, isAdmin }: Props) {
       <div className="flex flex-col gap-2 justify-center items-center">
         <h3 className="text-muted text-sm">Winner</h3>
         {data.winner ? (
-          <div className="grid grid-cols-[50px_1fr] gap-2 items-center">
+          <Link
+            href={`/members/${data.winner.member_id}`}
+            className="grid grid-cols-[50px_1fr] gap-2 items-center">
             <MemberImage
               src={data.winner.portrait_url}
               alt={data.winner.first_name}
@@ -41,7 +43,7 @@ function TournamentCard({ data, isAdmin }: Props) {
             <p className="text-lg md:text-xl font-bold">
               {data.winner.first_name} {data.winner.last_name}
             </p>
-          </div>
+          </Link>
         ) : (
           <p>Winner not Found</p>
         )}

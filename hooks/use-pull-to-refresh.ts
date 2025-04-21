@@ -33,18 +33,31 @@ function usePullToRefresh(
       if (!target || target !== ref.current) return;
 
       const initialY = startEvent.touches[0].clientY;
+      const initialX = startEvent.touches[0].clientX;
+      let isHorizontalScroll = false;
 
       el.addEventListener("touchmove", handleTouchMove, { passive: false });
       el.addEventListener("touchend", handleTouchEnd);
 
       function handleTouchMove(moveEvent: TouchEvent) {
-        moveEvent.preventDefault();
         const el = ref.current;
         if (!el) return;
 
         const currentY = moveEvent.touches[0].clientY;
+        const currentX = moveEvent.touches[0].clientX;
+
         const dy = currentY - initialY;
-        if (dy < 0) return;
+        const dx = currentX - initialX;
+
+        // If horizontal movement is more dominant, stop tracking
+        if (!isHorizontalScroll && Math.abs(dx) > Math.abs(dy)) {
+          isHorizontalScroll = true;
+        }
+
+        if (isHorizontalScroll || dy < 0) return;
+
+        moveEvent.preventDefault(); // We'll remove this if it's horizontal
+
         setPullHeight(appr(dy));
 
         if (dy > TRIGGER_THRESHOLD) {
@@ -63,6 +76,18 @@ function usePullToRefresh(
       function handleTouchEnd(endEvent: TouchEvent) {
         const el = ref.current;
         if (!el) return;
+
+        if (isHorizontalScroll) {
+          // Don't trigger refresh or any animation
+          el.style.transform = "translateY(0)";
+          el.style.transition = "transform 0.2s";
+          setTimeout(() => {
+            el.style.transition = "transform 0s";
+          }, 200);
+          el.removeEventListener("touchmove", handleTouchMove);
+          el.removeEventListener("touchend", handleTouchEnd);
+          return;
+        }
 
         const y = endEvent.changedTouches[0].clientY;
         const dy = y - initialY;
@@ -122,8 +147,8 @@ function usePullToRefresh(
 }
 
 function appr(x: number) {
-  const MAX = 128,
-    k = 1;
+  const MAX = 96,
+    k = 0.5;
   return MAX * (1 - Math.exp((-k * x) / MAX));
 }
 

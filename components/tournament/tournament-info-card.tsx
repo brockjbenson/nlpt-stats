@@ -27,7 +27,9 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
         <div className="flex flex-col gap-2 justify-center items-center">
           <h3 className="text-sm text-muted md:text-base">Winner</h3>
           {tournamentWinner ? (
-            <div className="grid grid-cols-[50px_1fr] gap-2 items-center">
+            <Link
+              href={`/members/${tournamentWinner.member_id}`}
+              className="grid grid-cols-[50px_1fr] gap-2 items-center">
               <MemberImage
                 src={tournamentWinner.portrait_url}
                 alt={tournamentWinner.first_name}
@@ -35,7 +37,7 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
               <p className="text-lg md:text-xl font-bold">
                 {tournamentWinner.first_name} {tournamentWinner.last_name}
               </p>
-            </div>
+            </Link>
           ) : (
             <p>Winner not Found</p>
           )}
