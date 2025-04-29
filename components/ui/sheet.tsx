@@ -3,10 +3,7 @@
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
-import { X } from "lucide-react";
-
 import { cn } from "@/lib/utils";
-import { CgLoadbar } from "react-icons/cg";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -32,7 +29,7 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-[2304598234058] focus:border-none focus:outline-none focus:ring-none gap-4 bg-neutral-900 py-6 px-2 pt-16 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-500 data-[state=open]:duration-500",
+  "fixed z-[2304598234058] focus:border-none focus:outline-none focus:ring-none gap-4 bg-neutral-900 py-6 px-2 pt-16 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
   {
     variants: {
       side: {

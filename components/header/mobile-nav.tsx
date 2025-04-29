@@ -16,7 +16,7 @@ function MobileNav() {
     <div
       id="mobile-nav"
       className={cn(
-        "px-2 md:hidden block pt-2 fixed bottom-0 bg-background left-0 w-screen border-t border-t-primary"
+        "px-2 md:hidden block pt-2 fixed bottom-0 z-10 bg-background left-0 w-screen border-t border-t-primary"
       )}>
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-auto flex justify-center items-center max-w-16 mx-auto">

@@ -1,10 +1,9 @@
 "use client";
 
 import { CashSessionNoId, Member, Season, Week } from "@/utils/types";
-import React, { useEffect } from "react";
-import AddSessionForm from "./add-session-form";
-import SessionsList from "./sessions-list";
+import React from "react";
 import { addSessionAction } from "./actions/add-session";
+import Sessions from "./cash/sessions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +13,23 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { AlertCircleIcon, Loader2, XCircle } from "lucide-react";
+import { AlertCircleIcon, ChevronDown, Loader2, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
 import { calculatePOYPoints, rankSessions } from "@/utils/utils";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import useLocalStorageState from "@/hooks/use-local-storage";
+import { createPortal } from "react-dom";
+import { cn } from "@/lib/utils";
+import { createClient } from "@/utils/supabase/client";
 
 interface Props {
   members: Member[];
@@ -26,109 +38,36 @@ interface Props {
 }
 
 function AddCashSessions({ members, seasons, weeks }: Props) {
+  const db = createClient();
   const { toast } = useToast();
-  const buyInRef = React.useRef<HTMLInputElement>(null);
-  const formRef = React.useRef<HTMLDivElement>(null);
-  const [sessionsToAdd, setSessionsToAdd] = React.useState<CashSessionNoId[]>(
+  const [selectedSeasonId, setSelectedSeasonId] = useLocalStorageState<
+    string | null
+  >("selectedSeasonId", null);
+  const [selectedWeekId, setSelectedWeekId] = useLocalStorageState<
+    string | null
+  >("selectedWeekId", null);
+  const [sessionsToAdd, setSessionsToAdd] = useLocalStorageState<
+    CashSessionNoId[]
+  >("sessionsToAdd", []);
+  const [selectWeeks, setSelectWeeks] = useLocalStorageState<Week[]>(
+    "selectWeeks",
     []
   );
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedSessions = localStorage.getItem("sessionsToAdd");
-      if (storedSessions) {
-        setSessionsToAdd(JSON.parse(storedSessions));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (sessionsToAdd.length > 0) {
-      localStorage.setItem("sessionsToAdd", JSON.stringify(sessionsToAdd));
-    }
-  }, [sessionsToAdd]);
-
-  const databaseState = {
-    members,
-    seasons,
-    weeks,
-  };
-  const [formState, setFormState] = React.useState({
-    buy_in: 25,
-    cash_out: 0,
-    net_profit: 0,
-    rebuys: 1,
-    week_id: "",
-    member_id: "",
-    season_id: "",
-  });
-  const [selectWeeks, setSelectWeeks] = React.useState<Week[]>([]);
+  const selectedSeason = seasons.find((s) => s.id === selectedSeasonId) || null;
+  const selectedWeek = weeks.find((w) => w.id === selectedWeekId) || null;
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | undefined>(undefined);
   const [confirmAdd, setConfirmAdd] = React.useState<boolean>(false);
   const [finalSessions, setFinalSessions] = React.useState<CashSessionNoId[]>(
     []
   );
-
-  useEffect(() => {
-    if (formState.buy_in !== 0) {
-      calculateNetProfit();
-    }
-  }, [formState.cash_out, formState.buy_in]);
-
-  const handleFormChange = (field: string, value: string | number) => {
-    setFormState((prevState) => {
-      const updatedState = { ...prevState, [field]: value };
-
-      return updatedState;
-    });
-  };
-
-  const calculateNetProfit = () => {
-    const calculatedNetProfit = parseFloat(
-      (formState.cash_out - formState.buy_in).toFixed(2)
-    );
-
-    handleFormChange("net_profit", calculatedNetProfit);
-  };
-
-  const addSessionToList = () => {
-    if (
-      !formState.member_id ||
-      !formState.season_id ||
-      !formState.buy_in ||
-      !formState.rebuys
-    ) {
-      return;
-    }
-
-    const newSession: CashSessionNoId = {
-      ...formState,
-      nlpi_points: 0,
-      poy_points: 0,
-    };
-
-    setSessionsToAdd((prevSessions) => [...prevSessions, newSession]);
-
-    setFormState({
-      ...formState,
-      member_id: "",
-      buy_in: 25,
-      cash_out: 0,
-      net_profit: 0,
-      rebuys: 1,
-    });
-
-    buyInRef.current?.focus();
-    formRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const [usedWeekIds, setUsedWeekIds] = React.useState<string[]>([]);
 
   const removeSessionFromList = (index: number) => {
     const sessionToRemove = sessionsToAdd[index];
 
     const updatedSessionsToAdd = sessionsToAdd.filter((_, i) => i !== index);
     setSessionsToAdd(updatedSessionsToAdd);
-    localStorage.setItem("sessionsToAdd", JSON.stringify(updatedSessionsToAdd));
 
     setFinalSessions((prev) =>
       prev.filter(
@@ -198,6 +137,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
     const allSessions = [...finalSessions, ...allNewSessions];
 
+    console.log("All Sessions", allSessions);
+
     try {
       setLoading(true);
       const result = await addSessionAction(allSessions);
@@ -208,20 +149,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         toast({
           title: "Sessions Added Successfully",
         });
-        setSessionsToAdd([]);
-        setFormState({
-          ...formState,
-          member_id: "",
-          season_id: "",
-          week_id: "",
-          buy_in: 25,
-          cash_out: 0,
-          net_profit: 0,
-          rebuys: 1,
-        });
+        resetLocalSessionData();
         setFinalSessions([]);
-        localStorage.removeItem("sessionsToAdd");
-        setSelectWeeks([]);
       }
     } catch (error) {
       setError("Failed to add sessions");
@@ -230,39 +159,143 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
     }
   };
 
+  function resetLocalSessionData() {
+    setSessionsToAdd([]);
+    setSelectedSeasonId(null);
+    setSelectedWeekId(null);
+    setSelectWeeks([]);
+  }
+
+  const getSeasonWeeks = async (seasonId: string) => {
+    const seasonWeeks = weeks.filter((w) => w.season_id === seasonId);
+    const { data: sessions, error } = await db
+      .from("cash_session")
+      .select("week_id")
+      .eq("season_id", seasonId);
+
+    const usedIds = sessions?.map((s) => s.week_id) || [];
+    const availableWeeks = seasonWeeks.filter((w) => !usedIds.includes(w.id));
+
+    setUsedWeekIds(usedIds);
+    setSelectWeeks(availableWeeks);
+  };
+
+  const addNewSession = (member: Member) => {
+    const buyInAmount = member.first_name === "Josh" ? 50 : 25;
+
+    setSessionsToAdd((prev) => [
+      ...prev,
+      {
+        buy_in: buyInAmount,
+        cash_out: 0,
+        net_profit: 0,
+        rebuys: 1,
+        week_id: selectedWeek?.id || "",
+        season_id: selectedSeason?.id || "",
+        member_id: member.id,
+        nlpi_points: 0,
+        poy_points: 0,
+      },
+    ]);
+  };
+
+  const removeSession = (memberId: string) => {
+    const sessionIndex = sessionsToAdd.findIndex(
+      (session) => session.member_id === memberId
+    );
+    if (sessionIndex !== -1) {
+      removeSessionFromList(sessionIndex);
+    }
+  };
+
+  const [isHydrated, setIsHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  if (!isHydrated) return null; // or a loading skeleton
+
   return (
     <>
-      <div className="flex sticky px-2 max-w-screen-lg mx-auto top-0 pb-4 bg-background z-10 items-center justify-between">
+      <div className="flex px-2 max-w-screen-lg mx-auto top-0 h-[50px] bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>
-        {sessionsToAdd.length > 0 && (
-          <button
-            onClick={() => setConfirmAdd(true)}
-            className="flex text-sm md:text-base items-center justify-center px-3 h-10 text-white bg-primary hover:bg-primary-hover rounded font-medium">
-            Add Sessions
-          </button>
-        )}
       </div>
-      <div className="w-full px-2 mt-8 max-w-screen-lg mx-auto">
-        {sessionsToAdd.length > 0 && (
-          <SessionsList
+      <div
+        className={cn(
+          "w-full px-2 mt-4 max-w-screen-lg mx-auto",
+          sessionsToAdd?.length > 0 ? "pb-20" : ""
+        )}>
+        <form className="grid grid-cols-2 gap-4 mb-8">
+          <fieldset className="flex flex-col  gap-2 grow">
+            <Label className="text-xs md:text-base" htmlFor="season">
+              Season
+            </Label>
+            <Select
+              value={selectedSeasonId || ""}
+              onValueChange={(value) => {
+                setSelectedSeasonId(value);
+                getSeasonWeeks(value);
+              }}>
+              <SelectTrigger id="season">
+                <SelectValue placeholder="Select a season" />
+                <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {seasons?.map((season) => (
+                    <SelectItem key={season.id} value={season.id}>
+                      {season.year}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </fieldset>
+          <fieldset className="flex flex-col  gap-2 grow">
+            <Label className="text-xs md:text-base" htmlFor="week">
+              Week
+            </Label>
+            <Select
+              value={selectedWeekId || ""}
+              onValueChange={(value) => setSelectedWeekId(value)}>
+              <SelectTrigger disabled={!selectedSeason} id="week">
+                <SelectValue placeholder="Select a week" />
+                <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {selectWeeks.map((week) => {
+                    const isUsed = usedWeekIds.some((id) => id === week.id);
+                    return (
+                      <SelectItem
+                        className={cn(isUsed && "text-muted")} // Add this line
+                        disabled={isUsed}
+                        key={week.id}
+                        value={week.id}>
+                        {week.week_number}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </fieldset>
+        </form>
+        <div className="w-full relative">
+          {(!selectedSeason || !selectedWeek) && (
+            <span className="w-full h-full z-10 bg-black/50 absolute top-0 left-0 " />
+          )}
+          <Sessions
+            removeSession={removeSession}
+            setSessionsToAdd={setSessionsToAdd}
+            addNewSession={addNewSession}
             sessionsToAdd={sessionsToAdd}
-            removeSessionFromList={removeSessionFromList}
-            databaseState={databaseState}
+            members={members}
           />
-        )}
-
-        <AddSessionForm
-          formRef={formRef}
-          databaseState={databaseState}
-          selectWeeks={selectWeeks}
-          setSelectWeeks={setSelectWeeks}
-          addSessionToList={addSessionToList}
-          formState={formState}
-          handleFormChange={handleFormChange}
-          buyInRef={buyInRef}
-        />
+        </div>
       </div>
       <AlertDialog
         open={confirmAdd}
@@ -305,6 +338,23 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           <Loader2 className="animate-spin w-16 h-16 text-primary" />
         </div>
       )}
+      {sessionsToAdd?.length > 0 &&
+        createPortal(
+          <div
+            className="bg-background/50 border-t flex items-center justify-center border-t-muted backdrop-blur-md fixed bottom-0 w-full px-4 pt-4"
+            style={{
+              paddingBottom:
+                "calc(env(safe-area-inset-bottom, 0px) + 1rem + 79px)",
+              paddingTop: "1rem",
+            }}>
+            <button
+              onClick={() => setConfirmAdd(true)}
+              className="flex w-full text-sm md:text-base items-center justify-center px-3 h-10 text-white bg-primary hover:bg-primary-hover rounded font-medium">
+              Add Sessions
+            </button>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

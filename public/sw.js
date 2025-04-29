@@ -1,10 +1,5 @@
 const CACHE_NAME = "nlptstats-cache-v2";
 const STATIC_ASSETS = [
-  "/",
-  "/members",
-  "/poy",
-  "/nlpi",
-  "/stats",
   "/favicon.ico",
   "/manifest.json",
   "/offline.html", // Offline fallback page
