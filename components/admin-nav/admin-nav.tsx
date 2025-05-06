@@ -16,14 +16,16 @@ async function AdminNav() {
       <ul className="flex gap-12">
         <li className="flex flex-col">
           <Link
-            className="whitespace-nowrap text-white p-1"
+            className="whitespace-nowrap text-white pb-1 border-b-2 border-foreground hover:border-primary"
             href="/admin/stats/cash">
             Cash
           </Link>
           <ul>
             {seasons.map((season) => (
               <li key={season.id}>
-                <Link href={`/admin/stats/cash/${season.id}/sessions`}>
+                <Link
+                  className="text-white"
+                  href={`/admin/stats/cash/${season.id}/sessions`}>
                   {season.year}
                 </Link>
               </li>
@@ -33,11 +35,18 @@ async function AdminNav() {
             <li>
               <Link
                 className="whitespace-nowrap text-white p-1"
-                href="/admin/stats/cashgames/new">
+                href="/admin/stats/cash/new">
                 Add Sessions
               </Link>
             </li>
           </ul>
+        </li>
+        <li>
+          <Link
+            className="whitespace-nowrap text-white pb-1 border-b-2 border-foreground hover:border-primary"
+            href="/admin/stats/tournaments">
+            Tournaments
+          </Link>
         </li>
         <li>
           <Link

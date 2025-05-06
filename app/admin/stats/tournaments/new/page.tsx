@@ -21,7 +21,7 @@ async function Page() {
   }
   return (
     <>
-      <h2>Add New Tournament</h2>
+      <h2 className="text-center w-full mb-6">Add New Tournament</h2>
       <NewTournamentForm seasons={seasons} members={members} />
     </>
   );
