@@ -46,7 +46,11 @@ async function Page({ searchParams }: Props) {
   }
   return (
     <>
-      <TournamentsMain tournamentsData={tournamentsData} seasons={seasons} />
+      <TournamentsMain
+        isAdmin={true}
+        tournamentsData={tournamentsData}
+        seasons={seasons}
+      />
     </>
   );
 }
