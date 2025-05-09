@@ -39,6 +39,7 @@ function StatsTable({ seasonStats }: Props) {
       setIsFullscreen(false);
     }, 300);
   };
+
   return (
     <>
       <div className="px-2">
@@ -168,8 +169,10 @@ function StatsTable({ seasonStats }: Props) {
                       {formatMoney(stats.avg_win || 0)}
                     </TableCell>
                     <TableCell
-                      className={cn(getProfitTextColor(stats.avg_loss || 0))}>
-                      {formatMoney(stats.avg_loss || 0)}
+                      className={cn(
+                        getProfitTextColor(stats.avg_loss * -1 || 0)
+                      )}>
+                      {formatMoney(stats.avg_loss * -1 * -1 || 0)}
                     </TableCell>
                     <TableCell>{formatMoney(stats.avg_buy_in || 0)}</TableCell>
                     <TableCell>
@@ -343,9 +346,9 @@ function StatsTable({ seasonStats }: Props) {
                         </TableCell>
                         <TableCell
                           className={cn(
-                            getProfitTextColor(stats.avg_loss || 0)
+                            getProfitTextColor(stats.avg_loss * -1 || 0)
                           )}>
-                          {formatMoney(stats.avg_loss || 0)}
+                          {formatMoney(stats.avg_loss * -1 || 0)}
                         </TableCell>
                         <TableCell>
                           {formatMoney(stats.avg_buy_in || 0)}

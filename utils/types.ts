@@ -344,3 +344,145 @@ type largestWin = {
   net_profit: number;
   created_at: string;
 };
+
+export type RecordsData = {
+  career: {
+    net_profit: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    gross_profit: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    total_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    tournament_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    cash_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    rebuys: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    win_percentage: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+  };
+  season: {
+    net_profit: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    gross_profit: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    total_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    tournament_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    cash_wins: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    rebuys: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+    win_percentage: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+    };
+  };
+  session: {
+    biggest_win: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+    rebuys: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+    };
+  };
+};
+
+export type NLPIHistoricalRecord = {
+  member_id: string;
+  first_name: string;
+  last_name: string;
+  best_rank: number;
+  total_weeks_at_1: number;
+  longest_consecutive_weeks_at_1: number;
+  longest_streak_streak: number;
+  longest_streak_end: number;
+  last_year_rank: number;
+  last_week_rank: number;
+  portrait_url: string;
+};

@@ -1,7 +1,12 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { CareerData, NLPIData, POYData } from "@/utils/types";
+import {
+  CareerData,
+  NLPIData,
+  NLPIHistoricalRecord,
+  POYData,
+} from "@/utils/types";
 import {
   formatMoney,
   getOrdinalSuffix,
@@ -15,6 +20,7 @@ interface Props {
   careerStats: CareerData;
   currentYear: number;
   view: string | undefined;
+  nlpiHistoricalRecords: NLPIHistoricalRecord[];
 }
 
 function MemberOverview({
@@ -23,6 +29,7 @@ function MemberOverview({
   careerStats,
   currentYear,
   view,
+  nlpiHistoricalRecords,
 }: Props) {
   if (view === "overview" || view === undefined)
     return (
@@ -41,6 +48,22 @@ function MemberOverview({
             {nlpiData[0].total_points > 0
               ? getOrdinalSuffix(nlpiData[0].rank)
               : "N/A"}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 items-start justify-start">
+          <h2 className="text-muted text-base font-normal">Best NLPI Rank</h2>
+          <p className="text-lg font-bold text-white">
+            {getOrdinalSuffix(nlpiHistoricalRecords[0].best_rank)}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 items-start justify-start">
+          <h2 className="text-muted text-base font-normal">
+            Total Weeks at #1
+          </h2>
+          <p className="text-lg font-bold text-white">
+            {nlpiHistoricalRecords[0].total_weeks_at_1
+              ? nlpiHistoricalRecords[0].total_weeks_at_1
+              : 0}
           </p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">

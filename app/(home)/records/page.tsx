@@ -1,20 +1,45 @@
+import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
-import Image from "next/image";
+import RecordsComponent from "@/components/records/main";
+import { createClient } from "@/utils/supabase/server";
 import React from "react";
 
-function Records() {
+async function Records() {
+  const db = await createClient();
+  const [
+    { data: recordsData, error: recordsError },
+    { data: nlpiRecords, error: membersError },
+  ] = await Promise.all([
+    db.rpc("get_poy_records"),
+    db.rpc("get_nlpi_rank_records", {
+      target_member_id: null,
+    }),
+  ]);
+
+  if (membersError) {
+    return (
+      <ErrorHandler
+        title="Error fetching members"
+        errorMessage={membersError.message}
+        pageTitle="Records"
+      />
+    );
+  }
+
+  if (recordsError) {
+    return (
+      <ErrorHandler
+        title="Error fetching records"
+        errorMessage={recordsError.message}
+        pageTitle="Records"
+      />
+    );
+  }
+
   return (
     <>
       <PageHeader title="Records" />
-      <div className="h-screen w-screen fixed top-0 left-0 flex flex-col gap-4 items-center justify-center">
-        <Image
-          src="/icons/nlpt-no-bg.png"
-          alt="NLPT"
-          width={100}
-          height={100}
-        />
-        <h1 className="text-base font-bold md:text-2xl">Coming Soon</h1>
-      </div>
+      <RecordsComponent data={recordsData} nlpiRecords={nlpiRecords} />
     </>
   );
 }

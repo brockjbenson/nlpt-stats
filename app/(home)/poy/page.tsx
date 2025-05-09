@@ -74,7 +74,7 @@ async function Page({ searchParams }: Params) {
         positive: false,
         change: 0,
         color: "text-foreground",
-        icon: <Minus className="text-foreground" size={16} />,
+        icon: <Minus className="text-foreground" size={14} />,
       };
     }
     return currentRank < lastWeekRank

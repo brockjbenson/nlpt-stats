@@ -1,6 +1,13 @@
 "use client";
 
-import { CareerData, Member, NLPIData, POYData, Season } from "@/utils/types";
+import {
+  CareerData,
+  Member,
+  NLPIData,
+  NLPIHistoricalRecord,
+  POYData,
+  Season,
+} from "@/utils/types";
 import React from "react";
 import MemberAllStats from "./member-all-stats";
 import MemberOverview from "./member-career-overview";
@@ -16,6 +23,7 @@ interface Props {
   careerStats: CareerData;
   seasons: Season[];
   joinDate: string;
+  nlpiHistoricalRecords: NLPIHistoricalRecord[];
 }
 
 function MemberMain({
@@ -27,6 +35,7 @@ function MemberMain({
   careerStats,
   seasons,
   joinDate,
+  nlpiHistoricalRecords,
 }: Props) {
   const [view, setView] = React.useState<string>("overview");
   return (
@@ -36,6 +45,7 @@ function MemberMain({
         <div>
           <MemberViewCarousel setView={setView} view={view} />
           <MemberOverview
+            nlpiHistoricalRecords={nlpiHistoricalRecords}
             view={view}
             currentYear={currentYear}
             nlpiData={nlpiData}

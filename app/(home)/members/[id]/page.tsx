@@ -54,6 +54,7 @@ async function Member({ params }: EditMemberProps) {
     { data: poyData, error: poyError },
     { data: careerStats, error: careerStatsError },
     { data: joinDate, error: joinDateError },
+    { data: historicalNLPIRecords, error: historicalNLPIRecordsError },
   ] = await Promise.all([
     db.rpc("get_nlpi_info", {
       current_season_id: currentSeasonId,
@@ -69,6 +70,9 @@ async function Member({ params }: EditMemberProps) {
       current_season_id: currentSeasonId,
     }),
     db.rpc("get_member_debut_date", {
+      target_member_id: id,
+    }),
+    db.rpc("get_nlpi_rank_records", {
       target_member_id: id,
     }),
   ]);
@@ -113,12 +117,21 @@ async function Member({ params }: EditMemberProps) {
     );
   }
 
-  console.log("joinDate", joinDate);
+  if (historicalNLPIRecordsError) {
+    return (
+      <ErrorHandler
+        errorMessage={historicalNLPIRecordsError.message}
+        title="Error fetching historical NLPI records"
+        pageTitle="Member"
+      />
+    );
+  }
 
   return (
     <>
       <PageHeader className="mb-0" title="Member" />
       <MemberMain
+        nlpiHistoricalRecords={historicalNLPIRecords}
         id={id}
         member={member}
         currentYear={currentYear}

@@ -69,6 +69,9 @@ export default async function AuthButton() {
             <li>
               <Link href="/nlpi">NLPI Rankings</Link>
             </li>
+            <li>
+              <Link href="/records">Records</Link>
+            </li>
           </ul>
         </div>
         {user ? (

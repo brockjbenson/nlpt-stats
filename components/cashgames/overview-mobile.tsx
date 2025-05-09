@@ -531,7 +531,9 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                             className={cn(
                               "font-semibold text-base md:text-lg py-2 border-b border-neutral-600 w-full"
                             )}>
-                            {data.avg_rebuys.toFixed(2)}
+                            {(data.avg_rebuys / data.sessions_played).toFixed(
+                              2
+                            )}
                           </p>
                           <p
                             className={cn(
