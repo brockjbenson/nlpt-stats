@@ -15,8 +15,6 @@ function RecordsComponent({
   data: RecordsData;
   nlpiRecords: NLPIHistoricalRecord[];
 }) {
-  console.log("RecordsComponent data:", data);
-
   const [mounted, setMounted] = React.useState(false);
   const [view, setView] = useLocalStorageState("records-view", "career");
   React.useEffect(() => {

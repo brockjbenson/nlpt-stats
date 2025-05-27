@@ -10,8 +10,6 @@ interface Props {
 }
 
 function CareerRecords({ data, className, nlpiRecords }: Props) {
-  console.log("CareerRecords data:", data);
-
   const mostWeeksAtNumberOne = nlpiRecords.reduce(
     (topPlayer: NLPIHistoricalRecord, current) => {
       return current.total_weeks_at_1 > (topPlayer?.total_weeks_at_1 ?? -1)
