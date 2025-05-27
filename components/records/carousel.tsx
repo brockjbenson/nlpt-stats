@@ -32,6 +32,13 @@ function RecordsCarousel({ view, setView }: Props) {
             Season
           </button>
         </li>
+        <li>
+          <button
+            className={`px-2 pb-2 text-xl ${view === "session" ? " text-white" : "text-neutral-400"}`}
+            onClick={() => setView("session")}>
+            Session
+          </button>
+        </li>
       </ul>
     </div>
   );

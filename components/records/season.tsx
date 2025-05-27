@@ -26,7 +26,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Gross Profit</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.gross_profit.first_name} {data.gross_profit.last_name}
+              {data.gross_profit.first_name}{" "}
+              {data.gross_profit.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.gross_profit.value)}
@@ -48,7 +49,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Net Profit</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.net_profit.first_name} {data.net_profit.last_name}
+              {data.net_profit.first_name}{" "}
+              {data.net_profit.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.net_profit.value)}
@@ -68,7 +70,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Win Percentage</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.win_percentage.first_name} {data.win_percentage.last_name}
+              {data.win_percentage.first_name}{" "}
+              {data.win_percentage.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.win_percentage.value * 100)}%
@@ -90,7 +93,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Total Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.total_wins.first_name} {data.total_wins.last_name}
+              {data.total_wins.first_name}{" "}
+              {data.total_wins.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.total_wins.value}</p>
             <p className="text-neutral-400 text-sm">({data.total_wins.year})</p>
@@ -108,7 +112,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Cash Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.cash_wins.first_name} {data.cash_wins.last_name}
+              {data.cash_wins.first_name} {data.cash_wins.last_name.slice(0, 1)}
+              .
             </p>
             <p className="font-semibold">{data.cash_wins.value}</p>
             <p className="text-neutral-400 text-sm">({data.cash_wins.year})</p>
@@ -126,7 +131,8 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Tournament Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.tournament_wins.first_name} {data.tournament_wins.last_name}
+              {data.tournament_wins.first_name}{" "}
+              {data.tournament_wins.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.tournament_wins.value}</p>
             <p className="text-neutral-400 text-sm">
@@ -146,7 +152,7 @@ function SeasonRecords({ data, className }: Props) {
           <h3 className="text-lg font-bold">Total Buy-Ins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.rebuys.first_name} {data.rebuys.last_name}
+              {data.rebuys.first_name} {data.rebuys.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.rebuys.value}</p>
             <p className="text-neutral-400 text-sm">({data.rebuys.year})</p>

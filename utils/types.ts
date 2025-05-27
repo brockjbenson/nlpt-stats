@@ -462,6 +462,36 @@ export type RecordsData = {
       last_name: string;
       portrait_url: string;
       member_id: string;
+      year: number;
+      week_number: number;
+    };
+    biggest_loss: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+      week_number: number;
+    };
+    biggest_buy_in: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+      week_number: number;
+    };
+    biggest_buy_in_plus_win: {
+      value: number;
+      first_name: string;
+      last_name: string;
+      portrait_url: string;
+      member_id: string;
+      year: number;
+      week_number: number;
+      net_profit: number;
     };
     rebuys: {
       value: number;
@@ -469,6 +499,8 @@ export type RecordsData = {
       last_name: string;
       portrait_url: string;
       member_id: string;
+      year: number;
+      week_number: number;
     };
   };
 };

@@ -6,6 +6,7 @@ import RecordsCarousel from "./carousel";
 import useLocalStorageState from "@/hooks/use-local-storage";
 import CareerRecords from "./career";
 import SeasonRecords from "./season";
+import SessionRecords from "./session";
 
 function RecordsComponent({
   data,
@@ -14,6 +15,8 @@ function RecordsComponent({
   data: RecordsData;
   nlpiRecords: NLPIHistoricalRecord[];
 }) {
+  console.log("RecordsComponent data:", data);
+
   const [mounted, setMounted] = React.useState(false);
   const [view, setView] = useLocalStorageState("records-view", "career");
   React.useEffect(() => {
@@ -31,6 +34,10 @@ function RecordsComponent({
       <SeasonRecords
         className={view === "season" ? "" : "!hidden"}
         data={data.season}
+      />
+      <SessionRecords
+        className={view === "session" ? "" : "!hidden"}
+        data={data.session}
       />
     </div>
   );

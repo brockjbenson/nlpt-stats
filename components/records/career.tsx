@@ -10,6 +10,8 @@ interface Props {
 }
 
 function CareerRecords({ data, className, nlpiRecords }: Props) {
+  console.log("CareerRecords data:", data);
+
   const mostWeeksAtNumberOne = nlpiRecords.reduce(
     (topPlayer: NLPIHistoricalRecord, current) => {
       return current.total_weeks_at_1 > (topPlayer?.total_weeks_at_1 ?? -1)
@@ -46,7 +48,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Gross Profit</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.gross_profit.first_name} {data.gross_profit.last_name}
+              {data.gross_profit.first_name}{" "}
+              {data.gross_profit.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.gross_profit.value)}
@@ -65,7 +68,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Total Weeks at #1 (NLPI)</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {mostWeeksAtNumberOne.first_name} {mostWeeksAtNumberOne.last_name}
+              {mostWeeksAtNumberOne.first_name}{" "}
+              {mostWeeksAtNumberOne.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {mostWeeksAtNumberOne.total_weeks_at_1}
@@ -85,7 +89,7 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
               {mostConsecutiveWeeksAtNumberOne.first_name}{" "}
-              {mostConsecutiveWeeksAtNumberOne.last_name}
+              {mostConsecutiveWeeksAtNumberOne.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {mostConsecutiveWeeksAtNumberOne.total_weeks_at_1}
@@ -104,7 +108,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Net Profit</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.net_profit.first_name} {data.net_profit.last_name}
+              {data.net_profit.first_name}{" "}
+              {data.net_profit.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.net_profit.value)}
@@ -123,7 +128,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Win Percentage</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.win_percentage.first_name} {data.win_percentage.last_name}
+              {data.win_percentage.first_name}{" "}
+              {data.win_percentage.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">
               {formatMoney(data.win_percentage.value * 100)}%
@@ -142,7 +148,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Total Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.total_wins.first_name} {data.total_wins.last_name}
+              {data.total_wins.first_name}{" "}
+              {data.total_wins.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.total_wins.value}</p>
           </span>
@@ -159,7 +166,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Cash Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.cash_wins.first_name} {data.cash_wins.last_name}
+              {data.cash_wins.first_name} {data.cash_wins.last_name.slice(0, 1)}
+              .
             </p>
             <p className="font-semibold">{data.cash_wins.value}</p>
           </span>
@@ -176,7 +184,8 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Tournament Wins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.tournament_wins.first_name} {data.tournament_wins.last_name}
+              {data.tournament_wins.first_name}{" "}
+              {data.tournament_wins.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.tournament_wins.value}</p>
           </span>
@@ -193,7 +202,7 @@ function CareerRecords({ data, className, nlpiRecords }: Props) {
           <h3 className="text-lg font-bold">Total Buy-Ins</h3>
           <span className="flex items-center gap-2">
             <p className="text-neutral-400 font-medium">
-              {data.rebuys.first_name} {data.rebuys.last_name}
+              {data.rebuys.first_name} {data.rebuys.last_name.slice(0, 1)}.
             </p>
             <p className="font-semibold">{data.rebuys.value}</p>
           </span>
