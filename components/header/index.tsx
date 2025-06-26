@@ -4,7 +4,6 @@ import { ThemeSwitcher } from "../theme-switcher";
 import HeaderAuth from "@/components/header-auth";
 import Logo from "../logo";
 import { createClient } from "@/utils/supabase/server";
-import MobileNav from "./mobile-nav";
 
 async function Header() {
   const db = await createClient();

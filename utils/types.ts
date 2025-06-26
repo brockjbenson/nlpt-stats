@@ -347,162 +347,47 @@ type largestWin = {
 
 export type RecordsData = {
   career: {
-    net_profit: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    gross_profit: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    total_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    tournament_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    cash_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    rebuys: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
-    win_percentage: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-    };
+    net_profit: CareerRecord[];
+    gross_profit: CareerRecord[];
+    total_wins: CareerRecord[];
+    tournament_wins: CareerRecord[];
+    cash_wins: CareerRecord[];
+    rebuys: CareerRecord[];
+    win_percentage: CareerRecord[];
   };
   season: {
-    net_profit: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    gross_profit: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    total_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    tournament_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    cash_wins: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    rebuys: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
-    win_percentage: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-    };
+    net_profit: SeasonRecord[];
+    gross_profit: SeasonRecord[];
+    total_wins: SeasonRecord[];
+    tournament_wins: SeasonRecord[];
+    cash_wins: SeasonRecord[];
+    rebuys: SeasonRecord[];
+    win_percentage: SeasonRecord[];
   };
   session: {
-    biggest_win: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-      week_number: number;
-    };
-    biggest_loss: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-      week_number: number;
-    };
-    biggest_buy_in: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-      week_number: number;
-    };
-    biggest_buy_in_plus_win: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-      week_number: number;
-      net_profit: number;
-    };
-    rebuys: {
-      value: number;
-      first_name: string;
-      last_name: string;
-      portrait_url: string;
-      member_id: string;
-      year: number;
-      week_number: number;
-    };
+    biggest_win: SessionRecord[];
+    biggest_loss: SessionRecord[];
+    biggest_buy_in: SessionRecord[];
+    biggest_buy_in_plus_win: (SessionRecord & { net_profit: number })[];
+    rebuys: SessionRecord[];
   };
+};
+
+export type CareerRecord = {
+  value: number;
+  first_name: string;
+  last_name: string;
+  portrait_url: string;
+  member_id: string;
+};
+
+export type SeasonRecord = CareerRecord & {
+  year: number;
+};
+
+export type SessionRecord = CareerRecord & {
+  year: number;
+  week_number: number;
 };
 
 export type NLPIHistoricalRecord = {

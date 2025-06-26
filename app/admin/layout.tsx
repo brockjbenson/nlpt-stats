@@ -1,5 +1,5 @@
+import BottomTabs from "@/components/bottom-tabs";
 import Header from "@/components/header";
-import MobileNav from "@/components/header/mobile-nav";
 import MainWrapper from "@/components/main-wrapper";
 import PageHeader from "@/components/page-header/page-header";
 
@@ -17,7 +17,7 @@ export default async function Layout({
           {children}
         </div>
       </MainWrapper>
-      <MobileNav />
+      <BottomTabs />
     </>
   );
 }
