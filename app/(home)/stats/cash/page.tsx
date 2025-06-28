@@ -68,6 +68,17 @@ async function Page({ searchParams }: Props) {
         <CashYearSelector seasons={seasons} activeSeason={activeSeason} />
       </PageHeader>
       <div className="">
+        <div className="hidden md:flex items-center px-2 mt-8 mb-2 justify-between">
+          <h1 className="text-2xl font-semibold">
+            {activeSeason.year} Cash Stats
+          </h1>
+          <CashYearSelector
+            triggerTitle={activeSeason.year.toString()}
+            triggerStyles="border-b border-b-neutral-500 py-3 w-24 m-0 rounded-none"
+            activeSeason={activeSeason}
+            seasons={seasons}
+          />
+        </div>
         <StatsOverview
           members={members}
           poyData={poyData}

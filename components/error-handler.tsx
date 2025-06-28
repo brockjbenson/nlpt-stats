@@ -25,9 +25,10 @@ function ErrorHandler({
       <PageHeader className={headerClassName} title={pageTitle} />
       <div
         className={cn(
-          "w-full max-w-screen-xl flex flex-col gap-8 items-center mx-auto px-2",
+          "w-full max-w-screen-xl  flex flex-col md:mt-8 gap-8 items-center mx-auto px-2",
           className
-        )}>
+        )}
+      >
         <h1 className="text-base font-bold md:text-xl">{title}</h1>
         <div className="flex items-center flex-col gap-4 justify-center">
           <AlertCircle className="w-16 h-16 text-theme-red" />

@@ -14,12 +14,13 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
   const sessions = data.sessions;
   const tournamentWinner = sessions.find((session) => session.place === 1);
   return (
-    <Card>
+    <Card className="mb-8">
       <CardTitle>Tournament Info</CardTitle>
       {isAdmin && (
         <Link
           href={`/admin/stats/tournaments/${data.id}/edit`}
-          className="text-base text-white underline absolute top-3 right-4">
+          className="text-base text-white underline absolute top-3 right-4"
+        >
           Edit
         </Link>
       )}
@@ -29,7 +30,8 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
           {tournamentWinner ? (
             <Link
               href={`/members/${tournamentWinner.member_id}`}
-              className="grid grid-cols-[50px_1fr] gap-2 items-center">
+              className="grid grid-cols-[50px_1fr] gap-2 items-center"
+            >
               <MemberImage
                 src={tournamentWinner.portrait_url}
                 alt={tournamentWinner.first_name}
@@ -42,8 +44,8 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
             <p>Winner not Found</p>
           )}
         </div>
-        <div className="grid w-full grid-cols-3 gap-3">
-          <div className="flex flex-col gap-1 items-start justify-center">
+        <div className="grid md:flex items-center justify-center w-full grid-cols-3 gap-3 md:gap-12">
+          <div className="flex flex-col gap-1 items-start md:items-center justify-center">
             <p className="text-sm text-muted md:text-base">Prize Pool</p>
             <p className="text-lg font-semibold md:text-xl">
               {formatMoney(data.prize_pool)}
@@ -55,11 +57,11 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
               {data.places_payed}
             </p>
           </div>
-          <div className="flex flex-col gap-1 items-end justify-center">
+          <div className="flex flex-col gap-1 items-end md:items-center justify-center">
             <p className="text-sm text-muted md:text-base">Players</p>
             <p className="text-lg font-semibold md:text-xl">{data.players}</p>
           </div>
-          <div className="flex flex-col gap-1 items-start justify-center">
+          <div className="flex flex-col gap-1 items-start md:items-center justify-center">
             <p className="text-sm text-muted md:text-base">Rebuys</p>
             <p className="text-lg font-semibold md:text-xl">{data.rebuys}</p>
           </div>
@@ -69,7 +71,7 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
               {data.total_buy_ins}
             </p>
           </div>
-          <div className="flex flex-col gap-1 items-end justify-center">
+          <div className="flex flex-col gap-1 items-end md:items-center justify-center">
             <p className="text-sm text-muted md:text-base">Date</p>
             <p className="text-lg font-semibold md:text-xl">
               {new Date(data.date).toLocaleDateString("en-US", {

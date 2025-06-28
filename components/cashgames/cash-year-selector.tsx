@@ -10,19 +10,36 @@ import {
 import { Season } from "@/utils/types";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 interface Props {
   activeSeason: Season;
   seasons: Season[];
+  triggerStyles?: string;
+  contentStyles?: string;
+  itemStyles?: string;
+  triggerTitle?: string;
+  isAdmin?: boolean;
 }
 
-function CashYearSelector({ activeSeason, seasons }: Props) {
+function CashYearSelector({
+  activeSeason,
+  seasons,
+  triggerStyles,
+  triggerTitle,
+  isAdmin = false,
+}: Props) {
   const [open, setOpen] = React.useState(false);
   return (
     <Select onOpenChange={setOpen} open={open}>
-      <SelectTrigger className="border-none bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit">
-        {activeSeason.year} Stats
-        <ChevronDown className="w-6 h-6 ml-2" />
+      <SelectTrigger
+        className={cn(
+          "bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit",
+          triggerStyles
+        )}
+      >
+        {triggerTitle ? triggerTitle : `${activeSeason.year} Stats`}
+        <ChevronDown className={cn("w-6 h-6 ml-2", open && "rotate-180")} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup className="flex w-full flex-col">
@@ -31,8 +48,13 @@ function CashYearSelector({ activeSeason, seasons }: Props) {
               <Link
                 onClick={() => setOpen(false)}
                 key={season.id + season.year}
-                className="w-full py-2 pl-2 pr-4"
-                href={`/stats/cash?year=${season.year}`}>
+                className="w-full py-2 pl-2 pr-4 hover:bg-neutral-800"
+                href={
+                  isAdmin
+                    ? `/admin/stats/cash?year=${season.year}`
+                    : `/stats/cash?year=${season.year}`
+                }
+              >
                 {season.year}
               </Link>
             ))}

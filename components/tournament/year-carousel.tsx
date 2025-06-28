@@ -5,6 +5,13 @@ import { Season } from "@/utils/types";
 import { EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
 import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+} from "../ui/select";
+import { ChevronDown } from "lucide-react";
 
 interface Props {
   seasons: Season[];
@@ -20,8 +27,9 @@ function YearCarousel({ seasons, view, setView, isAdmin = false }: Props) {
 
   return (
     <div
-      className="mb-4 border-b  pb-4 border-neutral-500 px-2 overflow-hidden"
-      ref={emblaMainRef}>
+      className="mb-4 border-b block md:hidden pb-4 border-neutral-500 px-2 overflow-hidden"
+      ref={emblaMainRef}
+    >
       <div className="flex touch-pan-y -ml-4">
         <div
           style={{
@@ -29,12 +37,14 @@ function YearCarousel({ seasons, view, setView, isAdmin = false }: Props) {
           }}
           className={cn(
             "flex-[0_0_20%] flex items-center justify-center font-semibold min-w-0 pl-4"
-          )}>
+          )}
+        >
           <button
             onClick={() => setView("all")}
             className={cn(
               view === "all" && "bg-primary px-3 py-1 text-white rounded"
-            )}>
+            )}
+          >
             All
           </button>
         </div>
@@ -46,13 +56,15 @@ function YearCarousel({ seasons, view, setView, isAdmin = false }: Props) {
             className={cn(
               "flex-[0_0_20%] flex items-center justify-center font-semibold min-w-0 pl-4"
             )}
-            key={season.id + season.year}>
+            key={season.id + season.year}
+          >
             <button
               onClick={() => setView(season.year.toString())}
               className={cn(
                 view === season.year.toString() &&
                   "bg-primary px-3 py-1 text-white rounded"
-              )}>
+              )}
+            >
               {season.year}
             </button>
           </div>

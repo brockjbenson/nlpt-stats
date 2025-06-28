@@ -1,5 +1,7 @@
 "use client";
 
+import CashYearSelector from "@/components/cashgames/cash-year-selector";
+import { Select, SelectTrigger } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Season } from "@/utils/types";
 import { EmblaOptionsType } from "embla-carousel";
@@ -19,35 +21,40 @@ function AdminCashCarousel({ seasons, year, isAdmin = false }: Props) {
   const [emblaMainRef, emblaMainApi] = useEmblaCarousel(OPTIONS);
 
   return (
-    <div
-      className="mb-4 border-b pb-4 border-neutral-500 px-2 overflow-hidden"
-      ref={emblaMainRef}>
-      <div className="flex touch-pan-y -ml-4">
-        {seasons.map((season) => (
-          <Link
-            style={{
-              transform: "translate3D(0, 0, 0)",
-            }}
-            className={cn(
-              "flex-[0_0_20%] flex items-center justify-center font-semibold min-w-0 pl-4"
-            )}
-            href={
-              isAdmin
-                ? `/admin/stats/cash?year=${season.year}`
-                : `/stats/cash?year=${season.year}`
-            }
-            key={season.id + season.year}>
-            <span
+    <>
+      <div
+        className="mb-4 border-b pb-4 block md:hidden border-neutral-500 px-2 overflow-hidden"
+        ref={emblaMainRef}
+      >
+        <div className="flex touch-pan-y -ml-4">
+          {seasons.map((season) => (
+            <Link
+              style={{
+                transform: "translate3D(0, 0, 0)",
+              }}
               className={cn(
-                year === season.year.toString() &&
-                  "bg-primary px-3 py-1 text-white rounded"
-              )}>
-              {season.year}
-            </span>
-          </Link>
-        ))}
+                "flex-[0_0_20%] flex items-center justify-center font-semibold min-w-0 pl-4"
+              )}
+              href={
+                isAdmin
+                  ? `/admin/stats/cash?year=${season.year}`
+                  : `/stats/cash?year=${season.year}`
+              }
+              key={season.id + season.year}
+            >
+              <span
+                className={cn(
+                  year === season.year.toString() &&
+                    "bg-primary px-3 py-1 text-white rounded"
+                )}
+              >
+                {season.year}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

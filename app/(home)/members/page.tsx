@@ -25,7 +25,8 @@ async function Members() {
   return (
     <>
       <PageHeader title="Members" />
-      <div className="w-full mt-4 px-2 max-w-screen-xl mx-auto">
+      <div className="w-full mt-4 px-2 max-w-screen-xl md:mt-8 mx-auto">
+        <h1 className="text-2xl font-semibold hidden mb-4 md:block">Members</h1>
         <ul className="w-full grid grid-cols-1 md:grid-cols-3 gap-x-12">
           {members.map((member) => (
             <li key={member.id}>
