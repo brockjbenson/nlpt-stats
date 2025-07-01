@@ -121,7 +121,7 @@ body {
 
 @media (display-mode: standalone) {
   #mobile-nav {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+    padding-bottom: calc(env(safe-area-inset-bottom) - 1rem);
   }
 
   #page-header-wrapper {

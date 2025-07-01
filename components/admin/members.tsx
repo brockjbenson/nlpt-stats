@@ -7,8 +7,12 @@ import { useRouter } from "next/navigation";
 import MemberCard from "../members/member-card";
 import { Member } from "@/utils/types";
 
+type MemberWithDebut = Member & {
+  debutDate: string | null;
+};
+
 interface Props {
-  members: Member[];
+  members: MemberWithDebut[];
 }
 
 function MembersList({ members }: Props) {

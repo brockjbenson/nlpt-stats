@@ -1,6 +1,5 @@
 import { Member } from "@/utils/types";
 import { Loader2, User2 } from "lucide-react";
-import Image from "next/image";
 import React from "react";
 import {
   Dialog,
@@ -16,8 +15,12 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import MemberImage from "./member-image";
 
+type MemberWithDebut = Member & {
+  debutDate: string | null;
+};
+
 interface Props {
-  member: Member;
+  member: MemberWithDebut;
   onEdit?: (id: string) => Promise<void>;
   onSave?: () => void;
   editId?: string | null;
@@ -48,27 +51,33 @@ function MemberCard({
   allowEdit = false,
   loading,
 }: Props) {
+  const debutDate = member.debutDate;
+
   return (
     <span
       className={cn(
-        "border-b border-neutral-500 grid gap-4 md:gap-8 py-4 md:py-8 w-full",
+        "flex flex-col justify-start gap-2 w-full",
         allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
       )}>
       <MemberImage
+        className="w-full relative aspect-[6/7] rounded-[8px] overflow-hidden"
+        imageClassName="object-cover absolute w-full h-full"
         src={member.portrait_url}
         alt={member.first_name + member.last_name}
       />
-      <ul className="flex flex-col w-full justify-center gap-2">
-        <li className="flex gap-2 items-center">
-          <span className="text-muted text-sm md:text-base">Name:</span>
-          <span>
-            {member.first_name} {member.last_name}
-          </span>
+
+      <ul className="flex flex-col w-full justify-center gap-1">
+        <li className="font-semibold">
+          {member.first_name} {member.last_name}
         </li>
-        <li className="flex gap-2 items-center">
-          <span className="text-muted text-sm md:text-base">Nickname:</span>
-          <span>{member.nickname}</span>
+        <li className="text-muted text-sm">
+          Joined:{" "}
+          {new Date(debutDate ? debutDate : "").toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+          })}
         </li>
+        <li className="text-muted text-sm">Nickname: {member.nickname}</li>
       </ul>
       {allowEdit && (
         <Dialog>

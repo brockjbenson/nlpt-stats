@@ -99,8 +99,6 @@ function TournamentSessionsForm({ tournament, members }: Props) {
 
     const allSessions = [...sessionsWithPOints, ...emptySessions];
 
-    console.log("allSessions", allSessions);
-
     try {
       setLoading(true);
       const result = await addTournamentSessionAction(allSessions);

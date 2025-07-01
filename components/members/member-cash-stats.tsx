@@ -28,8 +28,6 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
 
   const careerCashStats = careerStats.cash_stats;
 
-  console.log(careerCashStats);
-
   const avgWin =
     cashStats.gross_profit > 0 && cashStats.wins > 0
       ? cashStats.gross_profit / cashStats.wins

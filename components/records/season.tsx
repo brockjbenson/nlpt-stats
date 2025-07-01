@@ -10,8 +10,6 @@ interface Props {
 }
 
 function SeasonRecords({ data, className }: Props) {
-  console.log(data);
-
   return (
     <ul
       className={cn(

@@ -1,8 +1,13 @@
 import MembersList from "@/components/admin/members";
 import { createClient } from "@/utils/supabase/server";
+import { Member } from "@/utils/types";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+
+type MemberWithDebut = Member & {
+  debutDate: string | null;
+};
 
 async function MembersAdmin() {
   const db = await createClient();
@@ -14,6 +19,18 @@ async function MembersAdmin() {
   if (error) {
     return <p>Error fetching members: {error.message}</p>;
   }
+
+  const memberDebutDates: MemberWithDebut[] = await Promise.all(
+    data.map(async (member) => {
+      const { data: debutDate } = await db.rpc("get_member_debut_date", {
+        target_member_id: member.id,
+      });
+      return {
+        ...member,
+        debutDate: debutDate?.[0]?.created_at || null,
+      };
+    })
+  );
 
   return (
     <>
@@ -30,7 +47,7 @@ async function MembersAdmin() {
           Add <Plus className="w-4 h-4" />
         </Link>
       </div>
-      <MembersList members={data} />
+      <MembersList members={memberDebutDates} />
     </>
   );
 }

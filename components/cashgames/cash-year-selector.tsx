@@ -36,9 +36,8 @@ function CashYearSelector({
         className={cn(
           "bg-transparent mx-auto h-fit p-0 flex items-center gap-1 text-xl font-bold w-fit",
           triggerStyles
-        )}
-      >
-        {triggerTitle ? triggerTitle : `${activeSeason.year} Stats`}
+        )}>
+        {triggerTitle ? triggerTitle : `${activeSeason.year} Cash Stats`}
         <ChevronDown className={cn("w-6 h-6 ml-2", open && "rotate-180")} />
       </SelectTrigger>
       <SelectContent>
@@ -53,8 +52,7 @@ function CashYearSelector({
                   isAdmin
                     ? `/admin/stats/cash?year=${season.year}`
                     : `/stats/cash?year=${season.year}`
-                }
-              >
+                }>
                 {season.year}
               </Link>
             ))}

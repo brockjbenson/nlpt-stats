@@ -8,6 +8,7 @@ type ZoomValues = "1.5" | "2" | "2.5";
 interface Props extends Omit<ImageProps, "width" | "height"> {
   className?: string;
   zoom?: ZoomValues;
+  imageClassName?: string; // Optional prop for additional image styles
 }
 
 const zoomStyles = cva("", {
@@ -24,7 +25,12 @@ const zoomStyles = cva("", {
   },
 });
 
-const MemberImage: React.FC<Props> = ({ className, zoom = null, ...props }) => {
+const MemberImage: React.FC<Props> = ({
+  className,
+  zoom = null,
+  imageClassName,
+  ...props
+}) => {
   return (
     <figure
       className={cn(
@@ -32,7 +38,7 @@ const MemberImage: React.FC<Props> = ({ className, zoom = null, ...props }) => {
         className
       )}>
       <Image
-        className={cn("w-full h-auto", zoomStyles({ zoom }))}
+        className={cn("w-full h-auto", zoomStyles({ zoom }), imageClassName)}
         width={500}
         height={500}
         {...props}

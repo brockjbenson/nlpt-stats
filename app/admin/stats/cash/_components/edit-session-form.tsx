@@ -160,8 +160,6 @@ function EditSessionForm({ sessions }: Props) {
         session.rebuys === 0 ? 0 : calculatePOYPoints(session.net_profit),
     }));
 
-    console.log("Sessions with points:", sessionsWithPoints);
-
     // try {
     //   setLoading(true);
     //   const result = await editSessionAction(

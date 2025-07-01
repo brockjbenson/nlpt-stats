@@ -137,8 +137,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
     const allSessions = [...finalSessions, ...allNewSessions];
 
-    console.log("All Sessions", allSessions);
-
     try {
       setLoading(true);
       const result = await addSessionAction(allSessions);
