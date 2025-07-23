@@ -1,0 +1,344 @@
+"use client";
+
+import { Card, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
+import { CareerStats } from "@/utils/types";
+import { formatMoney, getProfitTextColor } from "@/utils/utils";
+import { X } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import { createPortal } from "react-dom";
+import { FaExpandAlt } from "react-icons/fa";
+
+interface Props {
+  careerStats: CareerStats[];
+  view: string;
+}
+
+function StatsTable({ careerStats, view }: Props) {
+  const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [fullScreenMounted, setFullScreenMounted] = React.useState(false);
+
+  const openFullScreen = () => {
+    setIsFullscreen(true);
+    setTimeout(() => {
+      setFullScreenMounted(true);
+    }, 10);
+  };
+
+  const closeFullScreen = () => {
+    setFullScreenMounted(false);
+    setTimeout(() => {
+      setIsFullscreen(false);
+    }, 300);
+  };
+
+  return (
+    <>
+      <div className="px-2">
+        <Card className="w-full mb-4">
+          <div className="flex pb-6 items-center justify-between">
+            <CardTitle className="m-0 p-0">
+              {view.charAt(0).toUpperCase() + view.slice(1)} Career Stats
+            </CardTitle>
+            <button
+              onClick={openFullScreen}
+              className="border-none w-4 h-4 flex items-center justify-center">
+              <FaExpandAlt />
+            </button>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Member
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Net</span>
+                    <span>Profit</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Gross</span>
+                    <span>Profit</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Gross</span>
+                    <span>Losses</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Session</span>
+                    <span>Average</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Average</span>
+                    <span>Win</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Average</span>
+                    <span>Loss</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Average</span>
+                    <span>Buy-In</span>
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="w-full flex flex-col gap-1 items-center justify-center">
+                    <span>Average</span>
+                    <span>Bullets</span>
+                  </span>
+                </TableHead>
+                <TableHead>Sessions</TableHead>
+                <TableHead>Wins</TableHead>
+                <TableHead>Losses</TableHead>
+                <TableHead>Win %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {careerStats.map((stats) => {
+                return (
+                  <TableRow key={stats.member_id}>
+                    <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                      <Link
+                        scroll={true}
+                        className="hover:text-primary underline"
+                        href={`/members/${stats.member_id}`}>
+                        {stats.first_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell
+                      className={cn(getProfitTextColor(stats.net_profit))}>
+                      {formatMoney(stats.net_profit)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        getProfitTextColor(stats.gross_profit || 0)
+                      )}>
+                      {formatMoney(stats.gross_profit || 0)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        getProfitTextColor(stats.gross_losses * -1 || 0)
+                      )}>
+                      {formatMoney(stats.gross_losses * -1 || 0)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        getProfitTextColor(stats.session_avg || 0)
+                      )}>
+                      {formatMoney(stats.session_avg || 0)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(getProfitTextColor(stats.avg_win || 0))}>
+                      {formatMoney(stats.avg_win || 0)}
+                    </TableCell>
+                    <TableCell
+                      className={cn(
+                        getProfitTextColor(stats.avg_loss * -1 || 0)
+                      )}>
+                      {formatMoney(stats.avg_loss * -1 * -1 || 0)}
+                    </TableCell>
+                    <TableCell>{formatMoney(stats.avg_buy_in || 0)}</TableCell>
+                    <TableCell>
+                      {(stats.avg_rebuys / stats.sessions_played).toFixed(2)}
+                    </TableCell>
+                    <TableCell>{stats.sessions_played}</TableCell>
+                    <TableCell>{stats.wins}</TableCell>
+                    <TableCell>{stats.losses}</TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(
+                          stats.win_percentage < 50
+                            ? "text-theme-red"
+                            : "text-theme-green"
+                        )}>
+                        {stats.win_percentage.toFixed(2)}%
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+      {isFullscreen &&
+        createPortal(
+          <div
+            className={cn(
+              "w-full h-screen fixed top-0 left-0 transition-transform duration-300 z-[12034812039481234]",
+              fullScreenMounted ? "translate-y-0" : "translate-y-full"
+            )}>
+            <Card className="w-screen h-screen overflow-y-auto pt-16 border-none rounded-none">
+              <div className="flex pb-6 items-center justify-between">
+                <CardTitle className="m-0 p-0">
+                  {view.charAt(0).toUpperCase() + view.slice(1)} Career Stats
+                </CardTitle>
+                <button
+                  onClick={closeFullScreen}
+                  className="border-none w-6 h-6 flex items-center justify-center">
+                  <X />
+                </button>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                      Member
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Net</span>
+                        <span>Profit</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Gross</span>
+                        <span>Profit</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Gross</span>
+                        <span>Losses</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Session</span>
+                        <span>Average</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Average</span>
+                        <span>Win</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Average</span>
+                        <span>Loss</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Average</span>
+                        <span>Buy-In</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>
+                      <span className="w-full flex flex-col gap-1 items-center justify-center">
+                        <span>Average</span>
+                        <span>Bullets</span>
+                      </span>
+                    </TableHead>
+                    <TableHead>Sessions</TableHead>
+                    <TableHead>Wins</TableHead>
+                    <TableHead>Losses</TableHead>
+                    <TableHead>Win %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {careerStats.map((stats) => {
+                    return (
+                      <TableRow key={stats.member_id}>
+                        <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                          <Link
+                            scroll={true}
+                            className="hover:text-primary underline"
+                            href={`/members/${stats.member_id}`}>
+                            {stats.first_name}
+                          </Link>
+                        </TableCell>
+                        <TableCell
+                          className={cn(getProfitTextColor(stats.net_profit))}>
+                          {formatMoney(stats.net_profit)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            getProfitTextColor(stats.gross_profit || 0)
+                          )}>
+                          {formatMoney(stats.gross_profit || 0)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            getProfitTextColor(stats.gross_losses * -1 || 0)
+                          )}>
+                          {formatMoney(stats.gross_losses * -1 || 0)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            getProfitTextColor(stats.session_avg || 0)
+                          )}>
+                          {formatMoney(stats.session_avg || 0)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            getProfitTextColor(stats.avg_win || 0)
+                          )}>
+                          {formatMoney(stats.avg_win || 0)}
+                        </TableCell>
+                        <TableCell
+                          className={cn(
+                            getProfitTextColor(stats.avg_loss * -1 || 0)
+                          )}>
+                          {formatMoney(stats.avg_loss * -1 || 0)}
+                        </TableCell>
+                        <TableCell>
+                          {formatMoney(stats.avg_buy_in || 0)}
+                        </TableCell>
+                        <TableCell>
+                          {(stats.avg_rebuys / stats.sessions_played).toFixed(
+                            2
+                          )}
+                        </TableCell>
+                        <TableCell>{stats.sessions_played}</TableCell>
+                        <TableCell>{stats.wins}</TableCell>
+                        <TableCell>{stats.losses}</TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              stats.win_percentage < 50
+                                ? "text-theme-red"
+                                : "text-theme-green"
+                            )}>
+                            {stats.win_percentage.toFixed(2)}%
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Card>
+          </div>,
+          document.body
+        )}
+    </>
+  );
+}
+
+export default StatsTable;

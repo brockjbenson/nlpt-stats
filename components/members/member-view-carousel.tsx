@@ -67,6 +67,22 @@ function MemberViewCarousel({ view, setView }: Props) {
             Majors
           </span>
         </li>
+        <li
+          style={{
+            transform: "translate3D(0, 0, 0)",
+          }}
+          onClick={() => setView("skills")}
+          className={cn(
+            "w-fit px-2 mr-2 z-20 py-3 flex items-center justify-center"
+          )}>
+          <span
+            className={cn(
+              "font-semibold",
+              view === "skills" ? "text-primary" : "text-muted"
+            )}>
+            Skill Profile
+          </span>
+        </li>
       </ul>
     </div>
   );
