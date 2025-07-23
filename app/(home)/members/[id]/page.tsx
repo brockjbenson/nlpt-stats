@@ -55,6 +55,8 @@ async function Member({ params }: EditMemberProps) {
     { data: careerStats, error: careerStatsError },
     { data: joinDate, error: joinDateError },
     { data: historicalNLPIRecords, error: historicalNLPIRecordsError },
+    { data: statsAvg, error: statsAvgError },
+    { data: memberAdvancedSkills, error: memberAdvancedSkillsError },
   ] = await Promise.all([
     db.rpc("get_nlpi_info", {
       current_season_id: currentSeasonId,
@@ -73,6 +75,10 @@ async function Member({ params }: EditMemberProps) {
       target_member_id: id,
     }),
     db.rpc("get_nlpi_rank_records", {
+      target_member_id: id,
+    }),
+    db.rpc("get_stat_avgs"),
+    db.rpc("get_member_advanced_skills", {
       target_member_id: id,
     }),
   ]);
@@ -127,10 +133,32 @@ async function Member({ params }: EditMemberProps) {
     );
   }
 
+  if (statsAvgError) {
+    return (
+      <ErrorHandler
+        errorMessage={statsAvgError.message}
+        title="Error fetching stats averages"
+        pageTitle="Member"
+      />
+    );
+  }
+
+  if (memberAdvancedSkillsError) {
+    return (
+      <ErrorHandler
+        errorMessage={memberAdvancedSkillsError.message}
+        title="Error fetching member advanced skills"
+        pageTitle="Member"
+      />
+    );
+  }
+
   return (
     <>
       <PageHeader className="mb-0" title="Member" />
       <MemberMain
+        advancedSkills={memberAdvancedSkills[0]}
+        avgData={statsAvg[0]}
         nlpiHistoricalRecords={historicalNLPIRecords}
         id={id}
         member={member}

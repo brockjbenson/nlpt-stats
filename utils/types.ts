@@ -131,6 +131,27 @@ export type SeasonCashStats = {
   avg_rebuys: number;
 };
 
+export type CareerStats = {
+  member_id: string;
+  first_name: string;
+  portrait_url: string;
+  gross_profit: number;
+  net_profit: number;
+  gross_losses: number;
+  sessions_played: number;
+  wins: number;
+  losses: number;
+  win_percentage: number;
+  win_streak: number;
+  loss_streak: number;
+  current_streak: string;
+  avg_win: number;
+  avg_loss: number;
+  avg_buy_in: number;
+  session_avg: number;
+  avg_rebuys: number;
+};
+
 export type NLPIData = {
   cash_points: number;
   rank: number;
