@@ -216,11 +216,9 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex px-2 max-w-screen-lg mx-auto top-0 h-[50px] bg-background z-10 items-center justify-between">
-        <h2 className="text-base md:text-xl font-semibold">
-          Add new cash sessions
-        </h2>
-      </div>
+      <h2 className="px-2 text-xl pb-4">
+        Total Sessions ({sessionsToAdd.length})
+      </h2>
       <div
         className={cn(
           "w-full px-2 mt-4 max-w-screen-lg mx-auto",
@@ -298,7 +296,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       <AlertDialog
         open={confirmAdd}
         onOpenChange={() => setConfirmAdd(!confirmAdd)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md">
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -307,7 +305,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           <AlertDialogFooter>
             <AlertDialogCancel>No Go Back</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-primary px-12 mx-auto text-white"
+              className="bg-primary w-full mx-auto text-white"
               onClick={() => {
                 setConfirmAdd(false);
                 addSessions();
@@ -338,19 +336,11 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       )}
       {sessionsToAdd?.length > 0 &&
         createPortal(
-          <div
-            className="bg-background/50 border-t flex items-center justify-center border-t-muted backdrop-blur-md fixed bottom-0 w-full px-4 pt-4"
-            style={{
-              paddingBottom:
-                "calc(env(safe-area-inset-bottom, 0px) + 1rem + 79px)",
-              paddingTop: "1rem",
-            }}>
-            <button
-              onClick={() => setConfirmAdd(true)}
-              className="flex w-full text-sm md:text-base items-center justify-center px-3 h-10 text-white bg-primary hover:bg-primary-hover rounded font-medium">
-              Add Sessions
-            </button>
-          </div>,
+          <button
+            onClick={() => setConfirmAdd(true)}
+            className="flex mt-auto relative bottom-12 w-full text-sm md:text-base items-center justify-center h-14 text-white bg-primary hover:bg-primary-hover font-medium">
+            Add Sessions
+          </button>,
           document.body
         )}
     </>

@@ -49,7 +49,7 @@ function Sessions({
 
   return (
     <>
-      <ul className="flex flex-col mb-8">
+      <ul className="flex flex-col">
         {members.map((member) => {
           const correspondingSession = sessionsToAdd.find(
             (session) => session.member_id === member.id

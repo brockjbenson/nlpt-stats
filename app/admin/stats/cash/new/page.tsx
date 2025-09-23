@@ -1,4 +1,5 @@
 import AddCashSessions from "@/components/admin/stats/add-cash-sessions";
+import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 
 async function NewCashGame() {
@@ -26,6 +27,7 @@ async function NewCashGame() {
 
   return (
     <>
+      <PageHeader title="New Cash Session" />
       <AddCashSessions members={members} seasons={seasons} weeks={weeks} />
     </>
   );

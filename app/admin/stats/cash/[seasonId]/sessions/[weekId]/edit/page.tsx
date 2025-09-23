@@ -1,7 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import EditSessionForm from "../../../../_components/edit-session-form";
-import SessionsList from "@/components/admin/stats/sessions-list";
+import PageHeader from "@/components/page-header/page-header";
+import ErrorHandler from "@/components/error-handler";
 interface Params {
   params: Promise<{ seasonId: string; weekId: string }>;
 }
@@ -14,30 +15,56 @@ async function Page({ params }: Params) {
     console.error("Invalid UUIDs passed to Supabase function.");
   }
 
-  const { data: members, error: membersError } = await db
-    .from("members")
-    .select("*")
-    .order("first_name", { ascending: true });
+  const [
+    { data: sessions, error: sessionsError },
+    { data: week, error: weekError },
+    { data: season, error: seasonError },
+  ] = await Promise.all([
+    db
+      .from("cash_session")
+      .select(`*, member:member_id(*), week:week_id(*), season:season_id(*)`)
+      .eq("week_id", weekId)
+      .eq("season_id", seasonId),
+    db.from("week").select("*").eq("id", weekId).single(),
+    db.from("season").select("*").eq("id", seasonId).single(),
+  ]);
 
-  if (membersError) {
-    return <p>Error fetching Members: {membersError.message}</p>;
+  if (sessionsError) {
+    return (
+      <ErrorHandler
+        errorMessage={sessionsError.message}
+        title="Error fetching sessions"
+        pageTitle="Edit Sessions"
+      />
+    );
   }
 
-  const { data: sessions, error: sessionError } = await db
-    .from("cash_session")
-    .select(`*, member:member_id(*), week:week_id(*), season:season_id(*)`)
-    .eq("week_id", weekId)
-    .eq("season_id", seasonId);
+  if (weekError) {
+    return (
+      <ErrorHandler
+        errorMessage={weekError.message}
+        title="Error fetching week"
+        pageTitle="Edit Sessions"
+      />
+    );
+  }
 
-  if (sessionError) {
-    return <p>Error fetching Session: {sessionError.message}</p>;
+  if (seasonError) {
+    return (
+      <ErrorHandler
+        errorMessage={seasonError.message}
+        title="Error fetching season"
+        pageTitle="Edit Sessions"
+      />
+    );
   }
 
   // Handle errors
 
   return (
     <>
-      <EditSessionForm sessions={sessions} />
+      <PageHeader title="Edit Sessions" />
+      <EditSessionForm week={week} season={season} sessions={sessions} />
     </>
   );
 }

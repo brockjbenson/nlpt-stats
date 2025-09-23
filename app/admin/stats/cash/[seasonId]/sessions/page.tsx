@@ -1,4 +1,5 @@
 import CashGameTable from "@/components/cashgames/cashgame-table";
+import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 
@@ -29,6 +30,7 @@ async function Page({ params }: Params) {
 
   return (
     <>
+      <PageHeader title={`${season[0].year} Cash Sessions`} />
       <h2>{season[0].year} Sessions</h2>
       <CashGameTable
         isAdmin={true}

@@ -2,9 +2,12 @@ import AdminCashCarousel from "@/components/admin/stats/cash/cash-nav";
 import CashYearSelector from "@/components/cashgames/cash-year-selector";
 import CashGameTable from "@/components/cashgames/cashgame-table";
 import ErrorHandler from "@/components/error-handler";
+import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { FaPlus } from "react-icons/fa6";
 
 interface Props {
   searchParams: Promise<{ year: string } | null>;
@@ -51,6 +54,7 @@ async function CashGames({ searchParams }: Props) {
 
   return (
     <>
+      <PageHeader title={`${activeSeason.year} Cash Sessions`} />
       <AdminCashCarousel
         seasons={season}
         year={year.year.toString()}
@@ -70,9 +74,8 @@ async function CashGames({ searchParams }: Props) {
           <div className="flex items-center gap-4">
             <Link
               className="bg-primary text-background border border-primary font-semibold text-sm flex items-center justify-center hover:bg-primary-hover px-4 py-2 rounded"
-              href="/admin/stats/cash/new"
-            >
-              Add Sessions
+              href="/admin/stats/cash/new">
+              Session <FaPlus className="ml-2 h-4 w-4" />
             </Link>
           </div>
         </div>

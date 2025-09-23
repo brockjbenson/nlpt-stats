@@ -12,10 +12,7 @@ export default async function Layout({
     <>
       <Header />
       <MainWrapper>
-        <div className="max-w-screen-lg mx-auto w-full">
-          <PageHeader title="Admin" />
-          {children}
-        </div>
+        <div className="max-w-screen-lg mx-auto w-full">{children}</div>
       </MainWrapper>
       <BottomTabs />
     </>
