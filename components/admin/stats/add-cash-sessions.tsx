@@ -237,7 +237,6 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
               }}>
               <SelectTrigger id="season">
                 <SelectValue placeholder="Select a season" />
-                <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>

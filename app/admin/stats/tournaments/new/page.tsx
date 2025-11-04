@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import NewTournamentForm from "./_components/newTournamentForm";
+import PageHeader from "@/components/page-header/page-header";
 
 async function Page() {
   const db = await createClient();
@@ -21,7 +22,7 @@ async function Page() {
   }
   return (
     <>
-      <h2 className="text-center w-full mb-6">Add New Tournament</h2>
+      <PageHeader title="Add New Tournament" />
       <NewTournamentForm seasons={seasons} members={members} />
     </>
   );

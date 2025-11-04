@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "../ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "../ui/sheet";
 import { FaCircleInfo } from "react-icons/fa6";
 
 function POYInfo() {
@@ -78,7 +72,6 @@ function POYInfo() {
           </div>
         </div>
       </SheetContent>
-      <SheetOverlay />
     </Sheet>
   );
 }

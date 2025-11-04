@@ -33,7 +33,7 @@ async function Page({ params }: Props) {
     <>
       <PageHeader title={"Tournament"} />
       <div className="w-full max-w-screen-xl mx-auto px-2">
-        <h2 className="text-2xl w-full flex items-center justify-center my-8">
+        <h2 className="text-2xl w-full flex items-center justify-center my-4">
           {majorData.name}
         </h2>
         <TournamentInfo data={majorData} />

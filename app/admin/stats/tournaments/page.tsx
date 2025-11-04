@@ -5,6 +5,7 @@ import React from "react";
 import TournamentCard from "@/components/tournament/tournament-card";
 import ErrorHandler from "@/components/error-handler";
 import TournamentsMain from "@/components/tournament/tournaments-main";
+import PageHeader from "@/components/page-header/page-header";
 
 interface Props {
   searchParams: Promise<{
@@ -46,6 +47,7 @@ async function Page({ searchParams }: Props) {
   }
   return (
     <>
+      <PageHeader title="Tournaments" />
       <TournamentsMain
         isAdmin={true}
         tournamentsData={tournamentsData}

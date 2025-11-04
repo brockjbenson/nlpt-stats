@@ -16,7 +16,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { createPortal } from "react-dom";
-import { FaExpandAlt } from "react-icons/fa";
+import { FaExpandAlt, FaLongArrowAltDown } from "react-icons/fa";
 
 interface Props {
   seasonStats: SeasonCashStats[];
@@ -25,6 +25,13 @@ interface Props {
 function StatsTable({ seasonStats }: Props) {
   const [isFullscreen, setIsFullscreen] = React.useState(false);
   const [fullScreenMounted, setFullScreenMounted] = React.useState(false);
+  const [sort, setSort] = React.useState({
+    column: "net_profit",
+    direction: "desc",
+  });
+  const [sortedSeasonStats, setSortedSeasonStats] = React.useState<
+    SeasonCashStats[]
+  >([...seasonStats].sort((a, b) => a.first_name.localeCompare(b.first_name)));
 
   const openFullScreen = () => {
     setIsFullscreen(true);
@@ -39,6 +46,141 @@ function StatsTable({ seasonStats }: Props) {
       setIsFullscreen(false);
     }, 300);
   };
+
+  React.useEffect(() => {
+    let sortedStats = [...seasonStats];
+
+    sortedStats.sort((a, b) => {
+      let aValue: number | string = "";
+      let bValue: number | string = "";
+
+      switch (sort.column) {
+        case "first_name":
+          aValue = a.first_name;
+          bValue = b.first_name;
+          break;
+        case "net_profit":
+          aValue = a.net_profit;
+          bValue = b.net_profit;
+          break;
+        case "gross_profit":
+          aValue = a.gross_profit || 0;
+          bValue = b.gross_profit || 0;
+          break;
+        case "gross_losses":
+          aValue = a.gross_losses || 0;
+          bValue = b.gross_losses || 0;
+          break;
+        case "session_avg":
+          aValue = a.session_avg || 0;
+          bValue = b.session_avg || 0;
+          break;
+        case "avg_win":
+          aValue = a.avg_win || 0;
+          bValue = b.avg_win || 0;
+          break;
+        case "avg_loss":
+          aValue = a.avg_loss || 0;
+          bValue = b.avg_loss || 0;
+          break;
+        case "avg_buy_in":
+          aValue = a.avg_buy_in || 0;
+          bValue = b.avg_buy_in || 0;
+          break;
+        case "avg_rebuys":
+          aValue = a.avg_rebuys / a.sessions_played || 0;
+          bValue = b.avg_rebuys / b.sessions_played || 0;
+          break;
+        case "sessions_played":
+          aValue = a.sessions_played;
+          bValue = b.sessions_played;
+          break;
+        case "wins":
+          aValue = a.wins;
+          bValue = b.wins;
+          break;
+        case "losses":
+          aValue = a.losses;
+          bValue = b.losses;
+          break;
+        case "win_percentage":
+          aValue = a.win_percentage;
+          bValue = b.win_percentage;
+          break;
+        case "win_streak":
+          aValue = a.win_streak;
+          bValue = b.win_streak;
+          break;
+        case "loss_streak":
+          aValue = a.loss_streak;
+          bValue = b.loss_streak;
+          break;
+        case "current_streak":
+          if (a.current_streak.includes("W")) {
+            aValue = parseInt(a.current_streak) || 0;
+          } else if (a.current_streak.includes("L")) {
+            aValue = (parseInt(a.current_streak) || 0) * -1;
+          }
+
+          if (b.current_streak.includes("W")) {
+            bValue = parseInt(b.current_streak) || 0;
+          } else if (b.current_streak.includes("L")) {
+            bValue = (parseInt(b.current_streak) || 0) * -1;
+          }
+
+          break;
+        default:
+          break;
+      }
+
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sort.direction === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      } else if (typeof aValue === "number" && typeof bValue === "number") {
+        return sort.direction === "asc" ? aValue - bValue : bValue - aValue;
+      } else {
+        return 0;
+      }
+    });
+
+    setSortedSeasonStats(sortedStats);
+  }, [sort, seasonStats]);
+
+  const handleSort = (column: string, direction: "asc" | "desc") => {
+    let newDirection;
+
+    if (sort.column === column) {
+      // Same column: toggle
+      newDirection = sort.direction === "asc" ? "desc" : "asc";
+    } else if (direction) {
+      newDirection = direction;
+    } else {
+      // New column: start with desc
+      newDirection = "desc";
+    }
+
+    const newSort = { column, direction: newDirection };
+    setSort(newSort);
+  };
+
+  const renderSortButton = (
+    column: string,
+    label: string,
+    direction: "asc" | "desc" = "desc"
+  ) => (
+    <button
+      className="w-full whitespace-nowrap flex justify-between items-center gap-2"
+      onClick={(e) => handleSort(column, direction)}>
+      {label}
+      <FaLongArrowAltDown
+        className={cn(
+          sort.column === column ? "opacity-100" : "opacity-0",
+          sort.direction === "asc" ? "rotate-0" : "rotate-180"
+        )}
+      />
+    </button>
+  );
 
   return (
     <>
@@ -56,82 +198,53 @@ function StatsTable({ seasonStats }: Props) {
             <TableHeader>
               <TableRow>
                 <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                  Member
+                  {renderSortButton("first_name", "Member")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Net</span>
-                    <span>Profit</span>
-                  </span>
+                  {renderSortButton("net_profit", "Net Profit")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Gross</span>
-                    <span>Profit</span>
-                  </span>
+                  {renderSortButton("gross_profit", "Gross Profit")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Gross</span>
-                    <span>Losses</span>
-                  </span>
+                  {renderSortButton("gross_losses", "Gross Losses", "asc")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Session</span>
-                    <span>Average</span>
-                  </span>
+                  {renderSortButton("session_avg", "Session Average", "desc")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Average</span>
-                    <span>Win</span>
-                  </span>
+                  {renderSortButton("avg_win", "Average Win")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Average</span>
-                    <span>Loss</span>
-                  </span>
+                  {renderSortButton("avg_loss", "Average Loss", "asc")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Average</span>
-                    <span>Buy-In</span>
-                  </span>
+                  {renderSortButton("avg_buy_in", "Average Buy-In")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Average</span>
-                    <span>Bullets</span>
-                  </span>
-                </TableHead>
-                <TableHead>Sessions</TableHead>
-                <TableHead>Wins</TableHead>
-                <TableHead>Losses</TableHead>
-                <TableHead>Win %</TableHead>
-                <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Best W</span>
-                    <span>Streak</span>
-                  </span>
+                  {renderSortButton("avg_rebuys", "Average Bullets")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Worst L</span>
-                    <span>Streak</span>
-                  </span>
+                  {renderSortButton("sessions_played", "Sessions")}
+                </TableHead>
+                <TableHead>{renderSortButton("wins", "Wins")}</TableHead>
+                <TableHead>{renderSortButton("losses", "Losses")}</TableHead>
+                <TableHead>
+                  {renderSortButton("win_percentage", "Win %")}
                 </TableHead>
                 <TableHead>
-                  <span className="w-full flex flex-col gap-1 items-center justify-center">
-                    <span>Current</span>
-                    <span>Streak</span>
-                  </span>
+                  {renderSortButton("win_streak", "Best W Streak")}
+                </TableHead>
+                <TableHead>
+                  {renderSortButton("loss_streak", "Worst L Streak")}
+                </TableHead>
+                <TableHead>
+                  {renderSortButton("current_streak", "Current Streak")}
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {seasonStats.map((stats) => {
+              {sortedSeasonStats.map((stats) => {
                 return (
                   <TableRow key={stats.member_id}>
                     <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
@@ -230,82 +343,59 @@ function StatsTable({ seasonStats }: Props) {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      Member
+                      {renderSortButton("first_name", "Member", "asc")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Net</span>
-                        <span>Profit</span>
-                      </span>
+                      {renderSortButton("net_profit", "Net Profit")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Gross</span>
-                        <span>Profit</span>
-                      </span>
+                      {renderSortButton("gross_profit", "Gross Profit")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Gross</span>
-                        <span>Losses</span>
-                      </span>
+                      {renderSortButton("gross_losses", "Gross Losses", "asc")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Session</span>
-                        <span>Average</span>
-                      </span>
+                      {renderSortButton(
+                        "session_avg",
+                        "Session Average",
+                        "desc"
+                      )}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Average</span>
-                        <span>Win</span>
-                      </span>
+                      {renderSortButton("avg_win", "Average Win")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Average</span>
-                        <span>Loss</span>
-                      </span>
+                      {renderSortButton("avg_loss", "Average Loss", "asc")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Average</span>
-                        <span>Buy-In</span>
-                      </span>
+                      {renderSortButton("avg_buy_in", "Average Buy-In")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Average</span>
-                        <span>Bullets</span>
-                      </span>
-                    </TableHead>
-                    <TableHead>Sessions</TableHead>
-                    <TableHead>Wins</TableHead>
-                    <TableHead>Losses</TableHead>
-                    <TableHead>Win %</TableHead>
-                    <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Best W</span>
-                        <span>Streak</span>
-                      </span>
+                      {renderSortButton("avg_rebuys", "Average Bullets")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Worst L</span>
-                        <span>Streak</span>
-                      </span>
+                      {renderSortButton("sessions_played", "Sessions")}
+                    </TableHead>
+                    <TableHead>{renderSortButton("wins", "Wins")}</TableHead>
+                    <TableHead>
+                      {renderSortButton("losses", "Losses")}
                     </TableHead>
                     <TableHead>
-                      <span className="w-full flex flex-col gap-1 items-center justify-center">
-                        <span>Current</span>
-                        <span>Streak</span>
-                      </span>
+                      {renderSortButton("win_percentage", "Win %")}
+                    </TableHead>
+                    <TableHead>
+                      {renderSortButton("win_streak", "Best W Streak")}
+                    </TableHead>
+                    <TableHead>
+                      {renderSortButton("loss_streak", "Worst L Streak")}
+                    </TableHead>
+                    <TableHead>
+                      {renderSortButton("current_streak", "Current Streak")}
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {seasonStats.map((stats) => {
+                  {sortedSeasonStats.map((stats) => {
                     return (
                       <TableRow key={stats.member_id}>
                         <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
@@ -348,7 +438,7 @@ function StatsTable({ seasonStats }: Props) {
                           className={cn(
                             getProfitTextColor(stats.avg_loss * -1 || 0)
                           )}>
-                          {formatMoney(stats.avg_loss * -1 || 0)}
+                          {formatMoney(stats.avg_loss * -1 * -1 || 0)}
                         </TableCell>
                         <TableCell>
                           {formatMoney(stats.avg_buy_in || 0)}

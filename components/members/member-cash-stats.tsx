@@ -41,20 +41,14 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
   const minWinPercentage = (1 / (1 + winLossRatio)) * 100;
 
   return (
-    <div className="w-full md:gap-8 md:col-span-2 grid grid-cols-1 md:grid-cols-2 mt-4 px-4 ">
-      <div className="flex w-full md:col-span-2 py-4 justify-between border-t-[2px] border-neutral-700 items-center">
+    <div className="w-full md:gap-8 md:col-span-2 grid grid-cols-1 md:grid-cols-2 mt-4 max-lg:px-4 ">
+      <div className="flex w-full md:col-span-2 py-4 justify-between border-t-[2px] border-neutral-700  items-center">
         <h3 className="text-xl font-semibold">
           {year === undefined ? "Career Cash Stats" : `${year} Cash Stats`}
         </h3>
         <Select open={dropDownOpen} onOpenChange={setDropDownOpen}>
-          <SelectTrigger className="border w-[112px] border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
+          <SelectTrigger className="border w-[112px] border-neutral-700 py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
             {currentDropDownLabel}
-            <ChevronDown
-              className={cn(
-                "w-6 h-6 ml-2 transition-transform duration-150",
-                dropDownOpen ? "rotate-180" : "rotate-0"
-              )}
-            />
           </SelectTrigger>
           <SelectContent>
             <div className="flex w-full flex-col">
@@ -81,7 +75,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-3 w-full max-w-[800px] mx-auto md:grid-cols-4 pb-4 gap-4">
+      <div className="grid grid-cols-3 w-full max-w-[800px] mx-auto xl:grid-cols-5 pb-4 gap-4">
         <div className="flex flex-col gap-2 items-start justify-start">
           <h3 className="text-muted text-sm font-normal">Sessions</h3>
           <p className="text-lg font-bold text-white">{cashStats.sessions}</p>
@@ -90,11 +84,11 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           <h3 className="text-muted text-sm font-normal">Wins</h3>
           <p className="text-lg font-bold text-white">{cashStats.wins}</p>
         </div>
-        <div className="flex flex-col gap-2 items-end md:items-center justify-start">
+        <div className="flex flex-col gap-2 items-end xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Losses</h3>
           <p className="text-lg font-bold text-white">{cashStats.losses}</p>
         </div>
-        <div className="flex flex-col gap-2 items-start md:items-end justify-start">
+        <div className="flex flex-col gap-2 items-start xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Net Profit</h3>
           <p
             className={cn(
@@ -104,7 +98,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             {formatMoney(cashStats.net_profit)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-center md:items-start justify-start">
+        <div className="flex flex-col gap-2 items-center xl:items-end justify-start">
           <h3 className="text-muted text-sm font-normal">Gross Profit</h3>
           <p
             className={cn(
@@ -114,7 +108,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             {formatMoney(cashStats.gross_profit)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-end md:items-center justify-start">
+        <div className="flex flex-col gap-2 items-end xl:items-start justify-start">
           <h3 className="text-muted text-sm font-normal">Gross Losses</h3>
           <p
             className={cn(
@@ -125,7 +119,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 items-start md:items-center justify-start">
+        <div className="flex flex-col gap-2 items-start xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Avg Net</h3>
           <p
             className={cn(
@@ -135,7 +129,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             {formatMoney(cashStats.net_profit / cashStats.sessions)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-center md:items-end justify-start">
+        <div className="flex flex-col gap-2 items-center xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Avg Win</h3>
           <p
             className={cn(
@@ -145,7 +139,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             {formatMoney(cashStats.gross_profit / cashStats.wins)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-end md:items-start justify-start">
+        <div className="flex flex-col gap-2 items-end xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Avg Loss</h3>
           <p
             className={cn(
@@ -163,7 +157,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             )}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-start md:items-center justify-start">
+        <div className="flex flex-col gap-2 items-start xl:items-end justify-start">
           <h3 className="text-muted text-sm font-normal">Avg Buy-In</h3>
           <p className="text-lg font-bold text-white">
             {formatMoney(
@@ -173,7 +167,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             )}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-center md:items-center justify-start">
+        <div className="flex flex-col gap-2 items-center xl:items-start justify-start">
           <h3 className="text-muted text-sm font-normal">Avg Rebuys</h3>
           <p className="text-lg font-bold text-white">
             {(cashStats.total_rebuys
@@ -182,13 +176,13 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
             ).toFixed(2)}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-end justify-start">
+        <div className="flex flex-col gap-2 items-end xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Win %</h3>
           <p className="text-lg font-bold text-white">
             {((cashStats.wins / cashStats.sessions) * 100).toFixed(2)}%
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-start justify-start">
+        <div className="flex flex-col gap-2 items-start xl:items-center justify-start">
           <h3 className="text-muted text-sm font-normal">Total Buy-In's</h3>
           <p className="text-lg font-bold text-white">
             {formatMoney(cashStats.total_buy_ins || 0)}

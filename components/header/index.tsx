@@ -31,8 +31,7 @@ async function Header() {
             <Button asChild size="sm" variant={"outline"}>
               <Link
                 className=" self-end ml-auto align-middle w-fit"
-                href="/sign-in"
-              >
+                href="/sign-in">
                 Sign in
               </Link>
             </Button>

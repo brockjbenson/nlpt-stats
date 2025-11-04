@@ -38,7 +38,6 @@ function CashYearSelector({
           triggerStyles
         )}>
         {triggerTitle ? triggerTitle : `${activeSeason.year} Cash Stats`}
-        <ChevronDown className={cn("w-6 h-6 ml-2", open && "rotate-180")} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup className="flex w-full flex-col">

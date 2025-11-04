@@ -20,8 +20,9 @@ interface Props {
 
 async function Page({ searchParams }: Props) {
   const db = await createClient();
+  const currentYear = new Date().getFullYear();
   const { year } = await searchParams;
-  const yearNumber = Number(year);
+  const yearNumber = year ? Number(year) : currentYear;
   const { data, error } = await db.rpc("get_seasons_and_members");
 
   if (error) {

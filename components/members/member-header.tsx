@@ -11,10 +11,10 @@ function MemberHeader({
 }) {
   return (
     <>
-      <figure className="w-full z-10 aspect-[8/7.5] h-auto overflow-hidden relative flex items-center justify-center">
+      <figure className="w-full z-10 aspect-[8/7.5] md:aspect-[8/6] h-auto overflow-hidden relative flex items-center justify-center">
         <div className="w-full h-full bg-gradient-to-b from-white/5  to-black/70 to-[99%] z-10" />
         <Image
-          className="w-full absolute h-auto"
+          className="w-full md:-top-32 absolute h-auto"
           src={member.portrait_url}
           alt={member.first_name + " " + member.last_name}
           width={200}

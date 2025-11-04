@@ -44,7 +44,7 @@ async function Members() {
       <PageHeader title="Members" />
       <div className="w-full mt-4 px-2 max-w-screen-xl md:mt-8 mx-auto">
         <h1 className="text-2xl font-semibold hidden mb-4 md:block">Members</h1>
-        <ul className="w-full grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-4">
+        <ul className="w-full mb-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-8 gap-x-4">
           {memberDebutDates.map((member) => (
             <li key={member.id}>
               <Link scroll={true} href={`/members/${member.id}`}>

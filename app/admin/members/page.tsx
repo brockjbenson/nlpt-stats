@@ -1,4 +1,5 @@
 import MembersList from "@/components/admin/members";
+import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import { Member } from "@/utils/types";
 import { Plus } from "lucide-react";
@@ -34,6 +35,7 @@ async function MembersAdmin() {
 
   return (
     <>
+      <PageHeader title="Members" />
       <div className="flex px-2 items-center justify-between">
         <h2 className=" text-2xl font-medium flex gap-2 items-end">
           Members

@@ -90,7 +90,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
               <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
                 Place
               </TableHead>
-              <TableHead className="sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+              <TableHead className="sticky left-[57px] z-10 bg-card border-b-[1.7px] border-neutral-600">
                 Member
               </TableHead>
               <TableHead>Buy in</TableHead>
@@ -111,7 +111,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
                     <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
                       {renderPlacementMedal(session.place)}
                     </TableCell>
-                    <TableCell className="font-bold sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
+                    <TableCell className="font-bold sticky left-[57px] z-10 bg-card border-b-[1.7px] border-neutral-600">
                       <Link
                         className="underline"
                         href={`/members/${session.member_id}`}>

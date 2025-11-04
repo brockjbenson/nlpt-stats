@@ -108,9 +108,9 @@ export function MemberRadarChart({ data }: Props) {
     },
   } satisfies ChartConfig;
   return (
-    <Card className="w-full bg-background p-0 border-none mx-auto">
+    <Card className="w-full bg-background !p-0 border-none mx-auto">
       <CardHeader className="items-center">
-        <CardTitle className="text-left w-full px-2 pt-4">
+        <CardTitle className="text-left w-full max-md:px-2 max-md:pt-4">
           NLPT Skill Profile
         </CardTitle>
         <div className="flex flex-col absolute right-2 top-4 items-end gap-2 text-muted-foreground">
@@ -124,7 +124,7 @@ export function MemberRadarChart({ data }: Props) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pb-0">
+      <CardContent className="pb-0 mx-auto w-[65%]">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-square w-full">

@@ -122,137 +122,143 @@ function MemberMain({
                   },
                 }}
               />
-              <div className="px-3 border-t border-neutral-500 py-4">
-                <h2>Bounce Back</h2>
-                <ul className="mt-4 flex flex-col gap-3">
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    <span className="flex items-center gap-1">
-                      Bounce Back Rate
-                      <Popover>
-                        <PopoverTrigger>
-                          <Info className="cursor-pointer w-4 h-4 text-muted-foreground" />
-                        </PopoverTrigger>
-                        <PopoverContent className="p-2">
-                          <p className="text-sm">
-                            This stat measures how often you follow up a losing
-                            session up with a winning session
-                          </p>
-                        </PopoverContent>
-                      </Popover>
-                    </span>
-                    <span className="font-semibold text-lg text-foreground">
-                      {advancedSkills.bounce_back_rate.toFixed(2)}%
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Avg Bounce Back Session
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(
-                          advancedSkills.avg_net_profit_after_loss
-                        )
-                      )}>
-                      {formatMoney(advancedSkills.avg_net_profit_after_loss)}
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Best Bounce Back Session
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(advancedSkills.largest_bounce_back)
-                      )}>
-                      {formatMoney(advancedSkills.largest_bounce_back)}
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Avg Rebuys Following Loss
-                    <span
-                      className={cn("font-semibold text-foreground text-lg")}>
-                      {advancedSkills.avg_rebuys_after_loss}
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Rebuy Rate Following Loss
-                    <span
-                      className={cn("font-semibold text-foreground text-lg")}>
-                      {advancedSkills.rebuy_rate.toFixed(2)}%
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <div className="px-3 border-t border-neutral-500 py-4">
-                <h2>Volume Shooter</h2>
-                <ul className="mt-4 flex flex-col gap-3">
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Win Rate after Rebuy
-                    <span className="font-semibold text-lg text-foreground">
-                      {advancedSkills.rebuy_win_percentage.toFixed(2)}%
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Avg Rebuy Session Net
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(advancedSkills.rebuy_avg_net_profit)
-                      )}>
-                      {formatMoney(advancedSkills.rebuy_avg_net_profit)}
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Largest Rebuy Session
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(
-                          advancedSkills.rebuy_largest_net_profit
-                        )
-                      )}>
-                      {formatMoney(advancedSkills.rebuy_largest_net_profit)}
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <div className="px-3 border-t border-neutral-500 py-4">
-                <h2>Conservative Tendencies</h2>
-                <ul className="mt-4 flex flex-col gap-3">
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Win Rate w/o Rebuy
-                    <span className="font-semibold text-lg text-foreground">
-                      {advancedSkills.no_rebuy_win_percentage.toFixed(2)}%
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Avg Session w/o Rebuy
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(
-                          advancedSkills.no_rebuy_avg_net_profit
-                        )
-                      )}>
-                      {formatMoney(advancedSkills.no_rebuy_avg_net_profit)}
-                    </span>
-                  </li>
-                  <li className="flex items-center text-muted-foreground justify-between text-base">
-                    Largest Session w/o Rebuy
-                    <span
-                      className={cn(
-                        "font-semibold text-lg",
-                        getProfitTextColor(
-                          advancedSkills.no_rebuy_largest_net_profit
-                        )
-                      )}>
-                      {formatMoney(advancedSkills.no_rebuy_largest_net_profit)}
-                    </span>
-                  </li>
-                </ul>
-              </div>
             </>
           )}
         </div>
+        {view === "skills" && (
+          <div className="w-full md:col-span-2 flex md:grid md:grid-cols-3 max-md:flex-col gap-4 ">
+            <div className="max-md:px-3 max-md:border-t border-neutral-500 max-md:py-4">
+              <h2 className="md:border-b md:border-neutral-500 w-full md:pb-4">
+                Bounce Back
+              </h2>
+              <ul className="mt-4 flex flex-col gap-3">
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  <span className="flex items-center gap-1">
+                    Bounce Back Rate
+                    <Popover>
+                      <PopoverTrigger>
+                        <Info className="cursor-pointer w-4 h-4 text-muted-foreground" />
+                      </PopoverTrigger>
+                      <PopoverContent className="p-2">
+                        <p className="text-sm">
+                          This stat measures how often you follow up a losing
+                          session up with a winning session
+                        </p>
+                      </PopoverContent>
+                    </Popover>
+                  </span>
+                  <span className="font-semibold text-lg text-foreground">
+                    {advancedSkills.bounce_back_rate.toFixed(2)}%
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Avg Bounce Back Session
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(
+                        advancedSkills.avg_net_profit_after_loss
+                      )
+                    )}>
+                    {formatMoney(advancedSkills.avg_net_profit_after_loss)}
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Best Bounce Back Session
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(advancedSkills.largest_bounce_back)
+                    )}>
+                    {formatMoney(advancedSkills.largest_bounce_back)}
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Avg Rebuys Following Loss
+                  <span className={cn("font-semibold text-foreground text-lg")}>
+                    {advancedSkills.avg_rebuys_after_loss}
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Rebuy Rate Following Loss
+                  <span className={cn("font-semibold text-foreground text-lg")}>
+                    {advancedSkills.rebuy_rate.toFixed(2)}%
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div className="max-md:px-3 max-md:border-t border-neutral-500 max-md:py-4">
+              <h2 className="md:border-b md:border-neutral-500 w-full md:pb-4">
+                Volume Shooter
+              </h2>
+              <ul className="mt-4 flex flex-col gap-3">
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Win Rate after Rebuy
+                  <span className="font-semibold text-lg text-foreground">
+                    {advancedSkills.rebuy_win_percentage.toFixed(2)}%
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Avg Rebuy Session Net
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(advancedSkills.rebuy_avg_net_profit)
+                    )}>
+                    {formatMoney(advancedSkills.rebuy_avg_net_profit)}
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Largest Rebuy Session
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(
+                        advancedSkills.rebuy_largest_net_profit
+                      )
+                    )}>
+                    {formatMoney(advancedSkills.rebuy_largest_net_profit)}
+                  </span>
+                </li>
+              </ul>
+            </div>
+            <div className="max-md:px-3 max-md:border-t border-neutral-500 max-md:py-4">
+              <h2 className="md:border-b md:border-neutral-500 w-full md:pb-4">
+                Conservative Tendencies
+              </h2>
+              <ul className="mt-4 flex flex-col gap-3">
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Win Rate w/o Rebuy
+                  <span className="font-semibold text-lg text-foreground">
+                    {advancedSkills.no_rebuy_win_percentage.toFixed(2)}%
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Avg Session w/o Rebuy
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(advancedSkills.no_rebuy_avg_net_profit)
+                    )}>
+                    {formatMoney(advancedSkills.no_rebuy_avg_net_profit)}
+                  </span>
+                </li>
+                <li className="flex items-center text-muted-foreground justify-between text-base">
+                  Largest Session w/o Rebuy
+                  <span
+                    className={cn(
+                      "font-semibold text-lg",
+                      getProfitTextColor(
+                        advancedSkills.no_rebuy_largest_net_profit
+                      )
+                    )}>
+                    {formatMoney(advancedSkills.no_rebuy_largest_net_profit)}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
         <MemberAllStats
           seasons={seasons}
           view={view}

@@ -14,9 +14,6 @@ interface Props {
 }
 
 function StatsOverview({ seasonStats, poyData, members }: Props) {
-  const poyPointsLeaders = [...seasonStats].sort(
-    (a, b) => b.poy_points - a.poy_points
-  );
   const netProfitLeaders = [...seasonStats].sort(
     (a, b) => b.net_profit - a.net_profit
   );
@@ -33,7 +30,7 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
 
   return (
     <>
-      <div className="w-full px-2 hidden mt-8 md:grid md:grid-cols-2 lg:grid-cols-3 mb-4 md:mb-8 gap-8">
+      <div className="w-full px-2 hidden mt-8 md:grid md:grid-cols-2 lg:grid-cols-3 mb-4 gap-4">
         <Card className={cn("w-full")}>
           <CardTitle>POY Points</CardTitle>
           <div className="flex flex-col gap-4">
@@ -47,23 +44,21 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                 return (
                   <div
                     className="flex items-center justify-between"
-                    key={data.member_id + data.cash_points + index + "poy"}
-                  >
+                    key={data.member_id + data.cash_points + index + "poy"}>
                     <Link
                       href={`/members/${memberData?.id}`}
-                      className="flex items-center gap-4"
-                    >
+                      className="flex items-center gap-4">
                       <MemberImage
                         className="w-10 h-10"
                         src={memberData?.portrait_url || ""}
                         alt={data.first_name}
                       />
-                      <h3 className="text-base md:text-xl font-medium">
+                      <h3 className="text-base md:text-lg font-medium">
                         {data.first_name}
                       </h3>
                     </Link>
 
-                    <p className="font-semibold text-lg md:text-xl">
+                    <p className="font-semibold text-lg md:text-lg">
                       {data.cash_points.toFixed(2)}
                     </p>
                   </div>
@@ -77,18 +72,16 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
             {netProfitLeaders.slice(0, 3).map((data, index) => (
               <div
                 className="flex items-center justify-between"
-                key={data.member_id + data.net_profit + index + "net"}
-              >
+                key={data.member_id + data.net_profit + index + "net"}>
                 <Link
                   href={`/members/${data.member_id}`}
-                  className="flex items-center gap-4"
-                >
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
                     alt={data.first_name}
                   />
-                  <h3 className="text-base md:text-xl font-medium">
+                  <h3 className="text-base md:text-lg font-medium">
                     {data.first_name}
                   </h3>
                 </Link>
@@ -96,9 +89,8 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
                 <p
                   className={cn(
                     getProfitTextColor(data.net_profit),
-                    "font-semibold text-lg md:text-xl"
-                  )}
-                >
+                    "font-semibold text-lg md:text-lg"
+                  )}>
                   {formatMoney(data.net_profit)}
                 </p>
               </div>
@@ -111,23 +103,21 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
             {winsLeaders.slice(0, 3).map((data, index) => (
               <div
                 className="flex items-center justify-between"
-                key={data.wins + data.member_id + index + "wins"}
-              >
+                key={data.wins + data.member_id + index + "wins"}>
                 <Link
                   href={`/members/${data.member_id}`}
-                  className="flex items-center gap-4"
-                >
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
                     alt={data.first_name}
                   />
-                  <h3 className="text-base md:text-xl font-medium">
+                  <h3 className="text-base md:text-lg font-medium">
                     {data.first_name}
                   </h3>
                 </Link>
 
-                <p className="font-semibold text-lg md:text-xl">{data.wins}</p>
+                <p className="font-semibold text-lg md:text-lg">{data.wins}</p>
               </div>
             ))}
           </div>
@@ -138,28 +128,25 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
             {grossProfitLeaders.slice(0, 3).map((data, index) => (
               <div
                 className="flex items-center justify-between"
-                key={data.gross_profit + data.member_id + index + "gross"}
-              >
+                key={data.gross_profit + data.member_id + index + "gross"}>
                 <Link
                   href={`/members/${data.member_id}`}
-                  className="flex items-center gap-4"
-                >
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
                     alt={data.first_name}
                   />
-                  <h3 className="text-base md:text-xl font-medium">
+                  <h3 className="text-base md:text-lg font-medium">
                     {data.first_name}
                   </h3>
                 </Link>
 
                 <p
                   className={cn(
-                    "font-semibold text-lg md:text-xl",
+                    "font-semibold text-lg md:text-lg",
                     getProfitTextColor(data.gross_profit)
-                  )}
-                >
+                  )}>
                   {formatMoney(data.gross_profit)}
                 </p>
               </div>
@@ -172,23 +159,21 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
             {winPercentageLeaders.slice(0, 3).map((data, index) => (
               <div
                 className="flex items-center justify-between"
-                key={data.win_percentage + data.member_id + index + "gross"}
-              >
+                key={data.win_percentage + data.member_id + index + "gross"}>
                 <Link
                   href={`/members/${data.member_id}`}
-                  className="flex items-center gap-4"
-                >
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
                     alt={data.first_name}
                   />
-                  <h3 className="text-base md:text-xl font-medium">
+                  <h3 className="text-base md:text-lg font-medium">
                     {data.first_name}
                   </h3>
                 </Link>
 
-                <p className={cn("font-semibold text-lg md:text-xl")}>
+                <p className={cn("font-semibold text-lg md:text-lg")}>
                   {data.win_percentage.toFixed(2)}%
                 </p>
               </div>
@@ -201,28 +186,25 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
             {sessionAverageLeaders.slice(0, 3).map((data, index) => (
               <div
                 className="flex items-center justify-between"
-                key={data.session_avg + data.member_id + index + "gross"}
-              >
+                key={data.session_avg + data.member_id + index + "gross"}>
                 <Link
                   href={`/members/${data.member_id}`}
-                  className="flex items-center gap-4"
-                >
+                  className="flex items-center gap-4">
                   <MemberImage
                     className="w-10 h-10"
                     src={data.portrait_url}
                     alt={data.first_name}
                   />
-                  <h3 className="text-base md:text-xl font-medium">
+                  <h3 className="text-base md:text-lg font-medium">
                     {data.first_name}
                   </h3>
                 </Link>
 
                 <p
                   className={cn(
-                    "font-semibold text-lg md:text-xl",
+                    "font-semibold text-lg md:text-lg",
                     getProfitTextColor(data.sessions_played)
-                  )}
-                >
+                  )}>
                   {formatMoney(data.session_avg)}
                 </p>
               </div>

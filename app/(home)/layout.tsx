@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <>
       <Header />
       <MainWrapper>
-        <div className="max-w-screen-lg mx-auto w-full">{children}</div>
+        <div className="max-w-screen-xl mx-auto w-full">{children}</div>
       </MainWrapper>
       <BottomTabs />
     </>

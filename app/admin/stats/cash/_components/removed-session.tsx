@@ -150,7 +150,6 @@ function RemovedSession({
                   className="text-base gap-1 bg-transparent relative -top-[2px] text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
                   <span className="absolute w-3/5 h-[1.5px] bg-neutral-400" />
                   <SelectValue className="text-base font-semibold text-white" />
-                  <ChevronDown className="text-neutral-400 pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>

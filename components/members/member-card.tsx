@@ -56,7 +56,7 @@ function MemberCard({
   return (
     <span
       className={cn(
-        "flex flex-col justify-start gap-2 w-full",
+        "flex flex-col justify-start gap-2 w-full hover:scale-[1.02] transition duration-150",
         allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
       )}>
       <MemberImage
@@ -77,7 +77,6 @@ function MemberCard({
             month: "short",
           })}
         </li>
-        <li className="text-muted text-sm">Nickname: {member.nickname}</li>
       </ul>
       {allowEdit && (
         <Dialog>
@@ -86,7 +85,7 @@ function MemberCard({
               onClick={() => {
                 onEdit && onEdit(member.id);
               }}
-              className="hover:text-primary hover:underline h-fit m-0 p-0 transition">
+              className="bg-primary text-white rounded w-full p-1">
               Edit
             </button>
           </DialogTrigger>
@@ -96,7 +95,7 @@ function MemberCard({
               <DialogTitle
                 className={cn(
                   loading ? "hidden" : "block",
-                  "text-xl text-center"
+                  "text-xl text-center bg-primary rounded p-1"
                 )}>
                 Edit Member
               </DialogTitle>

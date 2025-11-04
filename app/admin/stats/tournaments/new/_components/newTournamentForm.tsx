@@ -110,9 +110,10 @@ function NewTournamentForm({ seasons, members }: Props) {
                 season_id: value,
               }));
             }}>
-            <SelectTrigger id="season">
+            <SelectTrigger
+              className="border border-neutral-500 h-12 rounded"
+              id="season">
               <SelectValue placeholder="Select a season" />
-              <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

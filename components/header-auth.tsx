@@ -2,13 +2,7 @@ import { signOutAction } from "@/app/actions";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
-import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 export default async function AuthButton() {
@@ -25,8 +19,8 @@ export default async function AuthButton() {
       <SheetTrigger asChild>
         <RxHamburgerMenu className="ml-auto" size={32} />
       </SheetTrigger>
-      <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-        <SheetTitle className="w-full sr-only flex items-center font-bold justify-center mb-8 text-2xl">
+      <SheetContent>
+        <SheetTitle className="w-full flex items-center font-bold justify-center mb-8 text-2xl">
           NLPT Stats
         </SheetTitle>
         {isAdmin && (
@@ -90,7 +84,6 @@ export default async function AuthButton() {
           </Button>
         )}
       </SheetContent>
-      <SheetOverlay />
     </Sheet>
   );
 }

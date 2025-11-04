@@ -6,10 +6,10 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div data-table className="relative w-full overflow-auto">
+  <div data-table className="relative md:pb-4 w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full  caption-bottom text-sm", className)}
       {...props}
     />
   </div>
@@ -20,7 +20,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:bg-muted", className)} {...props} />
+  <thead ref={ref} className={cn(className)} {...props} />
 ));
 TableHeader.displayName = "TableHeader";
 
@@ -51,7 +51,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "!border-b-[1px] border-neutral-600 transition-colors",
+      "border-b-[1px] border-neutral-600 transition-colors",
       className
     )}
     {...props}
@@ -66,7 +66,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 pr-8 pb-4 last:pr-0 align-bottom text-left text-muted text-xs bg-card whitespace-nowrap first:left-0 font-normal [&:has([role=checkbox])]:pr-0",
+      "h-12 pr-4 pb-4 last:pr-0 align-bottom text-left text-muted md:text-sm text-xs bg-card whitespace-nowrap first:left-0 font-normal [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -81,7 +81,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "pr-8 py-4 last:pr-0 text-xs md:text-base align-middle bg-card first:left-0 whitespace-nowrap [&:has([role=checkbox])]:pr-0",
+      "pr-4 py-4 last:pr-0 text-xs md:text-sm align-middle bg-card first:left-0 whitespace-nowrap [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
