@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import {
   Sheet,
   SheetContent,
-  SheetOverlay,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
@@ -38,18 +37,28 @@ function CareerOverview({ careerStats }: Props) {
     [emblaMainApi, emblaThumbsApi]
   );
 
-  const onSelect = useCallback(() => {
-    if (!emblaMainApi || !emblaThumbsApi) return;
-    setSelectedIndex(emblaMainApi.selectedScrollSnap());
-    emblaThumbsApi.scrollTo(emblaMainApi.selectedScrollSnap());
-  }, [emblaMainApi, emblaThumbsApi, setSelectedIndex]);
-
   useEffect(() => {
-    if (!emblaMainApi) return;
-    onSelect();
+    if (!emblaMainApi || !emblaThumbsApi) return;
 
-    emblaMainApi.on("select", onSelect).on("reInit", onSelect);
-  }, [emblaMainApi, onSelect]);
+    const handleSelect = () => {
+      const index = emblaMainApi.selectedScrollSnap();
+      setSelectedIndex(index);
+      emblaThumbsApi.scrollTo(index);
+    };
+
+    // Call once to sync initial state
+    handleSelect();
+
+    // Subscribe to changes
+    emblaMainApi.on("select", handleSelect);
+    emblaMainApi.on("reInit", handleSelect);
+
+    // Cleanup on unmount or dependency change
+    return () => {
+      emblaMainApi.off("select", handleSelect);
+      emblaMainApi.off("reInit", handleSelect);
+    };
+  }, [emblaMainApi, emblaThumbsApi, setSelectedIndex]);
 
   const netProfitLeaders = [...careerStats].sort(
     (a, b) => b.net_profit - a.net_profit
@@ -166,7 +175,6 @@ function CareerOverview({ careerStats }: Props) {
                     })}
                   </div>
                 </SheetContent>
-                <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
                 {winsLeaders.slice(0, 3).map((data, index) => (
@@ -240,7 +248,6 @@ function CareerOverview({ careerStats }: Props) {
                     })}
                   </div>
                 </SheetContent>
-                <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
                 {netProfitLeaders.slice(0, 3).map((data, index) => (
@@ -319,7 +326,6 @@ function CareerOverview({ careerStats }: Props) {
                     })}
                   </div>
                 </SheetContent>
-                <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
                 {grossProfitLeaders.slice(0, 3).map((data, index) => (
@@ -406,7 +412,6 @@ function CareerOverview({ careerStats }: Props) {
                     })}
                   </div>
                 </SheetContent>
-                <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
                 {winPercentageLeaders.slice(0, 3).map((data, index) => (
@@ -491,7 +496,6 @@ function CareerOverview({ careerStats }: Props) {
                     })}
                   </div>
                 </SheetContent>
-                <SheetOverlay />
               </Sheet>
               <div className="flex flex-col gap-4">
                 {sessionAverageLeaders.slice(0, 3).map((data, index) => (

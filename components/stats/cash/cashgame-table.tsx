@@ -7,12 +7,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "../../ui/table";
 import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
-import { Card, CardTitle } from "../ui/card";
+import { Card, CardTitle } from "../../ui/card";
 import { Minus } from "lucide-react";
 
 interface Props {
@@ -60,7 +60,7 @@ async function CashGameTable({
   const sessionLookup = sessions?.reduce<Record<string, CashSession>>(
     (acc, session) => {
       const key = `${session.member_id}-${session.week_id}`;
-      acc[key] = session as any;
+      acc[key] = session as CashSession;
       return acc;
     },
     {}

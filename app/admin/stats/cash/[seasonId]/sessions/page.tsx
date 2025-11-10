@@ -1,4 +1,4 @@
-import CashGameTable from "@/components/cashgames/cashgame-table";
+import CashGameTable from "@/components/stats/cash/cashgame-table";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 

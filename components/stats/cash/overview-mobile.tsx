@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CashSession,
-  Member,
-  POYData,
-  SeasonCashStats,
-  Week,
-} from "@/utils/types";
+import { Member, POYData, SeasonCashStats } from "@/utils/types";
 import useEmblaCarousel from "embla-carousel-react";
 import React, { useCallback, useEffect, useState } from "react";
 import { EmblaOptionsType } from "embla-carousel";
@@ -16,12 +10,11 @@ import MemberImage from "@/components/members/member-image";
 import { cn } from "@/lib/utils";
 import OverviewThumbs from "./overview-thumbs";
 import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import Link from "next/link";
 
 interface Props {
@@ -47,22 +40,29 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
     [emblaMainApi, emblaThumbsApi]
   );
 
-  const onSelect = useCallback(() => {
+  useEffect(() => {
     if (!emblaMainApi || !emblaThumbsApi) return;
-    setSelectedIndex(emblaMainApi.selectedScrollSnap());
-    emblaThumbsApi.scrollTo(emblaMainApi.selectedScrollSnap());
+
+    const handleSelect = () => {
+      const index = emblaMainApi.selectedScrollSnap();
+      setSelectedIndex(index);
+      emblaThumbsApi.scrollTo(index);
+    };
+
+    // Call once to sync initial state
+    handleSelect();
+
+    // Subscribe to changes
+    emblaMainApi.on("select", handleSelect);
+    emblaMainApi.on("reInit", handleSelect);
+
+    // Cleanup on unmount or dependency change
+    return () => {
+      emblaMainApi.off("select", handleSelect);
+      emblaMainApi.off("reInit", handleSelect);
+    };
   }, [emblaMainApi, emblaThumbsApi, setSelectedIndex]);
 
-  useEffect(() => {
-    if (!emblaMainApi) return;
-    onSelect();
-
-    emblaMainApi.on("select", onSelect).on("reInit", onSelect);
-  }, [emblaMainApi, onSelect]);
-
-  const poyPointsLeaders = [...seasonStats].sort(
-    (a, b) => b.poy_points - a.poy_points
-  );
   const netProfitLeaders = [...seasonStats].sort(
     (a, b) => b.net_profit - a.net_profit
   );
@@ -98,18 +98,18 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
             className="flex-[0_0_100%] min-w-0 pl-4">
             <Card>
               <CardTitle>POY Points</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>
                     POY Points
                     <br />
                     <span className="text-muted font-normal text-lg">
                       (cash only)
                     </span>
-                  </SheetTitle>
+                  </DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-3">
                     <span className="pb-2 border-b text-sm md:text-base border-neutral-600 w-full text-muted">
                       Name
@@ -144,9 +144,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                         );
                       })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {poyData
                   .sort((a, b) => b.cash_points - a.cash_points)
@@ -191,14 +190,12 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                 transform: "translate3D(0, 0, 0)",
               }}>
               <CardTitle>Wins</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-                    Wins
-                  </SheetTitle>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>Wins</DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-2">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Name
@@ -221,9 +218,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       );
                     })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {winsLeaders.slice(0, 3).map((data, index) => (
                   <div
@@ -261,14 +257,12 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                 transform: "translate3D(0, 0, 0)",
               }}>
               <CardTitle>Net Profit</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-                    Net Profit
-                  </SheetTitle>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>Net Profit</DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-2">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Name
@@ -295,9 +289,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       );
                     })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {netProfitLeaders.slice(0, 3).map((data, index) => (
                   <div
@@ -339,14 +332,12 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                 transform: "translate3D(0, 0, 0)",
               }}>
               <CardTitle>Gross Profit</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-                    Gross Profit
-                  </SheetTitle>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>Gross Profit</DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-2">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Name
@@ -374,9 +365,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       );
                     })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {grossProfitLeaders.slice(0, 3).map((data, index) => (
                   <div
@@ -418,14 +408,12 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                 transform: "translate3D(0, 0, 0)",
               }}>
               <CardTitle>Win Percentage</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-                    Win Percentage
-                  </SheetTitle>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>Win Percentage</DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-[3fr_2fr_2fr]">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Name
@@ -461,9 +449,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       );
                     })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {winPercentageLeaders.slice(0, 3).map((data, index) => (
                   <div
@@ -501,14 +488,12 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                 transform: "translate3D(0, 0, 0)",
               }}>
               <CardTitle>Session Avg</CardTitle>
-              <Sheet>
-                <SheetTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
+              <Drawer>
+                <DrawerTrigger className="absolute underline top-2 mt-2 right-4 text-muted text-sm">
                   Full List
-                </SheetTrigger>
-                <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-                  <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-                    Session Average
-                  </SheetTitle>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerTitle>Session Average</DrawerTitle>
                   <div className="grid mt-4 w-full grid-cols-[3fr_2fr_2fr]">
                     <span className="pb-2 border-b border-neutral-600 w-full text-muted">
                       Name
@@ -546,9 +531,8 @@ function OverviewMobile({ seasonStats, poyData, members }: Props) {
                       );
                     })}
                   </div>
-                </SheetContent>
-                <SheetOverlay />
-              </Sheet>
+                </DrawerContent>
+              </Drawer>
               <div className="flex flex-col gap-4">
                 {sessionAverageLeaders.slice(0, 3).map((data, index) => (
                   <div

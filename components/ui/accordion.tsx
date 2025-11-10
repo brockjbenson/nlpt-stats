@@ -4,7 +4,7 @@ import * as React from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 
 import { cn } from "@/lib/utils";
-import { Minus, Plus } from "lucide-react";
+import { ChevronDown, ChevronUp, Minus, Plus } from "lucide-react";
 
 const Accordion = React.forwardRef<
   React.ComponentRef<typeof AccordionPrimitive.Root>,
@@ -44,24 +44,41 @@ AccordionHeader.displayName = AccordionPrimitive.Header.displayName;
 
 const AccordionTrigger = React.forwardRef<
   React.ComponentRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> & {
+    icon?: "chevron" | "plus-minus";
+  }
+>(({ className, children, icon = "chevron", ...props }, ref) => (
   <AccordionPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex w-full group p-2 items-center justify-between gap-2",
+      "flex w-full group p-2 max-md:focus-visible:ring-0 max-md:focus-visible:outline-none max-md:focus-visible:border-none items-center justify-between gap-2",
       className
     )}
     {...props}>
     {children}
-    <Plus
-      size="20"
-      className="transition-transform group-data-[state=open]:hidden group-data-[state=closed]:block"
-    />
-    <Minus
-      size="20"
-      className="transition-transform group-data-[state=open]:block group-data-[state=closed]:hidden"
-    />
+    {icon === "chevron" ? (
+      <>
+        <ChevronDown
+          size="20"
+          className="transition-transform group-data-[state=open]:hidden group-data-[state=closed]:block"
+        />
+        <ChevronUp
+          size="20"
+          className="transition-transform group-data-[state=open]:block group-data-[state=closed]:hidden"
+        />
+      </>
+    ) : (
+      <>
+        <Plus
+          size="20"
+          className="transition-transform group-data-[state=open]:hidden group-data-[state=closed]:block"
+        />
+        <Minus
+          size="20"
+          className="transition-transform group-data-[state=open]:block group-data-[state=closed]:hidden"
+        />
+      </>
+    )}
   </AccordionPrimitive.Trigger>
 ));
 AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;

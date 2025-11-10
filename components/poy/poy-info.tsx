@@ -1,23 +1,20 @@
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "../ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
 import { FaCircleInfo } from "react-icons/fa6";
 
 function POYInfo() {
   return (
-    <Sheet>
-      <SheetTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
+    <Drawer>
+      <DrawerTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
         POY Standings <FaCircleInfo />
-      </SheetTrigger>
-      <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-        <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-          POY Calculation Guidelines
-        </SheetTitle>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerTitle>POY Calculation Guidelines</DrawerTitle>
         <div className="text-sm">
           <p className="font-semibold text-base mt-4">POY Calculation:</p>
           <p className="mt-4 w-full font-bold flex gap-2 items-center justify-center">
@@ -77,9 +74,8 @@ function POYInfo() {
             </ul>
           </div>
         </div>
-      </SheetContent>
-      <SheetOverlay />
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import CashYearSelector from "@/components/cashgames/cash-year-selector";
+import CashYearSelector from "@/components/stats/cash/cash-year-selector";
 import { Select, SelectTrigger } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Season } from "@/utils/types";
@@ -24,8 +24,7 @@ function AdminCashCarousel({ seasons, year, isAdmin = false }: Props) {
     <>
       <div
         className="mb-4 border-b pb-4 block md:hidden border-neutral-500 px-2 overflow-hidden"
-        ref={emblaMainRef}
-      >
+        ref={emblaMainRef}>
         <div className="flex touch-pan-y -ml-4">
           {seasons.map((season) => (
             <Link
@@ -40,14 +39,12 @@ function AdminCashCarousel({ seasons, year, isAdmin = false }: Props) {
                   ? `/admin/stats/cash?year=${season.year}`
                   : `/stats/cash?year=${season.year}`
               }
-              key={season.id + season.year}
-            >
+              key={season.id + season.year}>
               <span
                 className={cn(
                   year === season.year.toString() &&
                     "bg-primary px-3 py-1 text-white rounded"
-                )}
-              >
+                )}>
                 {season.year}
               </span>
             </Link>

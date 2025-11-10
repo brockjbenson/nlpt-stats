@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import {
-  FaTrophy,
-  FaMoneyBill,
-  FaChartArea,
-  FaUsers,
-  FaHome,
-} from "react-icons/fa";
+import { FaTrophy, FaMoneyBill, FaUsers, FaHome } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { TbWorldStar } from "react-icons/tb";
@@ -118,7 +112,7 @@ function BottomTabs() {
               )}
               href="/stats/tournaments">
               <FaTrophy className="w-5 h-5 " />
-              Tourney's
+              {"Tourney's"}
             </Link>
           </div>
         </li>

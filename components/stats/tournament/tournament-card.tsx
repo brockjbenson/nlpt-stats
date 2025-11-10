@@ -1,10 +1,9 @@
 import React from "react";
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { formatMoney } from "@/utils/utils";
 import { MajorsData } from "@/utils/types";
-import MemberImage from "../members/member-image";
-import NLPTCurrency from "../nlpt-currency-svg";
+import MemberImage from "@/components/members/member-image";
 
 interface Props {
   isAdmin?: boolean;

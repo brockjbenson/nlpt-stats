@@ -1,15 +1,15 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
-import StatsOverview from "@/components/cashgames/overview";
-import OverviewMobile from "@/components/cashgames/overview-mobile";
-import StatsTable from "@/components/cashgames/stats-table";
+import StatsOverview from "@/components/stats/cash/overview";
+import OverviewMobile from "@/components/stats/cash/overview-mobile";
+import StatsTable from "@/components/stats/cash/stats-table";
 import ErrorHandler from "@/components/error-handler";
-import CashYearSelector from "@/components/cashgames/cash-year-selector";
+import CashYearSelector from "@/components/stats/cash/cash-year-selector";
 import dynamic from "next/dynamic";
 import { Member, POYData, Season, SeasonCashStats } from "@/utils/types";
 const LazyCashGameTable = dynamic(
-  () => import("@/components/cashgames/cashgame-table")
+  () => import("@/components/stats/cash/cashgame-table")
 );
 
 interface Props {

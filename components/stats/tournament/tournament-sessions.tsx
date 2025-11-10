@@ -1,7 +1,7 @@
 import { MajorData } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
-import { Card, CardTitle } from "../ui/card";
+import { Card, CardTitle } from "../../ui/card";
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "../../ui/table";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { PiMedalFill } from "react-icons/pi";
 

@@ -2,13 +2,7 @@ import { signOutAction } from "@/app/actions";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
-import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { RxHamburgerMenu } from "react-icons/rx";
 
 export default async function AuthButton() {
@@ -90,7 +84,6 @@ export default async function AuthButton() {
           </Button>
         )}
       </SheetContent>
-      <SheetOverlay />
     </Sheet>
   );
 }

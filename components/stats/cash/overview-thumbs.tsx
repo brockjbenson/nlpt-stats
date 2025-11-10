@@ -1,10 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Medal } from "lucide-react";
-import React from "react";
-import { FaMoneyBill } from "react-icons/fa";
-import { PiRanking } from "react-icons/pi";
 
 interface PropType {
   selectedIndex: number;

@@ -2,242 +2,151 @@
 
 import * as React from "react";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
-import { cva, type VariantProps } from "class-variance-authority";
+import { XIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
-const Sheet = SheetPrimitive.Root;
+function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
+  return <SheetPrimitive.Root data-slot="sheet" {...props} />;
+}
 
-const SheetTrigger = SheetPrimitive.Trigger;
+function SheetTrigger({
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
+  return (
+    <SheetPrimitive.Trigger
+      className="focus-visible:outline-none focus:outline-none focus-visible:ring-0"
+      data-slot="sheet-trigger"
+      {...props}
+    />
+  );
+}
 
-const SheetClose = SheetPrimitive.Close;
+function SheetClose({
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Close>) {
+  return <SheetPrimitive.Close data-slot="sheet-close" {...props} />;
+}
 
-const SheetPortal = SheetPrimitive.Portal;
+function SheetPortal({
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Portal>) {
+  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />;
+}
 
-const SheetOverlay = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Overlay
-    className={cn(
-      "fixed inset-0 z-[2304598234059] bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    )}
-    {...props}
-    ref={ref}
-  />
-));
-SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
+function SheetOverlay({
+  className,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Overlay>) {
+  return (
+    <SheetPrimitive.Overlay
+      data-slot="sheet-overlay"
+      className={cn(
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        className
+      )}
+      {...props}
+    />
+  );
+}
 
-const sheetVariants = cva(
-  "fixed z-[2304598234058] focus:border-none focus:outline-none focus:ring-none gap-4 bg-neutral-900 py-6 px-2 pt-16 shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
-  {
-    variants: {
-      side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-        bottom:
-          "inset-x-0 bottom-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right:
-          "inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
-      },
-    },
-    defaultVariants: {
-      side: "right",
-    },
-  }
-);
-
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {}
-
-const SheetContent = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Content>,
-  SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => {
-  const [startX, setStartX] = React.useState<number | null>(null);
-  const [startY, setStartY] = React.useState<number | null>(null);
-  const [translate, setTranslate] = React.useState(0);
-  const [isDragging, setIsDragging] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
-  const [startTime, setStartTime] = React.useState<number | null>(null);
-  const closeRef = React.useRef<HTMLDivElement>(null);
-
-  const threshold = 100; // Min swipe distance to close
-  const maxTranslate = 800; // Max movement distance
-  const minCloseDuration = 300; // Minimum close animation duration (fast swipe)
-  const maxCloseDuration = 500; // Maximum close animation duration (slow swipe)
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (isClosing || !closeRef.current) return;
-
-    if (closeRef.current.contains(e.target as Node)) {
-      setStartX(e.touches[0].clientX);
-      setStartY(e.touches[0].clientY);
-      setStartTime(performance.now()); // Record time when touch starts
-      setIsDragging(true);
-    }
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (startX === null || startY === null || isClosing) return;
-
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    let moveAmount = 0;
-
-    if (side === "right") {
-      moveAmount = Math.max(-maxTranslate, currentX - startX);
-    } else if (side === "left") {
-      moveAmount = Math.min(maxTranslate, currentX - startX);
-    } else if (side === "bottom") {
-      moveAmount = Math.min(maxTranslate, currentY - startY);
-      if (moveAmount < 0) moveAmount = 0; // Prevent moving up
-    } else if (side === "top") {
-      moveAmount = Math.max(-maxTranslate, currentY - startY);
-    }
-
-    setTranslate(moveAmount);
-  };
-
-  const handleTouchEnd = () => {
-    if (startX === null || startY === null || startTime === null) return;
-
-    const endTime = performance.now();
-    const timeTaken = endTime - startTime; // Time in milliseconds
-
-    let distance = Math.abs(translate);
-    let velocity = distance / timeTaken; // Pixels per millisecond
-
-    // Convert velocity into animation duration (higher velocity = shorter duration)
-    let closeDuration = Math.max(
-      minCloseDuration,
-      Math.min(maxCloseDuration, (1 / velocity) * 150) // Adjust factor for smooth scaling
-    );
-
-    if (distance > threshold) {
-      setIsClosing(true);
-
-      // Calculate the final close translation
-      const closeTranslate =
-        side === "right"
-          ? -maxTranslate
-          : side === "left"
-            ? maxTranslate
-            : side === "bottom"
-              ? maxTranslate
-              : -maxTranslate; // for "top"
-
-      setTranslate(closeTranslate);
-
-      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-      setTimeout(() => {
-        setTranslate(0); // Reset after close
-        setIsClosing(false);
-      }, closeDuration);
-    } else {
-      setTranslate(0);
-    }
-
-    setStartX(null);
-    setStartY(null);
-    setStartTime(null);
-    setIsDragging(false);
-  };
-
+function SheetContent({
+  className,
+  children,
+  side = "right",
+  hideCloseButton = false,
+  ...props
+}: React.ComponentProps<typeof SheetPrimitive.Content> & {
+  side?: "top" | "right" | "bottom" | "left";
+  hideCloseButton?: boolean;
+}) {
   return (
     <SheetPortal>
-      <SheetOverlay />
-      <SheetPrimitive.Content
-        ref={ref}
-        className={cn(sheetVariants({ side }), className)}
+      <SheetOverlay
         style={{
-          transform:
-            side === "right" || side === "left"
-              ? `translateX(${translate}px)`
-              : `translateY(${translate}px)`,
-          transition: isDragging
-            ? "none"
-            : `transform ${isClosing ? "var(--close-duration, 300ms)" : "0.3s"} ease-out`,
-          willChange: "transform",
+          backdropFilter: "blur(1px)",
         }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      />
+      <SheetPrimitive.Content
+        style={{
+          paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+          paddingInline: "16px",
+        }}
+        data-slot="sheet-content"
+        className={cn(
+          "bg-card data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 shadow-lg transition data-[state=closed]:duration-300 data-[state=open]:duration-300",
+          side === "right" &&
+            "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-4/5  sm:max-w-sm",
+          side === "left" &&
+            "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-4/5 sm:max-w-sm",
+          side === "top" &&
+            "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
+          side === "bottom" &&
+            "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
+          className
+        )}
         {...props}>
-        <div
-          id="sheet-scroll-container"
-          className="h-full px-2 overflow-y-auto overflow-x-hidden">
-          {children}
-        </div>
-        {/* Drag Handle */}
-        <div
-          ref={closeRef}
-          className="w-full absolute top-0 left-0 py-4 flex items-center justify-center cursor-grab">
-          <span className="w-1/5 h-1 bg-muted rounded-full" />
-        </div>
+        {children}
+        {!hideCloseButton && (
+          <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+            <XIcon className="size-4" />
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+        )}
       </SheetPrimitive.Content>
     </SheetPortal>
   );
-});
-SheetContent.displayName = SheetPrimitive.Content.displayName;
+}
 
-const SheetHeader = ({
+function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="sheet-header"
+      className={cn("flex flex-col gap-1.5 p-4", className)}
+      {...props}
+    />
+  );
+}
+
+function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="sheet-footer"
+      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+      {...props}
+    />
+  );
+}
+
+function SheetTitle({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col space-y-2 text-center sm:text-left",
-      className
-    )}
-    {...props}
-  />
-);
-SheetHeader.displayName = "SheetHeader";
+}: React.ComponentProps<typeof SheetPrimitive.Title>) {
+  return (
+    <SheetPrimitive.Title
+      data-slot="sheet-title"
+      className={cn("text-foreground font-semibold", className)}
+      {...props}
+    />
+  );
+}
 
-const SheetFooter = ({
+function SheetDescription({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className
-    )}
-    {...props}
-  />
-);
-SheetFooter.displayName = "SheetFooter";
-
-const SheetTitle = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold text-foreground", className)}
-    {...props}
-  />
-));
-SheetTitle.displayName = SheetPrimitive.Title.displayName;
-
-const SheetDescription = React.forwardRef<
-  React.ElementRef<typeof SheetPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <SheetPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-SheetDescription.displayName = SheetPrimitive.Description.displayName;
+}: React.ComponentProps<typeof SheetPrimitive.Description>) {
+  return (
+    <SheetPrimitive.Description
+      data-slot="sheet-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  );
+}
 
 export {
   Sheet,
-  SheetPortal,
-  SheetOverlay,
   SheetTrigger,
   SheetClose,
   SheetContent,

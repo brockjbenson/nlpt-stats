@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
+import MobileNav from "../header/nav/mobile";
 
 interface props {
   children?: React.ReactNode;
@@ -41,7 +42,7 @@ function PageHeader({ className, children, skeleton = false, title }: props) {
           <h1 className="text-xl text-center md:text-2xl font-bold">{title}</h1>
         )}
         {children && children}
-        <HeaderAuth />
+        <MobileNav />
       </div>
     </PageHeaderWrapper>
   );

@@ -1,6 +1,5 @@
 import React from "react";
 import Nav from "./nav";
-import { ThemeSwitcher } from "../theme-switcher";
 import HeaderAuth from "@/components/header-auth";
 import Logo from "../logo";
 import { createClient } from "@/utils/supabase/server";
@@ -31,8 +30,7 @@ async function Header() {
             <Button asChild size="sm" variant={"outline"}>
               <Link
                 className=" self-end ml-auto align-middle w-fit"
-                href="/sign-in"
-              >
+                href="/sign-in">
                 Sign in
               </Link>
             </Button>

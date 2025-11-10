@@ -56,6 +56,10 @@
     border-radius: 100vw;
   }
 
+  #drawer-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+
   [data-table]::-webkit-scrollbar {
     height: 8px;
   }
@@ -114,7 +118,7 @@ body {
 }
 
 #main-wrapper {
-  height: calc(100vh - 79px);
+  height: calc(100vh - 73px);
   overflow-y: scroll;
   overflow-x: hidden;
 }
@@ -135,7 +139,7 @@ body {
 
   #main-wrapper {
     height: calc(
-      100vh - 79px + 1rem - env(safe-area-inset-top) +
+      100vh - 73px + 1rem - env(safe-area-inset-top) +
         env(safe-area-inset-bottom)
     );
   }

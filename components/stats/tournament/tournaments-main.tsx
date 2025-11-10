@@ -5,14 +5,14 @@ import React from "react";
 import YearCarousel from "./year-carousel";
 import TournamentCard from "./tournament-card";
 import Link from "next/link";
-import { Card } from "../ui/card";
+import { Card } from "../../ui/card";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectTrigger,
-} from "../ui/select";
+} from "../../ui/select";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -42,8 +42,7 @@ function TournamentsMain({ tournamentsData, seasons, isAdmin }: Props) {
           <SelectTrigger
             className={cn(
               "bg-transparent border-b m-0 border-b-neutral-500 py-3 rounded-none h-fit items-center gap-1 text-xl font-bold w-fit"
-            )}
-          >
+            )}>
             {view === "all" ? "All" : view}
             <ChevronDown className={cn("w-6 h-6 ml-2", open && "rotate-180")} />
           </SelectTrigger>
@@ -56,8 +55,7 @@ function TournamentsMain({ tournamentsData, seasons, isAdmin }: Props) {
                     setView("all");
                   }}
                   key={"all"}
-                  className="w-full py-2 pl-2 text-left pr-4 hover:bg-neutral-800"
-                >
+                  className="w-full py-2 pl-2 text-left pr-4 hover:bg-neutral-800">
                   All
                 </button>
                 {seasons.map((season) => (
@@ -67,8 +65,7 @@ function TournamentsMain({ tournamentsData, seasons, isAdmin }: Props) {
                       setView(season.year.toString());
                     }}
                     key={season.id + season.year}
-                    className="w-full py-2 text-left pl-2 pr-4 hover:bg-neutral-800"
-                  >
+                    className="w-full py-2 text-left pl-2 pr-4 hover:bg-neutral-800">
                     {season.year}
                   </button>
                 ))}
@@ -83,8 +80,7 @@ function TournamentsMain({ tournamentsData, seasons, isAdmin }: Props) {
           <Card>
             <Link
               className="w-full flex items-center font-semibold justify-between"
-              href={"/admin/stats/tournaments/new"}
-            >
+              href={"/admin/stats/tournaments/new"}>
               New Tournament
               <PlusCircle className="text-primary" />
             </Link>

@@ -1,9 +1,9 @@
 import React from "react";
-import { Card, CardTitle } from "../ui/card";
+import { Card, CardTitle } from "../../ui/card";
 import { MajorData } from "@/utils/types";
 import { formatMoney } from "@/utils/utils";
 import Link from "next/link";
-import MemberImage from "../members/member-image";
+import MemberImage from "../../members/member-image";
 
 interface Props {
   isAdmin?: boolean;
@@ -19,8 +19,7 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
       {isAdmin && (
         <Link
           href={`/admin/stats/tournaments/${data.id}/edit`}
-          className="text-base text-white underline absolute top-3 right-4"
-        >
+          className="text-base text-white underline absolute top-3 right-4">
           Edit
         </Link>
       )}
@@ -30,8 +29,7 @@ function TournamentInfo({ isAdmin = false, data }: Props) {
           {tournamentWinner ? (
             <Link
               href={`/members/${tournamentWinner.member_id}`}
-              className="grid grid-cols-[50px_1fr] gap-2 items-center"
-            >
+              className="grid grid-cols-[50px_1fr] gap-2 items-center">
               <MemberImage
                 src={tournamentWinner.portrait_url}
                 alt={tournamentWinner.first_name}

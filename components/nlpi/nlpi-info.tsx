@@ -1,23 +1,20 @@
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "../ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { FaCircleInfo } from "react-icons/fa6";
 
 function NLPIInfo() {
   return (
-    <Sheet>
-      <SheetTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
+    <Drawer>
+      <DrawerTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
         NLPI Rankings <FaCircleInfo />
-      </SheetTrigger>
-      <SheetContent className="h-4/5 rounded-t-[20px]" side="bottom">
-        <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-          NLPI Calculation Guidelines
-        </SheetTitle>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerTitle>NLPI Calculation Guidelines</DrawerTitle>
         <p className="mt-4 text-sm">
           NLPI is calculated on your last 20 cash session and your last 4
           tournament sessions. It is a rolling period changing week by week and
@@ -84,9 +81,8 @@ function NLPIInfo() {
             </ul>
           </div>
         </div>
-      </SheetContent>
-      <SheetOverlay />
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

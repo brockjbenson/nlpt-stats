@@ -1,10 +1,7 @@
-import YearCarousel from "@/components/tournament/year-carousel";
 import { createClient } from "@/utils/supabase/server";
-import { MajorsData, Tournament } from "@/utils/types";
 import React from "react";
-import TournamentCard from "@/components/tournament/tournament-card";
 import ErrorHandler from "@/components/error-handler";
-import TournamentsMain from "@/components/tournament/tournaments-main";
+import TournamentsMain from "@/components/stats/tournament/tournaments-main";
 
 interface Props {
   searchParams: Promise<{

@@ -3,26 +3,12 @@ import NLPICalculator from "@/components/nlpi/nlpi-calculator";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { NLPIData } from "@/utils/types";
-import { ArrowDown, ArrowUp, Minus } from "lucide-react";
-import Link from "next/link";
-import React from "react";
+import { NLPIDataTable } from "./table/table";
+import { columns } from "./table/columns";
 
-interface props {
-  searchParams: Promise<{ date: string | null }>;
-}
-
-async function NLPI({ searchParams }: props) {
+async function NLPI() {
   const db = await createClient();
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
@@ -61,42 +47,6 @@ async function NLPI({ searchParams }: props) {
     (data: NLPIData) => data.total_points === 0
   );
 
-  const getRankChangeInfo = (
-    currentRank: number,
-    lastWeekRank: number | null
-  ) => {
-    if (lastWeekRank === null) {
-      return {
-        positive: false,
-        change: 0,
-        color: "text-theme-green",
-        icon: <ArrowUp size={16} />,
-      };
-    }
-    if (currentRank === lastWeekRank) {
-      return {
-        positive: false,
-        change: 0,
-        color: "text-foreground",
-        icon: <Minus className="text-foreground" size={14} />,
-      };
-    } else if (currentRank < lastWeekRank) {
-      return {
-        positive: true,
-        change: lastWeekRank - currentRank,
-        color: "text-theme-green",
-        icon: <ArrowUp className="text-theme-green" size={16} />,
-      };
-    } else {
-      return {
-        positive: false,
-        change: currentRank - lastWeekRank,
-        color: "text-theme-red",
-        icon: <ArrowDown className="text-theme-red" size={16} />,
-      };
-    }
-  };
-
   return (
     <>
       <PageHeader>
@@ -107,142 +57,15 @@ async function NLPI({ searchParams }: props) {
           <NLPICalculator nlpiData={nlpiData} />
         </div>
         <Card className="w-full mb-8">
-          <Table>
-            <TableHeader>
-              <TableRow className="uppercase">
-                <TableHead className="md:pr-0 pr-4 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                  Ranking
-                </TableHead>
-                <TableHead className="pr-4">
-                  <span className="flex flex-col items-center">
-                    <span>Last</span>
-                    <span>Week</span>
-                  </span>
-                </TableHead>
-                <TableHead className="pr-4">
-                  <span className="flex flex-col items-center">
-                    <span>End</span>
-                    <span>{previousYear}</span>
-                  </span>
-                </TableHead>
-
-                <TableHead className="pr-0 sticky left-[69px] z-10 bg-card border-b-[1.7px] border-neutral-600">
-                  Member
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Avg</span>
-                    <span>Points</span>
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Total</span>
-                    <span>Points</span>
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Total</span>
-                    <span>Cash</span>
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Avg</span>
-                    <span>Cash</span>
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Total</span>
-                    <span>Major</span>
-                  </span>
-                </TableHead>
-                <TableHead>
-                  <span className="flex flex-col items-center">
-                    <span>Avg</span>
-                    <span>Major</span>
-                  </span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {nlpiData.map((data: NLPIData) => {
-                if (data.total_points === 0) {
-                  return null;
-                }
-                const changeData = getRankChangeInfo(
-                  data.rank,
-                  data.last_week_rank
-                );
-                return (
-                  <TableRow key={data.member_id}>
-                    <TableCell className="md:pr-0 pr-2 sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      <span className="flex gap-2 items-center relative right-2 justify-center">
-                        <span
-                          className={cn(changeData.color, "flex items-center")}>
-                          {changeData.icon}
-                        </span>
-                        {data.rank}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {data.last_week_rank || (
-                          <Minus className="text-foreground" size={14} />
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell className="pr-8">
-                      <span className="flex justify-center">
-                        {data.last_year_rank || (
-                          <Minus className="text-foreground" size={14} />
-                        )}
-                      </span>
-                    </TableCell>
-                    <TableCell className="pr-3 md:pr-0 sticky left-[69px] z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      <Link href={`/members/${data.member_id}`}>
-                        {data.first_name} {data.last_name.slice(0, 1)}.
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {(data.total_points / data.divisor).toFixed(3)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {data.total_points.toFixed(3)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {data.cash_points.toFixed(3)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {(data.cash_points / data.cash_divisor).toFixed(3)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {data.tournament_points.toFixed(3)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex justify-center">
-                        {(data.tournament_points / data.major_divisor).toFixed(
-                          3
-                        )}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <NLPIDataTable
+            columns={columns}
+            data={nlpiData
+              .map((row: NLPIData) => ({ ...row, previousYear }))
+              .filter(
+                (row: NLPIData & { previousYear: number | null }) =>
+                  row.total_points > 0
+              )}
+          />
         </Card>
         <h2 className="mt-12 mb-2 w-full flex flex-col gap-1 text-base pb-2 border-b border-muted mr-auto">
           Ineligible Members

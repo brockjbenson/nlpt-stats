@@ -2,7 +2,7 @@
 
 import { Member, Tournament } from "@/utils/types";
 import React, { useRef } from "react";
-import { Label } from "../ui/label";
+import { Label } from "../../ui/label";
 import {
   Select,
   SelectContent,
@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "../../ui/select";
 import { assignTournamentSessionPoints } from "@/utils/tournament/utils";
 import {
   AlertDialog,
@@ -20,7 +20,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogTitle,
-} from "../ui/alert-dialog";
+} from "../../ui/alert-dialog";
 import {
   AlertCircleIcon,
   ChevronDown,
@@ -30,7 +30,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { addTournamentSessionAction } from "../admin/stats/actions/add-session";
+import { addTournamentSessionAction } from "../../admin/stats/actions/add-session";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";

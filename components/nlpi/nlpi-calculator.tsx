@@ -2,21 +2,19 @@
 
 import React from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetOverlay,
-  SheetTitle,
-  SheetTrigger,
-} from "../ui/sheet";
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "@/components/ui/select";
 import { NLPIData } from "@/utils/types";
 import { Label } from "../ui/label";
 import { cn } from "@/lib/utils";
@@ -27,28 +25,22 @@ interface Props {
 }
 
 function NLPICalculator({ nlpiData }: Props) {
-  const [selectedMemberId, setSelectedMemberId] = React.useState<string | null>(
-    null
-  );
   const [selectedMemberData, setSelectedMemberData] = React.useState<
     NLPIData["session_coming_off"] | null
   >(null);
 
   const handleMemberDataChange = (memberId: string) => {
-    setSelectedMemberId(memberId);
     const memberData = nlpiData.find((data) => data.member_id === memberId);
     setSelectedMemberData(memberData?.session_coming_off || null);
   };
 
   return (
-    <Sheet>
-      <SheetTrigger className="underline text-left">
+    <Drawer>
+      <DrawerTrigger className="underline text-left">
         Session Coming Off
-      </SheetTrigger>
-      <SheetContent className="h-3/5 rounded-t-[20px]" side="bottom">
-        <SheetTitle className="w-full sticky top-0 bg-neutral-900 text-center text-2xl mb-2 font-bold">
-          NLPI Session Coming Off
-        </SheetTitle>
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerTitle>NLPI Session Coming Off</DrawerTitle>
         <div className="mt-6">
           <Label>Members</Label>
           <Select onValueChange={(value) => handleMemberDataChange(value)}>
@@ -104,9 +96,8 @@ function NLPICalculator({ nlpiData }: Props) {
             </p>
           )}
         </div>
-      </SheetContent>
-      <SheetOverlay />
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

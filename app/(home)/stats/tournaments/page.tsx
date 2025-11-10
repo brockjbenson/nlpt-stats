@@ -2,7 +2,7 @@ import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import ErrorHandler from "@/components/error-handler";
-import TournamentsMain from "@/components/tournament/tournaments-main";
+import TournamentsMain from "@/components/stats/tournament/tournaments-main";
 
 async function Page() {
   const db = await createClient();

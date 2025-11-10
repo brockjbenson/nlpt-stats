@@ -1,6 +1,6 @@
 import ErrorHandler from "@/components/error-handler";
-import TournamentInfo from "@/components/tournament/tournament-info-card";
-import TournamentSessions from "@/components/tournament/tournament-sessions";
+import TournamentInfo from "@/components/stats/tournament/tournament-info-card";
+import TournamentSessions from "@/components/stats/tournament/tournament-sessions";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 
