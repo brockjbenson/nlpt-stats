@@ -12,7 +12,7 @@ interface Props {
 }
 async function AddWeeks({ seasonId, year }: Props) {
   return (
-    <form className="w-full px-4 max-w-screen-sm mx-auto">
+    <form className="w-full px-4 max-w-(--breakpoint-sm) mx-auto">
       <h2 className="text-center font-semibold text-xl">
         Add Weeks for {year} Season
       </h2>

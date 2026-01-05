@@ -60,7 +60,7 @@ function MemberCard({
         allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
       )}>
       <MemberImage
-        className="w-full relative aspect-[6/7] rounded-[8px] overflow-hidden"
+        className="w-full relative aspect-6/7 rounded-[8px] overflow-hidden"
         imageClassName="object-cover absolute w-full h-full"
         src={member.portrait_url}
         alt={member.first_name + member.last_name}

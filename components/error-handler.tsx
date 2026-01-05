@@ -25,7 +25,7 @@ function ErrorHandler({
       <PageHeader className={headerClassName} title={pageTitle} />
       <div
         className={cn(
-          "w-full max-w-screen-xl  flex flex-col md:mt-8 gap-8 items-center mx-auto px-2",
+          "w-full max-w-(--breakpoint-xl)  flex flex-col md:mt-8 gap-8 items-center mx-auto px-2",
           className
         )}
       >

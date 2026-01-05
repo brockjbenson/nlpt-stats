@@ -430,7 +430,7 @@ function EditSessionForm({ sessions }: Props) {
                                 [session.member_id]: session.buy_in.toFixed(2),
                               }));
                             }}
-                            className="h-fit p-0 disabled:line-through text-center w-full outline-none ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
+                            className="h-fit p-0 disabled:line-through text-center w-full outline-hidden ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
                           />
                         </fieldset>
                       </span>
@@ -510,7 +510,7 @@ function EditSessionForm({ sessions }: Props) {
                                   session.cash_out.toFixed(2),
                               }));
                             }}
-                            className="h-fit disabled:line-through p-0 text-center w-full outline-none ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
+                            className="h-fit disabled:line-through p-0 text-center w-full outline-hidden ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
                           />
                         </fieldset>
                       </span>

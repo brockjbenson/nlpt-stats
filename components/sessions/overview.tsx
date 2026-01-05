@@ -99,7 +99,7 @@ async function SessionsOverview({ sessions }: Props) {
               <span>{leaderData.member.lastName}</span>
             </h3>
           </div>
-          <div className="grid grid-cols-2 xs:grid-cols-4 items-center gap-6 flex-grow max-md:w-full">
+          <div className="grid grid-cols-2 xs:grid-cols-4 items-center gap-6 grow max-md:w-full">
             <div className="flex items-start justify-center flex-col gap-2">
               <h4 className="text-sm lg:text-lg pb-2 border-b border-muted w-full">
                 Net Profit

@@ -16,7 +16,7 @@ async function Header() {
 
   return (
     <header className="border-t-2 hidden md:block sticky top-0 py-6 bg-background/50 backdrop-blur-xl z-50 border-t-primary border-b border-b-neutral-600">
-      <div className=" max-w-screen-xl grid grid-cols-[100px_1fr_100px] px-4 justify-between items-center mx-auto">
+      <div className=" max-w-(--breakpoint-xl) grid grid-cols-[100px_1fr_100px] px-4 justify-between items-center mx-auto">
         <Logo />
         <Nav excludeAdmin={!user} />
         <div className="hidden md:block">

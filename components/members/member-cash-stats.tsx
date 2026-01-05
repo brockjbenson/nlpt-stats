@@ -42,7 +42,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
 
   return (
     <div className="w-full md:gap-8 md:col-span-2 grid grid-cols-1 md:grid-cols-2 mt-4 px-4 ">
-      <div className="flex w-full md:col-span-2 py-4 justify-between border-t-[2px] border-neutral-700 items-center">
+      <div className="flex w-full md:col-span-2 py-4 justify-between border-t-2 border-neutral-700 items-center">
         <h3 className="text-xl font-semibold">
           {year === undefined ? "Career Cash Stats" : `${year} Cash Stats`}
         </h3>
@@ -207,7 +207,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           </p>
         </div>
       </div>
-      <div className="max-md:py-4 max-md:border-t-[2px] max-md:border-neutral-700">
+      <div className="max-md:py-4 max-md:border-t-2 max-md:border-neutral-700">
         <h3 className="text-xl block md:hidden font-semibold">
           Advanced Stats
         </h3>

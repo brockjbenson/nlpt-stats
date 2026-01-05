@@ -39,7 +39,7 @@ async function MobileNav() {
       <SheetTrigger>
         <MenuIcon className="ml-auto" size={32} />
       </SheetTrigger>
-      <SheetContent className="!px-0 gap-0" hideCloseButton side="right">
+      <SheetContent className="px-0! gap-0" hideCloseButton side="right">
         <SheetTitle className="w-full border-b px-4 pb-4 mb-4 border-neutral-700 flex items-center gap-4">
           <Image
             src="/icons/nlpt-no-bg.png"

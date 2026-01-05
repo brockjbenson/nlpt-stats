@@ -216,14 +216,14 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex px-2 max-w-screen-lg mx-auto top-0 h-[50px] bg-background z-10 items-center justify-between">
+      <div className="flex px-2 max-w-(--breakpoint-lg) mx-auto top-0 h-[50px] bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>
       </div>
       <div
         className={cn(
-          "w-full px-2 mt-4 max-w-screen-lg mx-auto",
+          "w-full px-2 mt-4 max-w-(--breakpoint-lg) mx-auto",
           sessionsToAdd?.length > 0 ? "pb-20" : ""
         )}>
         <form className="grid grid-cols-2 gap-4 mb-8">

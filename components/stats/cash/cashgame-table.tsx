@@ -99,7 +99,7 @@ async function CashGameTable({
   };
 
   return (
-    <div className="px-2 w-full max-w-screen-xl mx-auto">
+    <div className="px-2 w-full max-w-(--breakpoint-xl) mx-auto">
       <Card className="w-full overflow-hidden">
         <CardTitle>Cash Sessions</CardTitle>
         <Table>

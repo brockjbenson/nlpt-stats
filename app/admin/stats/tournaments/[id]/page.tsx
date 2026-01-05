@@ -29,8 +29,8 @@ async function Page({ params }: Props) {
   }
 
   return (
-    <div className="w-full max-w-screen-xl mx-auto px-2">
-      <div className="w-full max-w-screen-xl mx-auto px-2">
+    <div className="w-full max-w-(--breakpoint-xl) mx-auto px-2">
+      <div className="w-full max-w-(--breakpoint-xl) mx-auto px-2">
         <h2 className="text-2xl w-full flex items-center justify-center mb-8">
           {majorData.name}
         </h2>

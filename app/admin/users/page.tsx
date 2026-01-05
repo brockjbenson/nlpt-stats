@@ -23,7 +23,7 @@ async function Page() {
   } = await adminSupabase.auth.admin.listUsers();
 
   return (
-    <div className="mx-auto max-w-screen-xl px-2">
+    <div className="mx-auto max-w-(--breakpoint-xl) px-2">
       <h2 className="text-xl mb-8 font-semibold">Users</h2>
       <Card>
         <Table>

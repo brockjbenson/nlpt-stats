@@ -55,8 +55,8 @@ const InstallPrompt = () => {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 w-screen h-screen flex items-end justify-center z-[20394582304958] bg-black/50">
-      <div className="fixed bottom-0 left-0 w-screen bg-background shadow-lg rounded-lg p-4 flex justify-between items-center z-[20394582304958]">
+    <div className="fixed bottom-0 left-0 w-screen h-screen flex items-end justify-center z-20394582304958 bg-black/50">
+      <div className="fixed bottom-0 left-0 w-screen bg-background shadow-lg rounded-lg p-4 flex justify-between items-center z-20394582304958">
         {renderInstructions()}
         <button
           onClick={() => setShowPrompt(false)}

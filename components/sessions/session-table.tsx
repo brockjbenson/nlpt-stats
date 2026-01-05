@@ -26,7 +26,7 @@ interface Props {
 function SessionTable({ data, className }: Props) {
   const sessions = data.sessions;
   return (
-    <div className="w-full max-w-screen-xl mx-auto mt-4 px-2">
+    <div className="w-full max-w-(--breakpoint-xl) mx-auto mt-4 px-2">
       <Card className="w-full mb-8">
         <CardTitle className="">Session Overview</CardTitle>
         <Table className={cn(className)}>

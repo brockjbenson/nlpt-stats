@@ -30,7 +30,7 @@ function MemberMajorStats({ careerStats, view, seasons }: Props) {
         )[0];
   return (
     <div className="w-full mt-4 px-4 ">
-      <div className="flex w-full py-4 justify-between border-t-[2px] border-neutral-700 items-center">
+      <div className="flex w-full py-4 justify-between border-t-2 border-neutral-700 items-center">
         <h3 className="text-xl font-semibold">
           {year === undefined ? "Career Major Stats" : `${year} Major Stats`}
         </h3>

@@ -25,16 +25,16 @@ function RecordsComponent({
     <div className="flex px-2 flex-col gap-4 items-center justify-center">
       <RecordsCarousel view={view} setView={setView} />
       <CareerRecords
-        className={view === "career" ? "" : "!hidden"}
+        className={view === "career" ? "" : "hidden!"}
         data={data.career}
         nlpiRecords={nlpiRecords}
       />
       <SeasonRecords
-        className={view === "season" ? "" : "!hidden"}
+        className={view === "season" ? "" : "hidden!"}
         data={data.season}
       />
       <SessionRecords
-        className={view === "session" ? "" : "!hidden"}
+        className={view === "session" ? "" : "hidden!"}
         data={data.session}
       />
     </div>

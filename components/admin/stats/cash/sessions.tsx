@@ -153,7 +153,7 @@ function Sessions({
                                 correspondingSession.buy_in.toFixed(2),
                             }));
                           }}
-                          className="h-fit p-0 text-center w-full outline-none ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
+                          className="h-fit p-0 text-center w-full outline-hidden ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
                         />
                       </fieldset>
                     </span>
@@ -233,7 +233,7 @@ function Sessions({
                                 correspondingSession.cash_out.toFixed(2),
                             }));
                           }}
-                          className="h-fit p-0 text-center w-full outline-none ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
+                          className="h-fit p-0 text-center w-full outline-hidden ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
                         />
                       </fieldset>
                     </span>

@@ -16,7 +16,7 @@ function SessionOverview({ data }: Props) {
   const biggestLoser = sessions[sessions.length - 1];
   const sessionDate = new Date(data.date);
   return (
-    <div className="grid mt-4 mb-4 grid-cols-1 w-full max-w-screen-xl px-2 mx-auto md:grid-cols-3 gap-4">
+    <div className="grid mt-4 mb-4 grid-cols-1 w-full max-w-(--breakpoint-xl) px-2 mx-auto md:grid-cols-3 gap-4">
       <Card>
         <div className="flex pb-6 items-center justify-between">
           <CardTitle className="p-0">Session Info</CardTitle>

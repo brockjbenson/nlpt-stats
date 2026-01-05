@@ -187,7 +187,7 @@ function StatsTable({ careerStats, view }: Props) {
         createPortal(
           <div
             className={cn(
-              "w-full h-screen fixed top-0 left-0 transition-transform duration-300 z-[12034812039481234]",
+              "w-full h-screen fixed top-0 left-0 transition-transform duration-300 z-12034812039481234",
               fullScreenMounted ? "translate-y-0" : "translate-y-full"
             )}>
             <Card className="w-screen h-screen overflow-y-auto pt-16 border-none rounded-none">

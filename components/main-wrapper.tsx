@@ -34,7 +34,7 @@ function MainWrapper({ children }: { children: React.ReactNode }) {
           <ArrowDown
             className={cn(
               "w-6 h-6 text-muted transition-transform duration-200",
-              flipIndicator ? " !rotate-180" : "!rotate-0"
+              flipIndicator ? " rotate-180!" : "rotate-0!"
             )}
           />
         )}

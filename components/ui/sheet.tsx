@@ -15,7 +15,7 @@ function SheetTrigger({
 }: React.ComponentProps<typeof SheetPrimitive.Trigger>) {
   return (
     <SheetPrimitive.Trigger
-      className="focus-visible:outline-none focus:outline-none focus-visible:ring-0"
+      className="focus-visible:outline-hidden focus:outline-hidden focus-visible:ring-0"
       data-slot="sheet-trigger"
       {...props}
     />
