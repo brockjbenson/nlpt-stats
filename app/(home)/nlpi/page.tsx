@@ -2,7 +2,7 @@ import ErrorHandler from "@/components/error-handler";
 import NLPICalculator from "@/components/nlpi/nlpi-calculator";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
 import { NLPIData } from "@/utils/types";
 import { NLPIDataTable } from "./table/table";

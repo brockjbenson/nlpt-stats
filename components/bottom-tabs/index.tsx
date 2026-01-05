@@ -1,24 +1,16 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { FaTrophy, FaMoneyBill, FaUsers, FaHome } from "react-icons/fa";
+import { FaTrophy, FaMoneyBill, FaUsers } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { TbWorldStar } from "react-icons/tb";
-import { FaChartLine } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
 import BottomTab from "./tab";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 
 function BottomTabs() {
   const pathname = usePathname();
   const [active, setActive] = React.useState<string>("");
-  const [statsTabOpen, setStatsTabOpen] = React.useState<boolean>(false);
 
   // Scroll-based hiding refs
   const mainContainer = useRef<HTMLElement>(null);
@@ -133,7 +125,6 @@ function BottomTabs() {
           <BottomTab
             onClick={() => {
               setActive("cash+stats");
-              setStatsTabOpen(false);
             }}
             id="cash+stats"
             active={active}
@@ -146,7 +137,6 @@ function BottomTabs() {
           <BottomTab
             onClick={() => {
               setActive("tournament+stats");
-              setStatsTabOpen(false);
             }}
             id="tournament+stats"
             active={active}
