@@ -1,6 +1,4 @@
 import React from "react";
-import NavigateBack from "../back-button/back-button";
-import HeaderAuth from "@/components/header-auth";
 import PageHeaderWrapper from "./page-header-wrapper";
 import Link from "next/link";
 import Image from "next/image";

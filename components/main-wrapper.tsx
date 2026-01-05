@@ -4,7 +4,6 @@ import usePullToRefresh from "@/hooks/use-pull-to-refresh";
 import { useRouterRefresh } from "@/hooks/use-router-refresh";
 import { cn } from "@/lib/utils";
 import { ArrowDown, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import React from "react";
 
 function MainWrapper({ children }: { children: React.ReactNode }) {

@@ -1,21 +1,27 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @custom-variant dark (&:is(.dark *));
 
+/* Container utility */
 @utility container {
   margin-inline: auto;
   padding-inline: 2rem;
+
   @media (width >= --theme(--breakpoint-xs)) {
     max-width: none;
   }
+
   @media (width >= 1400px) {
     max-width: 1400px;
   }
 }
 
+/* Theme configuration */
 @theme {
+  /* Breakpoints */
   --breakpoint-xs: 475px;
 
+  /* Colors */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -47,11 +53,13 @@
   --color-card-foreground: hsl(var(--card-foreground));
   --color-card-border: hsl(var(--card-border));
 
+  /* Border radius */
+  --radius: 5px;
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-  --radius: 5px;
 
+  /* Animations */
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
@@ -63,6 +71,7 @@
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
@@ -73,14 +82,7 @@
   }
 }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
+/* Tailwind v4 border color compatibility */
 @layer base {
   *,
   ::after,
@@ -91,9 +93,9 @@
   }
 }
 
-/* width */
-
+/* Base styles */
 @layer base {
+  /* CSS variables */
   :root {
     --background: 0 0% 0%;
     --foreground: 0 0% 90%;
@@ -125,44 +127,21 @@
     --chart-5: 340 75% 55%;
   }
 
-  [data-table="true"]::-webkit-scrollbar {
-    display: none;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
-
-  /* Track */
-  ::-webkit-scrollbar-track {
-    @apply bg-background;
-    border-radius: 100vw;
-  }
-
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    background: rgb(111, 111, 111);
-    border-radius: 100vw;
-  }
-
-  #drawer-scroll-container::-webkit-scrollbar {
-    display: none;
-  }
-
-  [data-table]::-webkit-scrollbar {
-    height: 8px;
-  }
-  [data-table]::-webkit-scrollbar-track {
-    padding: 2px;
-  }
-
+  /* Global elements */
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
+
+  html,
+  body {
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
 
+  /* Typography */
   h2 {
     @apply text-2xl font-semibold;
   }
@@ -172,9 +151,52 @@
       @apply text-lg;
     }
   }
+
+  /* Scrollbar styles */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+    border-radius: 100vw;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(111, 111, 111);
+    border-radius: 100vw;
+  }
+
+  /* Hide scrollbars for specific elements */
+  [data-table="true"]::-webkit-scrollbar,
+  #drawer-scroll-container::-webkit-scrollbar,
+  #sheet-scroll-container::-webkit-scrollbar,
+  #main-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Table scrollbar */
+  [data-table]::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  [data-table]::-webkit-scrollbar-track {
+    padding: 2px;
+  }
+
+  /* Autofill styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(185, 26%, 9%) inset !important;
+    -webkit-text-fill-color: white !important;
+  }
 }
 
+/* Utility classes */
 @layer utilities {
+  /* Animations */
   @keyframes fadeInUp {
     0% {
       opacity: 0;
@@ -185,20 +207,19 @@
       transform: translateY(0);
     }
   }
-  html,
-  body {
-    overflow: hidden;
-  }
 
-  #sheet-scroll-container::-webkit-scrollbar,
-  #main-wrapper::-webkit-scrollbar {
-    width: 0px;
-    height: 0px;
+  /* Layout utilities */
+  #main-wrapper {
+    height: 100svh;
+    padding-bottom: 1rem;
+    overflow-y: scroll;
+    overflow-x: hidden;
   }
 
   #page-header-wrapper {
     padding-top: 1rem;
   }
+
   #mobile-nav {
     padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
   }
@@ -207,15 +228,14 @@
     top: calc(env(safe-area-inset-top) + 1rem);
   }
 
-  #main-wrapper {
-    height: calc(100vh - 73px);
-    overflow-y: scroll;
-    overflow-x: hidden;
-  }
-
+  /* PWA standalone mode */
   @media (display-mode: standalone) {
     #mobile-nav {
       padding-bottom: calc(env(safe-area-inset-bottom) - 1rem);
+    }
+
+    #main-wrapper {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
     }
 
     #page-header-wrapper {
@@ -227,34 +247,10 @@
       padding-inline: env(safe-area-inset-left);
     }
 
-    #main-wrapper {
-      height: calc(
-        100vh - 73px + 1rem - env(safe-area-inset-top) +
-          env(safe-area-inset-bottom)
-      );
-    }
-    /* Prevent unintended gestures */
     .pwa-mode {
       touch-action: manipulation;
       user-select: none;
       -webkit-touch-callout: none;
     }
-  }
-
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus,
-  input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px hsl(185, 26%, 9%) inset !important;
-    -webkit-text-fill-color: white !important;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
   }
 }
