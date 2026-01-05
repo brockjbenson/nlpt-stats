@@ -12,10 +12,10 @@ const BottomTab = React.forwardRef<
     href={href}
     onClick={onClick}
     className={cn(
-      "flex flex-col items-center justify-between gap-1 h-12 text-xs",
+      "flex flex-col items-center justify-start gap-1 h-12 text-xs",
       active === id
         ? "text-primary font-semibold"
-        : "text-neutral-600 font-medium",
+        : "text-neutral-300 font-medium",
       className
     )}
     {...props}>

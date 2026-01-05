@@ -59,7 +59,7 @@ function BottomTabs() {
     };
 
     const handleScroll = () => {
-      if (!mainContainer.current) return;
+      if (!mainContainer.current || !navRef.current) return;
 
       const currentScrollY = mainContainer.current.scrollTop;
       const scrollHeight = mainContainer.current.scrollHeight;
@@ -70,17 +70,19 @@ function BottomTabs() {
       const isAtBottom = currentScrollY + clientHeight >= scrollHeight - 5;
 
       if (currentScrollY < 10) {
-        // At top of page - fully show nav
+        // At top of page - smoothly show nav
+        navRef.current.style.transition = "transform 0.2s ease-out";
         currentTranslateY.current = 0;
-      } else if (isAtBottom && scrollDifference < 0) {
-        // At bottom and trying to scroll up (overscroll) - don't show nav
-        currentTranslateY.current = Math.min(
-          navHeight.current,
-          currentTranslateY.current
-        );
+      } else if (isAtBottom) {
+        // At bottom - smoothly hide nav completely
+        navRef.current.style.transition = "transform 0.2s ease-out";
+        currentTranslateY.current = navHeight.current;
       } else {
+        // Normal scrolling - no transition for immediate response
+        navRef.current.style.transition = "transform 0.1s";
+
         // Calculate new translateY based on scroll difference (2x slower)
-        const dampedScroll = scrollDifference / 2;
+        const dampedScroll = scrollDifference / 1.25;
         const newTranslateY = currentTranslateY.current + dampedScroll;
 
         // Clamp between 0 (fully visible) and navHeight (fully hidden below screen)
@@ -115,7 +117,7 @@ function BottomTabs() {
       ref={navRef}
       id="mobile-nav"
       className={cn(
-        "p-2 md:hidden block fixed bottom-0 z-10 bg-background left-0 w-screen border-t border-t-primary"
+        "px-2 pb-2 pt-1 md:hidden block fixed bottom-0 z-10 bg-background/70 backdrop-blur-sm left-0 w-screen border-t border-t-neutral-700"
       )}
       style={{
         willChange: "transform",
@@ -140,7 +142,7 @@ function BottomTabs() {
             }}
             id="tournament+stats"
             active={active}
-            href="/stats/tournaments">
+            href="/tournaments">
             <FaTrophy className="w-5 h-5 mt-1" />
             {"Tourney's"}
           </BottomTab>

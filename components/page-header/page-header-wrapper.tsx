@@ -37,7 +37,7 @@ function PageHeaderWrapper({
     };
 
     const handleScroll = () => {
-      if (!mainContainer.current) return;
+      if (!mainContainer.current || !headerRef.current) return;
 
       const currentScrollY = mainContainer.current.scrollTop;
       const scrollHeight = mainContainer.current.scrollHeight;
@@ -49,16 +49,18 @@ function PageHeaderWrapper({
 
       if (currentScrollY < 10) {
         // At top of page - fully show header
+        headerRef.current.style.transition = "transform 0.2s ease-out";
         currentTranslateY.current = 0;
-      } else if (isAtBottom && scrollDifference < 0) {
-        // At bottom and trying to scroll up (overscroll) - don't show header
-        currentTranslateY.current = Math.max(
-          -headerHeight.current,
-          currentTranslateY.current
-        );
+      } else if (isAtBottom) {
+        // At bottom - smoothly hide header completely
+        headerRef.current.style.transition = "transform 0.2s ease-out";
+        currentTranslateY.current = -headerHeight.current;
       } else {
+        // Normal scrolling - no transition for immediate response
+        headerRef.current.style.transition = "transform 0.1s";
+
         // Calculate new translateY based on scroll difference (2x slower)
-        const dampedScroll = scrollDifference / 2; // ✅ Divide by 2 for 2x slower
+        const dampedScroll = scrollDifference / 1.25;
         const newTranslateY = currentTranslateY.current - dampedScroll;
 
         // Clamp between 0 (fully visible) and -headerHeight (fully hidden)
@@ -93,7 +95,7 @@ function PageHeaderWrapper({
       ref={headerRef}
       id="page-header-wrapper"
       className={cn(
-        "w-full border-b bg-background md:bg-background z-304958 sticky md:relative top-0 border-neutral-500 mb-4 px-2 pb-4 flex md:hidden items-center justify-between",
+        "w-full border-b bg-background z-304958 sticky md:relative top-0 border-neutral-700 mb-4 px-2 pb-4 flex md:hidden items-center justify-between",
         className
       )}
       style={{

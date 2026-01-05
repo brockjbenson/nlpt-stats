@@ -79,7 +79,7 @@ async function Page({
               <YearSelectorItem
                 key={season.id}
                 active={season.year === activeSeason.year}
-                href={`/stats/tournaments?year=${season.year}`}>
+                href={`/tournaments?year=${season.year}`}>
                 {season.year}
               </YearSelectorItem>
             ))}
