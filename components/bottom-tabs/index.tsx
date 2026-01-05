@@ -6,15 +6,19 @@ import { FaRankingStar } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { TbWorldStar } from "react-icons/tb";
 import { FaChartLine } from "react-icons/fa6";
-import { PiTriangleFill } from "react-icons/pi";
 import { cn } from "@/lib/utils";
 import BottomTab from "./tab";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 function BottomTabs() {
   const pathname = usePathname();
   const [active, setActive] = React.useState<string>("");
   const [statsTabOpen, setStatsTabOpen] = React.useState<boolean>(false);
-  const statsTabRef = React.useRef<HTMLButtonElement>(null);
 
   // Scroll-based hiding refs
   const mainContainer = useRef<HTMLElement>(null);
@@ -41,22 +45,6 @@ function BottomTabs() {
       setActive("stats");
     }
   }, [pathname]);
-
-  const toggleStatsTab = () => {
-    setStatsTabOpen(!statsTabOpen);
-  };
-
-  useEffect(() => {
-    if (!statsTabOpen) return;
-    document.addEventListener("click", (e) => {
-      if (
-        statsTabRef.current &&
-        !statsTabRef.current.contains(e.target as Node)
-      ) {
-        setStatsTabOpen(false);
-      }
-    });
-  }, [statsTabOpen]);
 
   // Scroll-based hiding logic
   useEffect(() => {
@@ -101,7 +89,7 @@ function BottomTabs() {
       } else {
         // Calculate new translateY based on scroll difference (2x slower)
         const dampedScroll = scrollDifference / 2;
-        const newTranslateY = currentTranslateY.current + dampedScroll; // Note: + for bottom nav
+        const newTranslateY = currentTranslateY.current + dampedScroll;
 
         // Clamp between 0 (fully visible) and navHeight (fully hidden below screen)
         currentTranslateY.current = Math.max(
@@ -142,51 +130,51 @@ function BottomTabs() {
       }}>
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <button
-            ref={statsTabRef}
-            onClick={toggleStatsTab}
-            className={cn(
-              "flex flex-col items-center justify-between gap-1 h-12 text-xs",
-              statsTabOpen
-                ? "text-primary font-semibold"
-                : active === "cash+stats" || active === "tournament+stats"
-                  ? "text-primary font-semibold"
-                  : "text-neutral-600 font-medium"
-            )}>
-            <FaChartLine className="w-5 h-5 mt-[0.1rem]" />
-            Stats
-          </button>
-          <div
-            className={cn(
-              "absolute rounded-[8px] flex flex-col left-4 p-4 gap-4 bg-background w-32 -top-[120%] border border-neutral-500",
-              statsTabOpen ? "flex" : "hidden"
-            )}>
-            <PiTriangleFill className="absolute -bottom-[0.8rem] text-neutral-500 w-4 h-4 rotate-180" />
-            <PiTriangleFill className="absolute -bottom-[0.7rem] text-background w-4 h-4 rotate-180" />
+          <DropdownMenu open={statsTabOpen} onOpenChange={setStatsTabOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={cn(
+                  "flex flex-col items-center justify-between gap-1 h-12 text-xs",
+                  statsTabOpen
+                    ? "text-primary font-semibold"
+                    : active === "cash+stats" || active === "tournament+stats"
+                      ? "text-primary font-semibold"
+                      : "text-neutral-600 font-medium"
+                )}>
+                <FaChartLine className="w-5 h-5 mt-[0.1rem]" />
+                Stats
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="mb-1" align="start">
+              <DropdownMenuGroup>
+                <BottomTab
+                  onClick={() => {
+                    setActive("cash+stats");
+                    setStatsTabOpen(false);
+                  }}
+                  id="cash+stats"
+                  active={active}
+                  className="flex-row justify-start gap-2 h-fit p-2"
+                  href="/stats/cash?year=2025">
+                  <FaMoneyBill className="w-5 h-5 " />
+                  Cash
+                </BottomTab>
 
-            <BottomTab
-              onClick={() => {
-                setActive("cash+stats");
-                setStatsTabOpen(false);
-              }}
-              id="cash+stats"
-              active={active}
-              href="/stats/cash?year=2025">
-              <FaMoneyBill className="w-5 h-5 " />
-              Cash
-            </BottomTab>
-            <BottomTab
-              onClick={() => {
-                setActive("tournament+stats");
-                setStatsTabOpen(false);
-              }}
-              id="tournament+stats"
-              active={active}
-              href="/stats/tournaments">
-              <FaTrophy className="w-5 h-5 " />
-              {"Tourney's"}
-            </BottomTab>
-          </div>
+                <BottomTab
+                  onClick={() => {
+                    setActive("tournament+stats");
+                    setStatsTabOpen(false);
+                  }}
+                  id="tournament+stats"
+                  active={active}
+                  className="flex-row justify-start gap-2 h-fit p-2"
+                  href="/stats/tournaments">
+                  <FaTrophy className="w-5 h-5 " />
+                  {"Tourney's"}
+                </BottomTab>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </li>
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
           <BottomTab

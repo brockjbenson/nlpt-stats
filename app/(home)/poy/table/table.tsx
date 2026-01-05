@@ -57,7 +57,7 @@ export function POYDataTable<TData, TValue>({
                     className={cn(
                       index === 0 && "hidden",
                       index === 1 && "sticky left-0",
-                      index === 3 && "sticky left-[48px]"
+                      index === 3 && "sticky left-12"
                     )}
                     key={header.id}>
                     {header.isPlaceholder
@@ -83,7 +83,7 @@ export function POYDataTable<TData, TValue>({
                     className={cn(
                       index === 0 && "hidden",
                       index === 1 && "sticky left-0",
-                      index === 3 && "sticky left-[48px]"
+                      index === 3 && "sticky left-12"
                     )}
                     key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

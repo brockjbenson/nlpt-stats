@@ -6,16 +6,8 @@ import {
   CashSessionWithMember,
   CashSessionWithWeek,
   Member,
-  TournamentSession,
 } from "./types";
 
-/**
- * Redirects to a specified path with an encoded message as a query parameter.
- * @param {('error' | 'success')} type - The type of message, either 'error' or 'success'.
- * @param {string} path - The path to redirect to.
- * @param {string} message - The message to be encoded and added as a query parameter.
- * @returns {never} This function doesn't return as it triggers a redirect.
- */
 export function encodedRedirect(
   type: "error" | "success",
   path: string,
@@ -26,9 +18,9 @@ export function encodedRedirect(
 
 export function getProfitTextColor(profit: number) {
   return profit > 0
-    ? "text-theme-green"
+    ? "text-green-600"
     : profit < 0
-      ? "text-theme-red"
+      ? "text-red-600"
       : "text-muted";
 }
 
@@ -256,7 +248,7 @@ export const calculatePOYPoints = (netProfit: number) => {
 
 export const getPOYPointsLeaders = (
   sessions: CashSession[],
-  memberIds: any[],
+  memberIds: string[],
   members: Member[]
 ) => {
   const sessionsCopy = [...sessions];
@@ -305,7 +297,7 @@ export const getPOYPointsLeaders = (
 
 export const getPOYPointsLeadersWithTournaments = (
   sessions: CashSession[],
-  memberIds: any[],
+  memberIds: string[],
   members: Member[],
   tournamentSessions: {
     id: string;
@@ -390,14 +382,17 @@ export const getPOYPointsLeadersWithTournaments = (
 
 export const getNetProfitLeaders = (
   sessions: CashSessionWithMember[],
-  memberIds: any[],
+  memberIds: string[],
   members: Member[]
 ) => {
   const sessionsCopy = [...sessions];
-  const sessionsByMember = memberIds.reduce((acc, memberId) => {
+  const sessionsByMember = memberIds.reduce<
+    Record<string, CashSessionWithMember[]>
+  >((acc, memberId) => {
     acc[memberId] = sessionsCopy.filter(
       (session) => session.member_id === memberId
     );
+
     return acc;
   }, {});
 
@@ -476,11 +471,13 @@ export const getLargestWins = (
 
 export const getCumulativeCashStats = (
   sessions: CashSessionWithMember[],
-  memberIds: any[],
+  memberIds: string[],
   members: Member[]
 ) => {
   const sessionsCopy = [...sessions];
-  const sessionsByMember = memberIds.reduce((acc, memberId) => {
+  const sessionsByMember = memberIds.reduce<
+    Record<string, CashSessionWithMember[]>
+  >((acc, memberId) => {
     acc[memberId] = sessionsCopy.filter(
       (session) => session.member_id === memberId
     );

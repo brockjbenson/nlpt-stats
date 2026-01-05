@@ -2,7 +2,7 @@ import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
 import POYInfo from "@/components/poy/poy-info";
 import YearCarousel from "@/components/poy/year-carousel";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
 import { POYDataTable } from "./table/table";
 import { columns } from "./table/columns";
@@ -54,7 +54,12 @@ async function Page({ searchParams }: Params) {
       <YearCarousel seasons={seasons} year={year || currentYear.toString()} />
       <div className="w-full  mt-4 mb-8 max-w-(--breakpoint-xl) mx-auto px-2">
         <Card className="w-full">
-          <POYDataTable columns={columns} data={poyData} />
+          <CardHeader>
+            <CardTitle>Player of the Year Standings - {currentYear}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <POYDataTable columns={columns} data={poyData} />
+          </CardContent>
         </Card>
       </div>
     </>

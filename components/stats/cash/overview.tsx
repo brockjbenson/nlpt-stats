@@ -1,6 +1,6 @@
 "use client";
 import MemberImage from "@/components/members/member-image";
-import { Card, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Member, POYData, SeasonCashStats } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
@@ -32,7 +32,9 @@ function StatsOverview({ seasonStats, poyData, members }: Props) {
     <>
       <div className="w-full px-2 hidden mt-8 md:grid md:grid-cols-2 lg:grid-cols-3 mb-4 md:mb-8 gap-8">
         <Card className={cn("w-full")}>
-          <CardTitle>POY Points</CardTitle>
+          <CardHeader>
+            <CardTitle>POY Points</CardTitle>
+          </CardHeader>
           <div className="flex flex-col gap-4">
             {poyData
               .sort((a, b) => b.cash_points - a.cash_points)

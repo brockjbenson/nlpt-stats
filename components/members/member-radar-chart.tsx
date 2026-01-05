@@ -1,6 +1,5 @@
 "use client";
 
-import { Circle, TrendingUp } from "lucide-react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -9,19 +8,11 @@ import {
   RadarChart,
 } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
 } from "@/components/ui/chart";
 
 export const description = "A radar chart with a grid and circle fill";
@@ -132,7 +123,7 @@ export function MemberRadarChart({ data }: Props) {
             <ChartTooltip
               labelClassName="z-20"
               cursor={false}
-              content={({ active, payload, label }) => {
+              content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const dataPoint = payload[0].payload; // Access full data object
 
@@ -185,10 +176,10 @@ export function MemberRadarChart({ data }: Props) {
 
             <Radar
               dataKey="player"
-              stroke="hsl(var(--primary))"
+              stroke="var(--primary)"
               strokeWidth={1}
               strokeOpacity={0.75}
-              fill="hsl(var(--primary))"
+              fill="var(--primary)"
               fillOpacity={0.2}
               dot={{
                 r: 3,
@@ -197,7 +188,7 @@ export function MemberRadarChart({ data }: Props) {
             />
             <Radar
               dataKey="nlpt"
-              stroke="hsl(var(--muted-foreground))"
+              stroke="var(--muted)"
               strokeDasharray="5 5"
               strokeWidth={1.5}
               fillOpacity={0}

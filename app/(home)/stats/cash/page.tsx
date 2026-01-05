@@ -2,12 +2,12 @@ import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import StatsOverview from "@/components/stats/cash/overview";
-import OverviewMobile from "@/components/stats/cash/overview-mobile";
 import StatsTable from "@/components/stats/cash/stats-table";
 import ErrorHandler from "@/components/error-handler";
 import CashYearSelector from "@/components/stats/cash/cash-year-selector";
 import dynamic from "next/dynamic";
 import { Member, POYData, Season, SeasonCashStats } from "@/utils/types";
+import OverviewMobile from "@/components/stats/cash/cards";
 const LazyCashGameTable = dynamic(
   () => import("@/components/stats/cash/cashgame-table")
 );

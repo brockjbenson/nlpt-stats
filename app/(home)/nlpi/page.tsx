@@ -2,7 +2,7 @@ import ErrorHandler from "@/components/error-handler";
 import NLPICalculator from "@/components/nlpi/nlpi-calculator";
 import NLPIInfo from "@/components/nlpi/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
 import { NLPIData } from "@/utils/types";
 import { NLPIDataTable } from "./table/table";
@@ -57,15 +57,17 @@ async function NLPI() {
           <NLPICalculator nlpiData={nlpiData} />
         </div>
         <Card className="w-full mb-8">
-          <NLPIDataTable
-            columns={columns}
-            data={nlpiData
-              .map((row: NLPIData) => ({ ...row, previousYear }))
-              .filter(
-                (row: NLPIData & { previousYear: number | null }) =>
-                  row.total_points > 0
-              )}
-          />
+          <CardContent>
+            <NLPIDataTable
+              columns={columns}
+              data={nlpiData
+                .map((row: NLPIData) => ({ ...row, previousYear }))
+                .filter(
+                  (row: NLPIData & { previousYear: number | null }) =>
+                    row.total_points > 0
+                )}
+            />
+          </CardContent>
         </Card>
         <h2 className="mt-12 mb-2 w-full flex flex-col gap-1 text-base pb-2 border-b border-muted mr-auto">
           Ineligible Members

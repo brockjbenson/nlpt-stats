@@ -12,7 +12,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
-import { Card, CardTitle } from "../../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Minus } from "lucide-react";
 
 interface Props {
@@ -86,7 +86,7 @@ async function CashGameTable({
       );
     }
 
-    const { id, net_profit, rebuys } = sessionData;
+    const { net_profit, rebuys } = sessionData;
     return (
       <TableCell className={cn("font-medium text-center group")} key={weekId}>
         <span className="flex items-center gap-1">
@@ -101,51 +101,55 @@ async function CashGameTable({
   return (
     <div className="px-2 w-full max-w-(--breakpoint-xl) mx-auto">
       <Card className="w-full overflow-hidden">
-        <CardTitle>Cash Sessions</CardTitle>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                Member
-              </TableHead>
-              {weeks.map((week) => (
-                <TableHead className="whitespace-nowrap" key={week.id}>
-                  <Link
-                    scroll={true}
-                    className="underline"
-                    href={
-                      isAdmin
-                        ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
-                        : `/stats/cash/${year}/${week.week_number}`
-                    }>
-                    Week {week.week_number}
-                  </Link>
+        <CardHeader>
+          <CardTitle>Cash Sessions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                  Member
                 </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map(
-              (member) =>
-                hasAtLeastOneSession(member.id) && (
-                  <TableRow key={member.id}>
-                    <TableCell className="font-semibold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      <Link
-                        scroll={true}
-                        className="hover:text-primary underline"
-                        href={`/members/${member.id}`}>
-                        {member.first_name}
-                      </Link>
-                    </TableCell>
-                    {weeks.map((week) => {
-                      const sessionData = getSessionData(member.id, week.id);
-                      return renderTableCell(sessionData, week.id);
-                    })}
-                  </TableRow>
-                )
-            )}
-          </TableBody>
-        </Table>
+                {weeks.map((week) => (
+                  <TableHead className="whitespace-nowrap" key={week.id}>
+                    <Link
+                      scroll={true}
+                      className="underline"
+                      href={
+                        isAdmin
+                          ? `/admin/stats/cash/${seasonId}/sessions/${week.id}/edit`
+                          : `/stats/cash/${year}/${week.week_number}`
+                      }>
+                      Week {week.week_number}
+                    </Link>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {members.map(
+                (member) =>
+                  hasAtLeastOneSession(member.id) && (
+                    <TableRow key={member.id}>
+                      <TableCell className="font-semibold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                        <Link
+                          scroll={true}
+                          className="hover:text-primary underline"
+                          href={`/members/${member.id}`}>
+                          {member.first_name}
+                        </Link>
+                      </TableCell>
+                      {weeks.map((week) => {
+                        const sessionData = getSessionData(member.id, week.id);
+                        return renderTableCell(sessionData, week.id);
+                      })}
+                    </TableRow>
+                  )
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
       </Card>
     </div>
   );

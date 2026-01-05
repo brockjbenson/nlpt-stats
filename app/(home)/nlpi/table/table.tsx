@@ -29,8 +29,6 @@ export function NLPIDataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  "use no memo";
-
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "total_points", desc: true },
   ]);
@@ -57,7 +55,7 @@ export function NLPIDataTable<TData, TValue>({
                     className={cn(
                       index === 0 && "hidden",
                       index === 1 && "sticky left-0",
-                      index === 4 && "sticky left-[48px]"
+                      index === 4 && "sticky left-12"
                     )}
                     key={header.id}>
                     {header.isPlaceholder
@@ -83,7 +81,7 @@ export function NLPIDataTable<TData, TValue>({
                     className={cn(
                       index === 0 && "hidden",
                       index === 1 && "sticky left-0",
-                      index === 4 && "sticky left-[48px]"
+                      index === 4 && "sticky left-12"
                     )}
                     key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

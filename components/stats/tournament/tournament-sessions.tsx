@@ -1,7 +1,7 @@
 import { MajorData } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
-import { Card, CardTitle } from "../../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import {
   Table,
   TableBody,
@@ -49,7 +49,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
             <PiMedalFill className="text-yellow-600 w-10 h-10" />
-            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
+            <span className="text-black text-xs absolute z-10 top-1.75 font-bold">
               1
             </span>
           </div>
@@ -58,7 +58,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
             <PiMedalFill className="text-neutral-400 w-10 h-10" />
-            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
+            <span className="text-black text-xs absolute z-10 top-1.75 font-bold">
               2
             </span>
           </div>
@@ -67,7 +67,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
         return (
           <div className="w-10 h-10 relative flex items-center justify-center">
             <PiMedalFill className="text-orange-600 w-10 h-10" />
-            <span className="text-black text-xs absolute z-10 top-[7px] font-bold">
+            <span className="text-black text-xs absolute z-10 top-1.75 font-bold">
               3
             </span>
           </div>
@@ -83,56 +83,61 @@ function TournamentSessions({ data, isAdmin }: Props) {
   return (
     <div className="mt-4">
       <Card>
-        <CardTitle>Tournament Sessions</CardTitle>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                Place
-              </TableHead>
-              <TableHead className="sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
-                Member
-              </TableHead>
-              <TableHead>Buy in</TableHead>
-              <TableHead>Cash out</TableHead>
-              <TableHead>Net Profit</TableHead>
-              <TableHead>Rebuys</TableHead>
-              <TableHead>POY Points</TableHead>
-              <TableHead>NLPI points</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sessions
-              .filter((s) => s.place > 0)
-              .sort((a, b) => a.place - b.place)
-              .map((session) => {
-                return (
-                  <TableRow key={session.member_id}>
-                    <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      {renderPlacementMedal(session.place)}
-                    </TableCell>
-                    <TableCell className="font-bold sticky left-[73px] z-10 bg-card border-b-[1.7px] border-neutral-600">
-                      <Link
-                        className="underline"
-                        href={`/members/${session.member_id}`}>
-                        {session.first_name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{formatMoney(session.buy_in)}</TableCell>
-                    <TableCell>{formatMoney(session.cash_out)}</TableCell>
-                    <TableCell>
-                      <span className={getProfitTextColor(session.net_profit)}>
-                        {formatMoney(session.net_profit)}
-                      </span>
-                    </TableCell>
-                    <TableCell>{session.rebuys}</TableCell>
-                    <TableCell>{session.poy_points.toFixed(2)}</TableCell>
-                    <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
-                  </TableRow>
-                );
-              })}
-          </TableBody>
-        </Table>
+        <CardHeader>
+          <CardTitle>Tournament Sessions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="sticky left-0 z-10 bg-card">
+                  Place
+                </TableHead>
+                <TableHead className="sticky left-12 z-10 bg-card">
+                  Member
+                </TableHead>
+                <TableHead>Buy in</TableHead>
+                <TableHead>Cash out</TableHead>
+                <TableHead>Net Profit</TableHead>
+                <TableHead>Rebuys</TableHead>
+                <TableHead>POY Points</TableHead>
+                <TableHead>NLPI points</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions
+                .filter((s) => s.place > 0)
+                .sort((a, b) => a.place - b.place)
+                .map((session) => {
+                  return (
+                    <TableRow key={session.member_id}>
+                      <TableCell className="font-bold sticky left-0 z-10">
+                        {renderPlacementMedal(session.place)}
+                      </TableCell>
+                      <TableCell className="font-bold sticky left-12 z-10">
+                        <Link
+                          className="underline"
+                          href={`/members/${session.member_id}`}>
+                          {session.first_name}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{formatMoney(session.buy_in)}</TableCell>
+                      <TableCell>{formatMoney(session.cash_out)}</TableCell>
+                      <TableCell>
+                        <span
+                          className={getProfitTextColor(session.net_profit)}>
+                          {formatMoney(session.net_profit)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{session.rebuys}</TableCell>
+                      <TableCell>{session.poy_points.toFixed(2)}</TableCell>
+                      <TableCell>{session.nlpi_points.toFixed(3)}</TableCell>
+                    </TableRow>
+                  );
+                })}
+            </TableBody>
+          </Table>
+        </CardContent>
       </Card>
     </div>
   );

@@ -15,7 +15,7 @@ const getRankChangeInfo = (
     return {
       positive: false,
       change: 0,
-      color: "text-theme-green",
+      color: "text-green-600",
       icon: <ArrowUp size={16} />,
     };
   }
@@ -31,14 +31,14 @@ const getRankChangeInfo = (
     ? {
         positive: true,
         change: lastWeekRank - currentRank,
-        color: "text-theme-green",
-        icon: <ArrowUp className="text-theme-green" size={16} />,
+        color: "text-green-600",
+        icon: <ArrowUp className="text-green-600" size={16} />,
       }
     : {
         positive: false,
         change: currentRank - lastWeekRank,
-        color: "text-theme-red",
-        icon: <ArrowDown className="text-theme-red" size={16} />,
+        color: "text-red-600",
+        icon: <ArrowDown className="text-red-600" size={16} />,
       };
 };
 
