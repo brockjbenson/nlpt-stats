@@ -155,7 +155,7 @@ function BottomTabs() {
                   id="cash+stats"
                   active={active}
                   className="flex-row justify-start gap-2 h-fit p-2"
-                  href="/stats/cash?year=2025">
+                  href="/stats/cash">
                   <FaMoneyBill className="w-5 h-5 " />
                   Cash
                 </BottomTab>

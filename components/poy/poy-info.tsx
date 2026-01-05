@@ -11,7 +11,7 @@ function POYInfo() {
   return (
     <Drawer>
       <DrawerTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
-        POY Standings <FaCircleInfo />
+        <FaCircleInfo />
       </DrawerTrigger>
       <DrawerContent>
         <DrawerTitle>POY Calculation Guidelines</DrawerTitle>

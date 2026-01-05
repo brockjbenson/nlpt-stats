@@ -262,18 +262,24 @@ export type MajorData = {
 };
 
 export type MajorsData = {
-  id: string;
+  buy_ins: number;
   date: string;
+  id: string;
   name: string;
-  players: number;
-  prize_pool: number;
-  total_buy_ins: number;
-  winner: {
-    first_name: string;
-    last_name: string;
-    portrait_url: string;
+  place: number;
+  money_in_play: number;
+  player_count: number;
+  rebuys: number;
+  tournament_sessions: {
     member_id: string;
-  };
+    buy_in: number;
+    cash_out: number;
+    net_profit: number;
+    rebuys: number;
+    nlpi_points: number;
+    poy_points: number;
+    place: number;
+  }[];
 };
 
 export type CareerData = {

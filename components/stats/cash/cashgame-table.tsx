@@ -108,9 +108,7 @@ async function CashGameTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
-                  Member
-                </TableHead>
+                <TableHead className="sticky left-0 z-10">Member</TableHead>
                 {weeks.map((week) => (
                   <TableHead className="whitespace-nowrap" key={week.id}>
                     <Link
@@ -132,7 +130,7 @@ async function CashGameTable({
                 (member) =>
                   hasAtLeastOneSession(member.id) && (
                     <TableRow key={member.id}>
-                      <TableCell className="font-semibold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                      <TableCell className="font-semibold sticky left-0 z-10">
                         <Link
                           scroll={true}
                           className="hover:text-primary underline"

@@ -1,6 +1,5 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
-import React from "react";
 import StatsOverview from "@/components/stats/cash/overview";
 import StatsTable from "@/components/stats/cash/stats-table";
 import ErrorHandler from "@/components/error-handler";
@@ -8,6 +7,14 @@ import CashYearSelector from "@/components/stats/cash/cash-year-selector";
 import dynamic from "next/dynamic";
 import { Member, POYData, Season, SeasonCashStats } from "@/utils/types";
 import OverviewMobile from "@/components/stats/cash/cards";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { AlertCircle } from "lucide-react";
 const LazyCashGameTable = dynamic(
   () => import("@/components/stats/cash/cashgame-table")
 );
@@ -21,7 +28,8 @@ interface Props {
 async function Page({ searchParams }: Props) {
   const db = await createClient();
   const { year } = await searchParams;
-  const yearNumber = Number(year);
+  const currentYear = year ? year : new Date().getFullYear();
+  const yearNumber = Number(currentYear);
   const { data, error } = await db.rpc("get_seasons_and_members");
 
   if (error) {
@@ -67,37 +75,52 @@ async function Page({ searchParams }: Props) {
       <PageHeader>
         <CashYearSelector seasons={seasons} activeSeason={activeSeason} />
       </PageHeader>
-      <div className="">
-        <div className="hidden md:flex items-center px-2 mt-8 mb-2 justify-between">
-          <h1 className="text-2xl font-semibold">
-            {activeSeason.year} Cash Stats
-          </h1>
-          <CashYearSelector
-            triggerTitle={activeSeason.year.toString()}
-            triggerStyles="border-b border-b-neutral-500 py-3 w-24 m-0 rounded-none"
-            activeSeason={activeSeason}
-            seasons={seasons}
-          />
-        </div>
-        <StatsOverview
-          members={members}
-          poyData={poyData}
-          seasonStats={seasonStats}
-        />
-        <OverviewMobile
-          members={members}
-          poyData={poyData}
-          seasonStats={seasonStats}
-        />
-        <div className="pb-4 w-full">
-          <StatsTable seasonStats={seasonStats} />
-          <LazyCashGameTable
+      {seasonStats.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <AlertCircle />
+            </EmptyMedia>
+            <EmptyTitle>No Cash Stats Available</EmptyTitle>
+            <EmptyDescription>
+              No cash games have been played for {activeSeason.year}. Please
+              check back later.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <div className="">
+          <div className="hidden md:flex items-center px-2 mt-8 mb-2 justify-between">
+            <h1 className="text-2xl font-semibold">
+              {activeSeason.year} Cash Stats
+            </h1>
+            <CashYearSelector
+              triggerTitle={activeSeason.year.toString()}
+              triggerStyles="border-b border-b-neutral-500 py-3 w-24 m-0 rounded-none"
+              activeSeason={activeSeason}
+              seasons={seasons}
+            />
+          </div>
+          <StatsOverview
             members={members}
-            year={activeSeason.year}
-            seasonId={activeSeason.id}
+            poyData={poyData}
+            seasonStats={seasonStats}
           />
+          <OverviewMobile
+            members={members}
+            poyData={poyData}
+            seasonStats={seasonStats}
+          />
+          <div className="pb-4 w-full">
+            <StatsTable seasonStats={seasonStats} />
+            <LazyCashGameTable
+              members={members}
+              year={activeSeason.year}
+              seasonId={activeSeason.id}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

@@ -30,7 +30,7 @@ function SessionTable({ data, className }: Props) {
           <Table className={cn(className)}>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                <TableHead className="font-bold sticky left-0 bg-card z-10">
                   Member
                 </TableHead>
                 <TableHead>Buy-In</TableHead>
@@ -45,7 +45,7 @@ function SessionTable({ data, className }: Props) {
               {sessions.map((session) => {
                 return (
                   <TableRow key={session.member_id}>
-                    <TableCell className="font-bold sticky left-0 z-10 bg-card border-b-[1.7px] border-neutral-600">
+                    <TableCell className="font-bold sticky left-0 z-10">
                       <Link
                         scroll={true}
                         className="hover:text-primary underline"

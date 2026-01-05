@@ -51,7 +51,7 @@ function StatCard<T extends StatItem>({
             </div>
           </DrawerContent>
         </Drawer>
-        <CardContent>
+        <CardContent className="mt-3">
           <div className="flex flex-col gap-4">
             {topThree.map((item, index) => {
               const memberData = members?.find(
