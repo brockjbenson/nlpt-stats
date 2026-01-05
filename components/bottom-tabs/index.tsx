@@ -130,51 +130,30 @@ function BottomTabs() {
       }}>
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <DropdownMenu open={statsTabOpen} onOpenChange={setStatsTabOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "flex flex-col items-center justify-between gap-1 h-12 text-xs",
-                  statsTabOpen
-                    ? "text-primary font-semibold"
-                    : active === "cash+stats" || active === "tournament+stats"
-                      ? "text-primary font-semibold"
-                      : "text-neutral-600 font-medium"
-                )}>
-                <FaChartLine className="w-5 h-5 mt-[0.1rem]" />
-                Stats
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="mb-1" align="start">
-              <DropdownMenuGroup>
-                <BottomTab
-                  onClick={() => {
-                    setActive("cash+stats");
-                    setStatsTabOpen(false);
-                  }}
-                  id="cash+stats"
-                  active={active}
-                  className="flex-row justify-start gap-2 h-fit p-2"
-                  href="/stats/cash">
-                  <FaMoneyBill className="w-5 h-5 " />
-                  Cash
-                </BottomTab>
-
-                <BottomTab
-                  onClick={() => {
-                    setActive("tournament+stats");
-                    setStatsTabOpen(false);
-                  }}
-                  id="tournament+stats"
-                  active={active}
-                  className="flex-row justify-start gap-2 h-fit p-2"
-                  href="/stats/tournaments">
-                  <FaTrophy className="w-5 h-5 " />
-                  {"Tourney's"}
-                </BottomTab>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <BottomTab
+            onClick={() => {
+              setActive("cash+stats");
+              setStatsTabOpen(false);
+            }}
+            id="cash+stats"
+            active={active}
+            href="/stats/cash">
+            <FaMoneyBill className="w-5 h-5 mt-1" />
+            Cash
+          </BottomTab>
+        </li>
+        <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
+          <BottomTab
+            onClick={() => {
+              setActive("tournament+stats");
+              setStatsTabOpen(false);
+            }}
+            id="tournament+stats"
+            active={active}
+            href="/stats/tournaments">
+            <FaTrophy className="w-5 h-5 mt-1" />
+            {"Tourney's"}
+          </BottomTab>
         </li>
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
           <BottomTab
@@ -186,18 +165,6 @@ function BottomTabs() {
             href="/members">
             <FaUsers className="w-6 h-6" />
             Members
-          </BottomTab>
-        </li>
-        <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <BottomTab
-            onClick={() => {
-              setActive("home");
-            }}
-            id="home"
-            active={active}
-            href="/">
-            <FaHome className="w-6 h-6" />
-            Home
           </BottomTab>
         </li>
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">

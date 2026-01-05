@@ -54,8 +54,8 @@ export function NLPIDataTable<TData, TValue>({
                   <TableHead
                     className={cn(
                       index === 0 && "hidden",
-                      index === 1 && "sticky left-0",
-                      index === 4 && "sticky left-12"
+                      index === 1 && "sticky bg-card z-10 left-0",
+                      index === 4 && "sticky bg-card z-10 left-12"
                     )}
                     key={header.id}>
                     {header.isPlaceholder
@@ -73,15 +73,13 @@ export function NLPIDataTable<TData, TValue>({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}>
+              <TableRow className="border-b" key={row.id}>
                 {row.getVisibleCells().map((cell, index) => (
                   <TableCell
                     className={cn(
                       index === 0 && "hidden",
-                      index === 1 && "sticky left-0",
-                      index === 4 && "sticky left-12"
+                      index === 1 && "sticky bg-card z-10 left-0",
+                      index === 4 && "sticky bg-card z-10 left-12"
                     )}
                     key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
