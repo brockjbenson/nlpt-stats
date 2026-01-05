@@ -3,15 +3,13 @@ import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import ErrorHandler from "@/components/error-handler";
 import TournamentsMain from "@/components/stats/tournament/tournaments-main";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
+import {
+  YearSelector,
+  YearSelectorContent,
+  YearSelectorItem,
+  YearSelectorTrigger,
+} from "@/components/page-header/year-selector";
 
 async function Page({
   searchParams,
@@ -71,25 +69,22 @@ async function Page({
   return (
     <>
       <PageHeader>
-        <DropdownMenu>
-          <DropdownMenuTrigger className="text-xl font-bold">
-            {currentYear} Tournaments
-            <ChevronDown className="ml-1 inline-block size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuGroup>
-              {seasons.map((season) => (
-                <DropdownMenuItem asChild key={season.id}>
-                  <Link
-                    href={`/stats/tournaments?year=${season.year}`}
-                    className="w-full">
-                    {season.year}
-                  </Link>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <YearSelector>
+          <YearSelectorTrigger className="font-bold text-xl">
+            {activeSeason.year} Tournaments
+            <ChevronDown className="inline-block ml-2 mb-1" size={16} />
+          </YearSelectorTrigger>
+          <YearSelectorContent>
+            {seasons.map((season) => (
+              <YearSelectorItem
+                key={season.id}
+                active={season.year === activeSeason.year}
+                href={`/stats/tournaments?year=${season.year}`}>
+                {season.year}
+              </YearSelectorItem>
+            ))}
+          </YearSelectorContent>
+        </YearSelector>
       </PageHeader>
       <TournamentsMain
         members={members}

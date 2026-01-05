@@ -14,13 +14,11 @@ import {
 } from "@/components/ui/empty";
 import { AlertCircle, ChevronDown } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import Link from "next/link";
+  YearSelector,
+  YearSelectorContent,
+  YearSelectorItem,
+  YearSelectorTrigger,
+} from "@/components/page-header/year-selector";
 
 interface Params {
   searchParams: Promise<{ year: string | null }>;
@@ -64,25 +62,24 @@ async function Page({ searchParams }: Params) {
   return (
     <>
       <PageHeader>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center relative w-fit mx-auto justify-center ">
           <POYInfo />
-          <DropdownMenu>
-            <DropdownMenuTrigger className="text-xl font-bold">
-              {currentYear} POY
-              <ChevronDown className="ml-1 inline-block size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuGroup>
-                {seasons.map((season) => (
-                  <DropdownMenuItem asChild key={season.id}>
-                    <Link href={`/poy?year=${season.year}`} className="w-full">
-                      {season.year}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <YearSelector>
+            <YearSelectorTrigger className="font-bold text-xl">
+              {activeSeason.year} POY
+              <ChevronDown className="inline-block ml-2 mb-1" size={16} />
+            </YearSelectorTrigger>
+            <YearSelectorContent>
+              {seasons.map((season) => (
+                <YearSelectorItem
+                  key={season.id}
+                  active={season.year === activeSeason.year}
+                  href={`/poy?year=${season.year}`}>
+                  {season.year}
+                </YearSelectorItem>
+              ))}
+            </YearSelectorContent>
+          </YearSelector>
         </div>
       </PageHeader>
       <div className="w-full  mt-4 mb-8 max-w-(--breakpoint-xl) mx-auto px-2">

@@ -14,7 +14,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ChevronDown } from "lucide-react";
+import {
+  YearSelector,
+  YearSelectorContent,
+  YearSelectorItem,
+  YearSelectorTrigger,
+} from "@/components/page-header/year-selector";
 const LazyCashGameTable = dynamic(
   () => import("@/components/stats/cash/cashgame-table")
 );
@@ -73,7 +79,22 @@ async function Page({ searchParams }: Props) {
   return (
     <>
       <PageHeader>
-        <CashYearSelector seasons={seasons} activeSeason={activeSeason} />
+        <YearSelector>
+          <YearSelectorTrigger className="font-bold text-xl">
+            {activeSeason.year} Cash Stats
+            <ChevronDown className="inline-block ml-2 mb-1" size={16} />
+          </YearSelectorTrigger>
+          <YearSelectorContent>
+            {seasons.map((season) => (
+              <YearSelectorItem
+                key={season.id}
+                active={season.year === activeSeason.year}
+                href={`/stats/cash?year=${season.year}`}>
+                {season.year}
+              </YearSelectorItem>
+            ))}
+          </YearSelectorContent>
+        </YearSelector>
       </PageHeader>
       {seasonStats.length === 0 ? (
         <Empty>
@@ -83,8 +104,8 @@ async function Page({ searchParams }: Props) {
             </EmptyMedia>
             <EmptyTitle>No Cash Stats Available</EmptyTitle>
             <EmptyDescription>
-              No cash games have been played for {activeSeason.year}. Please
-              check back later.
+              No cash sessions have been added for {activeSeason.year}. Once a
+              cash session is added, it will appear here.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

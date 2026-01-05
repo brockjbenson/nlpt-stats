@@ -10,7 +10,7 @@ import { FaCircleInfo } from "react-icons/fa6";
 function POYInfo() {
   return (
     <Drawer>
-      <DrawerTrigger className="flex items-center justify-center gap-2 text-white font-bold text-lg">
+      <DrawerTrigger className="flex items-center absolute -left-8 justify-center gap-2 text-white font-bold text-lg">
         <FaCircleInfo />
       </DrawerTrigger>
       <DrawerContent>
