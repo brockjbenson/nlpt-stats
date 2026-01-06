@@ -18,7 +18,7 @@ import {
 import { columns } from "@/features/poy/components/table/columns";
 import { POYDataTable } from "@/features/poy/components/table/table";
 import POYInfo from "@/features/poy/components/poy-info";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { createStaticClient } from "@/utils/supabase/static";
 
 interface Params {
   params: Promise<{ year: string }>;
@@ -27,10 +27,7 @@ interface Params {
 // Generate static params for all available years
 export async function generateStaticParams() {
   // Use service role client for static generation
-  const db = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const db = createStaticClient();
   const { data: seasons } = await db.from("season").select("year");
 
   return (
@@ -49,10 +46,7 @@ async function Page({ params }: Params) {
   const currentYear = Number(year);
 
   // Use service role client for static generation
-  const db = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const db = createStaticClient();
 
   const [{ data: seasons, error: seasonError }] = await Promise.all([
     db.from("season").select("*"),

@@ -1,13 +1,8 @@
 import ErrorHandler from "@/components/error-handler";
-import MemberAllStats from "@/components/members/member-all-stats";
-import MemberOverview from "@/components/members/member-career-overview";
-import MemberHeader from "@/components/members/member-header";
 import MemberMain from "@/components/members/member-main";
-import MemberViewCarousel from "@/components/members/member-view-carousel";
 import PageHeader from "@/components/page-header/page-header";
-import { createClient } from "@/utils/supabase/server";
 import { Season } from "@/utils/types";
-import React from "react";
+import { createStaticClient } from "@/utils/supabase/static";
 
 interface EditMemberProps {
   params: Promise<{
@@ -15,8 +10,26 @@ interface EditMemberProps {
   }>;
 }
 
+// Generate static params for all members
+export async function generateStaticParams() {
+  const db = createStaticClient();
+
+  const { data: members } = await db.from("members").select("id");
+
+  return (
+    members?.map((member) => ({
+      id: member.id,
+    })) ?? []
+  );
+}
+
+// Enable static generation
+export const dynamic = "force-static";
+export const revalidate = 3600; // Revalidate every hour (optional)
+
 async function Member({ params }: EditMemberProps) {
-  const db = await createClient();
+  const db = createStaticClient();
+
   const { id } = await params;
 
   const currentYear = new Date().getFullYear();
@@ -27,6 +40,7 @@ async function Member({ params }: EditMemberProps) {
     db.from("season").select("*"),
     db.from("members").select("*").eq("id", id).single(),
   ]);
+
   if (seasonsError) {
     return (
       <ErrorHandler
@@ -36,6 +50,7 @@ async function Member({ params }: EditMemberProps) {
       />
     );
   }
+
   if (memberError) {
     return (
       <ErrorHandler
@@ -46,9 +61,22 @@ async function Member({ params }: EditMemberProps) {
     );
   }
 
-  const currentSeasonId = seasons.find(
+  const currentSeason = seasons.find(
     (season: Season) => season.year === currentYear
-  ).id;
+  );
+
+  if (!currentSeason) {
+    return (
+      <ErrorHandler
+        errorMessage="Current season not found"
+        title="Error fetching season"
+        pageTitle="Member"
+      />
+    );
+  }
+
+  const currentSeasonId = currentSeason.id;
+
   const [
     { data: nlpiData, error: nlpiError },
     { data: poyData, error: poyError },
@@ -60,7 +88,7 @@ async function Member({ params }: EditMemberProps) {
   ] = await Promise.all([
     db.rpc("get_nlpi_info", {
       current_season_id: currentSeasonId,
-      target_filter_date: null, // Use null if no date filtering is needed
+      target_filter_date: null,
       target_member_id: id,
     }),
     db.rpc("get_poy_info", {

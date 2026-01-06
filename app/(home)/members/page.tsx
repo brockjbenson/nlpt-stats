@@ -1,17 +1,21 @@
 import ErrorHandler from "@/components/error-handler";
 import MemberCard from "@/components/members/member-card";
 import PageHeader from "@/components/page-header/page-header";
-import { createClient } from "@/utils/supabase/server";
 import { Member } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
+import { createStaticClient } from "@/utils/supabase/static";
 
 type MemberWithDebut = Member & {
   debutDate: string | null;
 };
 
+export const dynamic = "force-static";
+export const revalidate = 3600; // Revalidate every hour (optional)
+
 async function Members() {
-  const db = await createClient();
+  const db = createStaticClient();
+
   const { data, error } = await db
     .from("members")
     .select("*")

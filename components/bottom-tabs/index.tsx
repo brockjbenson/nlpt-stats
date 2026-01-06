@@ -13,6 +13,7 @@ import { useScrollState } from "@/app/providers/scroll-context"; // ⚠️ USE O
 function BottomTabs() {
   const pathname = usePathname();
   const [active, setActive] = React.useState<string>("");
+  const currentYear = new Date().getFullYear();
 
   const { navTranslateY } = useScrollState();
 
@@ -58,7 +59,7 @@ function BottomTabs() {
         </li>
 
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <BottomTab id="poy" active={active} href="/poy">
+          <BottomTab id="poy" active={active} href={`/poy/${currentYear}`}>
             <FaRankingStar className="w-6 h-6" />
             POY
           </BottomTab>

@@ -30,10 +30,11 @@ function PageHeader({ className, children, skeleton = false, title }: props) {
       <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
         <Link href="/">
           <Image
-            src="/icons/nlpt-no-bg.png"
+            className="ml-1"
+            src="/favicon.svg"
             alt="logo"
-            width={40}
-            height={40}
+            width={26}
+            height={26}
           />
         </Link>
         {title && (

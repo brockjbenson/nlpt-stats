@@ -3,11 +3,11 @@ import NLPICalculator from "@/features/nlpi/components/nlpi-calculator";
 import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 import { NLPIDataTable } from "@/features/nlpi/components/table/table";
 import { columns } from "@/features/nlpi/components/table/columns";
 import { NLPIData } from "@/features/nlpi/lib/types";
+import { createStaticClient } from "@/utils/supabase/static";
 
 // Enable static generation
 export const dynamic = "force-static";
@@ -15,10 +15,7 @@ export const revalidate = 3600; // Revalidate every hour (optional)
 
 async function NLPI() {
   // Use service role client for static generation
-  const db = createServiceClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const db = createStaticClient();
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
