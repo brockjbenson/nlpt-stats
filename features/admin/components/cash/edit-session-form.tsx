@@ -40,7 +40,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
 import { useToast } from "@/hooks/use-toast";
-import { editSessionAction } from "@/components/admin/stats/actions/edit-session";
+import { editSessionAction } from "@/features/admin/actions/edit-session";
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import {
   Select,

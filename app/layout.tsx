@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Viewport } from "next";
 import InstallPrompt from "@/components/install-prompt";
+import { ScrollProvider } from "./providers/scroll-context";
 
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
@@ -158,14 +159,16 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-background overflow-x-hidden min-h-screen text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange>
-          {children}
-          <InstallPrompt />
-        </ThemeProvider>
+        <ScrollProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange>
+            {children}
+            <InstallPrompt />
+          </ThemeProvider>
+        </ScrollProvider>
         <Toaster />
       </body>
     </html>

@@ -34,7 +34,7 @@ import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 import useLocalStorageState from "@/hooks/use-local-storage";
-import { addTournamentSessionAction } from "@/components/admin/stats/actions/add-session";
+import { addTournamentSessionAction } from "@/features/admin/actions/add-session";
 
 interface Props {
   tournament: Tournament;

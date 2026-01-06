@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
-import EditSessionForm from "../../../../_components/edit-session-form";
+import EditSessionForm from "../../../../../../../../features/admin/components/cash/edit-session-form";
 interface Params {
   params: Promise<{ seasonId: string; weekId: string }>;
 }
