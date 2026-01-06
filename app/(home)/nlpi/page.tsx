@@ -3,14 +3,23 @@ import NLPICalculator from "@/features/nlpi/components/nlpi-calculator";
 import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClient } from "@/utils/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 
 import { NLPIDataTable } from "@/features/nlpi/components/table/table";
 import { columns } from "@/features/nlpi/components/table/columns";
 import { NLPIData } from "@/features/nlpi/lib/types";
 
+// Enable static generation
+export const dynamic = "force-static";
+export const revalidate = 3600; // Revalidate every hour (optional)
+
 async function NLPI() {
-  const db = await createClient();
+  // Use service role client for static generation
+  const db = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
 
@@ -29,6 +38,16 @@ async function NLPI() {
   }
 
   const activeSeason = seasons.find((season) => season.year === currentYear);
+
+  if (!activeSeason) {
+    return (
+      <ErrorHandler
+        errorMessage="Current season not found"
+        title="Error fetching season"
+        pageTitle="NLPI Rankings"
+      />
+    );
+  }
 
   const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
     current_season_id: activeSeason.id,
@@ -53,7 +72,7 @@ async function NLPI() {
       <PageHeader>
         <NLPIInfo />
       </PageHeader>
-      <div className="w-full  px-2 mt-4 max-w-(--breakpoint-xl) mx-auto">
+      <div className="w-full px-2 mt-4 max-w-(--breakpoint-xl) mx-auto">
         <div className="my-4 grid grid-cols-2">
           <NLPICalculator nlpiData={nlpiData} />
         </div>

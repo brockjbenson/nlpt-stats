@@ -69,7 +69,7 @@ export function StatsTable<TData, TValue>({
                       <TableHead
                         className={cn(
                           index === 0 && "hidden",
-                          index === 1 && "sticky z-10 left-0"
+                          index === 1 && "sticky bg-card z-10 left-0"
                         )}
                         key={header.id}>
                         {header.isPlaceholder
@@ -94,7 +94,7 @@ export function StatsTable<TData, TValue>({
                       <TableCell
                         className={cn(
                           index === 0 && "hidden",
-                          index === 1 && "sticky z-10 left-0"
+                          index === 1 && "sticky bg-card z-10 left-0"
                         )}
                         key={cell.id}>
                         {flexRender(
