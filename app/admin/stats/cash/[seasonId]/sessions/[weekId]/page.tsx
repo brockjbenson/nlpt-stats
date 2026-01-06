@@ -22,15 +22,15 @@ async function Page({ params }: Params) {
   if (weekError) {
     return <p>Error fetching Week: {weekError.message}</p>;
   }
-  const { data: sessions, error: sessionError } = await db
-    .from("cash_session")
-    .select(`*, member:member_id(*), week:week_id(*), season:season_id(*)`)
-    .eq("week_id", weekId)
-    .eq("season_id", seasonId);
+  // const { data: sessions, error: sessionError } = await db
+  //   .from("cash_session")
+  //   .select(`*, member:member_id(*), week:week_id(*), season:season_id(*)`)
+  //   .eq("week_id", weekId)
+  //   .eq("season_id", seasonId);
 
-  if (sessionError) {
-    return <p>Error fetching Session: {sessionError.message}</p>;
-  }
+  // if (sessionError) {
+  //   return <p>Error fetching Session: {sessionError.message}</p>;
+  // }
   return (
     <div>
       {season[0].year}: Week {week[0].week_number}

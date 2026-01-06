@@ -13,7 +13,7 @@ import { CashSessionNoId, Member } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { Label } from "@radix-ui/react-label";
 import { ChevronDown, PlusCircle, X } from "lucide-react";
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 
 interface Props {
   members: Member[];
@@ -39,13 +39,6 @@ function Sessions({
   const [buyInInputs, setBuyInInputs] = React.useState<Record<string, string>>(
     {}
   );
-
-  useEffect(() => {
-    if (sessionsToAdd.length === 0) {
-      setCashOutInputs({});
-      setBuyInInputs({});
-    }
-  }, [sessionsToAdd]);
 
   return (
     <>
@@ -92,7 +85,7 @@ function Sessions({
                           }}
                           type="text"
                           inputMode="decimal"
-                          onFocus={(e) => {
+                          onFocus={() => {
                             if (rawBuyIn === "0" || rawBuyIn === "0.00") {
                               setBuyInInputs((prev) => ({
                                 ...prev,
@@ -111,7 +104,7 @@ function Sessions({
                             });
                           }}
                           onChange={(e) => {
-                            let raw = e.target.value.replace(/^\$/, ""); // remove leading $
+                            const raw = e.target.value.replace(/^\$/, ""); // remove leading $
                             setBuyInInputs((prev) => ({
                               ...prev,
                               [member.id]: raw,
@@ -172,7 +165,7 @@ function Sessions({
                             cashOutInputRefs.current[member.id] = el;
                           }}
                           inputMode="decimal"
-                          onFocus={(e) => {
+                          onFocus={() => {
                             if (rawCashOut === "0" || rawCashOut === "0.00") {
                               setCashOutInputs((prev) => ({
                                 ...prev,
@@ -191,7 +184,7 @@ function Sessions({
                             });
                           }}
                           onChange={(e) => {
-                            let raw = e.target.value.replace(/^\$/, ""); // remove leading $
+                            const raw = e.target.value.replace(/^\$/, ""); // remove leading $
                             setCashOutInputs((prev) => ({
                               ...prev,
                               [member.id]: raw,
@@ -257,7 +250,7 @@ function Sessions({
                           }}>
                           <SelectTrigger
                             id={`rebuys-${member.id}`}
-                            className="text-base gap-1 relative -top-[2px] text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
+                            className="text-base gap-1 relative -top-0.5 text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
                             <SelectValue className="text-base font-semibold text-white" />
                             <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
                           </SelectTrigger>

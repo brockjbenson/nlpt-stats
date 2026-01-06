@@ -29,6 +29,7 @@ const MemberImage: React.FC<Props> = ({
   className,
   zoom = null,
   imageClassName,
+  alt = "Member image",
   ...props
 }) => {
   return (
@@ -38,6 +39,7 @@ const MemberImage: React.FC<Props> = ({
         className
       )}>
       <Image
+        alt={alt}
         className={cn("w-full h-auto", zoomStyles({ zoom }), imageClassName)}
         width={500}
         height={500}

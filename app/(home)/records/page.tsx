@@ -1,8 +1,7 @@
 import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
-import RecordsComponent from "@/components/records/main";
+import RecordsComponent from "@/features/records/components/main";
 import { createClient } from "@/utils/supabase/server";
-import React from "react";
 
 async function Records() {
   const db = await createClient();

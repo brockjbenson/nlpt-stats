@@ -1,4 +1,4 @@
-import TournamentSessionsForm from "@/components/stats/tournament/tournament-sessions-form";
+import TournamentSessionsForm from "@/features/tournaments/components/tournament-sessions-form";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 

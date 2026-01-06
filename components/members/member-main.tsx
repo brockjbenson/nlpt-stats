@@ -3,7 +3,6 @@
 import {
   CareerData,
   Member,
-  NLPIData,
   NLPIHistoricalRecord,
   POYData,
   Season,
@@ -18,6 +17,7 @@ import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Info } from "lucide-react";
+import { NLPIData } from "@/features/nlpi/lib/types";
 
 type avgData = {
   avg_rebuys: number;
@@ -56,7 +56,6 @@ interface Props {
 }
 
 function MemberMain({
-  id,
   member,
   currentYear,
   nlpiData,

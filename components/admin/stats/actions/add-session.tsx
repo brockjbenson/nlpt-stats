@@ -2,7 +2,7 @@
 
 import { createClient } from "@/utils/supabase/client";
 import { SessionNoId } from "@/utils/tournament/utils";
-import { CashSession, CashSessionNoId } from "@/utils/types";
+import { CashSessionNoId } from "@/utils/types";
 
 export const addSessionAction = async (sessions: CashSessionNoId[]) => {
   const db = createClient();

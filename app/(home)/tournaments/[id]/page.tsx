@@ -1,9 +1,8 @@
 import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
-import TournamentInfo from "@/components/stats/tournament/tournament-info-card";
-import TournamentSessions from "@/components/stats/tournament/tournament-sessions";
+import TournamentInfo from "@/features/tournaments/components/tournament-info-card";
+import TournamentSessions from "@/features/tournaments/components/tournament-sessions";
 import { createClient } from "@/utils/supabase/server";
-import React from "react";
 
 interface Props {
   params: Promise<{ id: string }>;

@@ -12,7 +12,7 @@ interface Props {
   seasons: Season[];
 }
 
-function MemberMajorStats({ careerStats, view, seasons }: Props) {
+function MemberMajorStats({ careerStats, seasons }: Props) {
   const [year, setActiveYear] = React.useState<string | undefined>(undefined);
 
   const [dropDownOpen, setDropDownOpen] = React.useState(false);
@@ -35,7 +35,7 @@ function MemberMajorStats({ careerStats, view, seasons }: Props) {
           {year === undefined ? "Career Major Stats" : `${year} Major Stats`}
         </h3>
         <Select open={dropDownOpen} onOpenChange={setDropDownOpen}>
-          <SelectTrigger className="border w-[112px] border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
+          <SelectTrigger className="border w-28 border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
             {currentDropDownLabel}
             <ChevronDown
               className={cn(
@@ -79,7 +79,7 @@ function MemberMajorStats({ careerStats, view, seasons }: Props) {
           <p className="text-lg font-bold text-white">{majorStats.wins}</p>
         </div>
         <div className="flex flex-col gap-2 items-end justify-end">
-          <h3 className="text-muted text-sm font-normal">Top 3's</h3>
+          <h3 className="text-muted text-sm font-normal">{"Top 3's"}</h3>
           <p className="text-lg font-bold text-white">{majorStats.top_three}</p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">
@@ -150,7 +150,7 @@ function MemberMajorStats({ careerStats, view, seasons }: Props) {
           </p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">
-          <h3 className="text-muted text-sm font-normal">Total Buy In's</h3>
+          <h3 className="text-muted text-sm font-normal">Total {"Buy In's"}</h3>
           <p className={cn("text-lg font-bold text-white")}>
             {formatMoney(majorStats.total_buy_ins)}
           </p>

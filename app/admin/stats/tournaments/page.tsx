@@ -1,7 +1,7 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
 import ErrorHandler from "@/components/error-handler";
-import TournamentsMain from "@/components/stats/tournament/tournaments-main";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
+import TournamentsMain from "@/features/tournaments/components/tournaments-main";
 
 async function Page({
   searchParams,

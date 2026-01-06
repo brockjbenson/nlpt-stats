@@ -27,12 +27,11 @@ function ErrorHandler({
         className={cn(
           "w-full max-w-(--breakpoint-xl)  flex flex-col md:mt-8 gap-8 items-center mx-auto px-2",
           className
-        )}
-      >
+        )}>
         <h1 className="text-base font-bold md:text-xl">{title}</h1>
         <div className="flex items-center flex-col gap-4 justify-center">
           <AlertCircle className="w-16 h-16 text-theme-red" />
-          <p className="text-sm max-w-[350px] md:text-base">{errorMessage}</p>
+          <p className="text-sm max-w-87.5 md:text-base">{errorMessage}</p>
         </div>
         {children}
       </div>

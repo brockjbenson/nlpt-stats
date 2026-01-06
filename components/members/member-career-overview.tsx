@@ -1,12 +1,8 @@
 "use client";
 
+import { NLPIData } from "@/features/nlpi/lib/types";
 import { cn } from "@/lib/utils";
-import {
-  CareerData,
-  NLPIData,
-  NLPIHistoricalRecord,
-  POYData,
-} from "@/utils/types";
+import { CareerData, NLPIHistoricalRecord, POYData } from "@/utils/types";
 import {
   formatMoney,
   getOrdinalSuffix,
@@ -255,14 +251,16 @@ function MemberOverview({
           </p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">
-          <h2 className="text-muted text-base font-normal">Career Top 3's</h2>
+          <h2 className="text-muted text-base font-normal">
+            Career {"Top 3's"}
+          </h2>
           <p className="text-lg font-bold text-white">
             {careerStats.tournament_stats.top_three}
           </p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">
           <h2 className="text-muted text-base font-normal">
-            Top 3's ({currentYear})
+            {"Top 3's"} ({currentYear})
           </h2>
           <p className="text-lg font-bold text-white">
             {careerStats.tournament_stats.season_stats.filter(

@@ -1,5 +1,5 @@
 import { Member } from "@/utils/types";
-import { Loader2, User2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import React from "react";
 import {
   Dialog,
@@ -84,7 +84,9 @@ function MemberCard({
           <DialogTrigger asChild>
             <button
               onClick={() => {
-                onEdit && onEdit(member.id);
+                if (onEdit) {
+                  onEdit(member.id);
+                }
               }}
               className="hover:text-primary hover:underline h-fit m-0 p-0 transition">
               Edit
@@ -92,7 +94,7 @@ function MemberCard({
           </DialogTrigger>
           <DialogPortal>
             <DialogOverlay />
-            <DialogContent className="w-full max-w-xl h-[582px]">
+            <DialogContent className="w-full max-w-xl h-145.5">
               <DialogTitle
                 className={cn(
                   loading ? "hidden" : "block",

@@ -1,10 +1,9 @@
 import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
-import POYInfo from "@/components/poy/poy-info";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
-import { POYDataTable } from "./table/table";
-import { columns } from "./table/columns";
+
 import {
   Empty,
   EmptyDescription,
@@ -19,6 +18,9 @@ import {
   YearSelectorItem,
   YearSelectorTrigger,
 } from "@/components/page-header/year-selector";
+import { columns } from "@/features/poy/components/table/columns";
+import { POYDataTable } from "@/features/poy/components/table/table";
+import POYInfo from "@/features/poy/components/poy-info";
 
 interface Params {
   searchParams: Promise<{ year: string | null }>;

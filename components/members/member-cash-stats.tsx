@@ -12,7 +12,7 @@ interface Props {
   seasons: Season[];
 }
 
-function MemberCashStats({ careerStats, view, seasons }: Props) {
+function MemberCashStats({ careerStats, seasons }: Props) {
   const [year, setActiveYear] = React.useState<string | undefined>(undefined);
   const [dropDownOpen, setDropDownOpen] = React.useState(false);
   const currentDropDownLabel = year ? `${year}` : "Career";
@@ -47,7 +47,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           {year === undefined ? "Career Cash Stats" : `${year} Cash Stats`}
         </h3>
         <Select open={dropDownOpen} onOpenChange={setDropDownOpen}>
-          <SelectTrigger className="border w-[112px] border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
+          <SelectTrigger className="border w-28 border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
             {currentDropDownLabel}
             <ChevronDown
               className={cn(
@@ -81,7 +81,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-3 w-full max-w-[800px] mx-auto md:grid-cols-4 pb-4 gap-4">
+      <div className="grid grid-cols-3 w-full max-w-200 mx-auto md:grid-cols-4 pb-4 gap-4">
         <div className="flex flex-col gap-2 items-start justify-start">
           <h3 className="text-muted text-sm font-normal">Sessions</h3>
           <p className="text-lg font-bold text-white">{cashStats.sessions}</p>
@@ -189,7 +189,7 @@ function MemberCashStats({ careerStats, view, seasons }: Props) {
           </p>
         </div>
         <div className="flex flex-col gap-2 items-start justify-start">
-          <h3 className="text-muted text-sm font-normal">Total Buy-In's</h3>
+          <h3 className="text-muted text-sm font-normal">Total {"Buy-In's"}</h3>
           <p className="text-lg font-bold text-white">
             {formatMoney(cashStats.total_buy_ins || 0)}
           </p>

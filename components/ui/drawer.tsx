@@ -65,7 +65,10 @@ const DrawerHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("grid gap-1.5 p-4 text-center sm:text-left", className)}
+    className={cn(
+      "grid sticky top-0 -translate-y-1 bg-card z-10 gap-1.5 p-3 text-center sm:text-left",
+      className
+    )}
     {...props}
   />
 );
@@ -76,7 +79,7 @@ const DrawerFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+    className={cn("mt-auto flex flex-col gap-2 p-3", className)}
     {...props}
   />
 );
@@ -88,10 +91,7 @@ const DrawerTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Title
     ref={ref}
-    className={cn(
-      "text-xl font-bold mx-auto sticky top-0 bg-card  pb-4 leading-none tracking-tight",
-      className
-    )}
+    className={cn("text-xl font-bold leading-none tracking-tight", className)}
     {...props}
   />
 ));

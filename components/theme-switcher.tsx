@@ -10,30 +10,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Laptop, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 const ThemeSwitcher = () => {
-  const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
-
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
+  const { theme, setTheme, systemTheme } = useTheme();
 
   const ICON_SIZE = 16;
+
+  // Current theme considering system preference
+  const currentTheme = theme === "system" ? systemTheme : theme;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={"sm"}>
-          {theme === "light" ? (
+        <Button variant="ghost" size={"sm"} suppressHydrationWarning>
+          {currentTheme === "light" ? (
             <Sun key="light" size={ICON_SIZE} className={"text-neutral-700"} />
-          ) : theme === "dark" ? (
+          ) : currentTheme === "dark" ? (
             <Moon key="dark" size={ICON_SIZE} className={"text-neutral-400"} />
           ) : (
             <Laptop

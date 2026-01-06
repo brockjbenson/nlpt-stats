@@ -24,7 +24,7 @@ const logoSizes = cva("", {
 function Logo({ className, size = "md" }: Props) {
   return (
     <Link
-      className={cn("bg-primary w-fit h-fit rounded-full p-[2px]", className)}
+      className={cn("bg-primary w-fit h-fit rounded-full p-0.5", className)}
       href="/">
       <Image
         alt="Northern Lights Poker Tour Stats"

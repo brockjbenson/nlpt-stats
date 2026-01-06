@@ -1,13 +1,10 @@
 "use client";
 
-import CashYearSelector from "@/components/stats/cash/cash-year-selector";
-import { Select, SelectTrigger } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Season } from "@/utils/types";
 import { EmblaOptionsType } from "embla-carousel";
 import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
-import React from "react";
 
 interface Props {
   seasons: Season[];
@@ -18,7 +15,7 @@ interface Props {
 const OPTIONS: EmblaOptionsType = {};
 
 function AdminCashCarousel({ seasons, year, isAdmin = false }: Props) {
-  const [emblaMainRef, emblaMainApi] = useEmblaCarousel(OPTIONS);
+  const [emblaMainRef] = useEmblaCarousel(OPTIONS);
 
   return (
     <>

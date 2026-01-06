@@ -1,12 +1,13 @@
 import ErrorHandler from "@/components/error-handler";
-import NLPICalculator from "@/components/nlpi/nlpi-calculator";
-import NLPIInfo from "@/components/nlpi/nlpi-info";
+import NLPICalculator from "@/features/nlpi/components/nlpi-calculator";
+import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
-import { NLPIData } from "@/utils/types";
-import { NLPIDataTable } from "./table/table";
-import { columns } from "./table/columns";
+
+import { NLPIDataTable } from "@/features/nlpi/components/table/table";
+import { columns } from "@/features/nlpi/components/table/columns";
+import { NLPIData } from "@/features/nlpi/lib/types";
 
 async function NLPI() {
   const db = await createClient();

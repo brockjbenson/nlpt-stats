@@ -24,7 +24,6 @@ function MembersList({ members }: Props) {
   const [lastName, setLastName] = React.useState<string>("");
   const [nickname, setNickname] = React.useState<string>("");
   const [portraitUrl, setPortraitUrl] = React.useState<string>("");
-  const [error, setError] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [editId, setEditId] = React.useState<string | null>(null);
   const [searchValue, setSearchValue] = React.useState<string>("");
@@ -39,7 +38,6 @@ function MembersList({ members }: Props) {
 
     if (error) {
       console.error(error.message);
-      setError(error.message);
     }
 
     if (data) {
@@ -79,7 +77,7 @@ function MembersList({ members }: Props) {
       .eq("id", editId);
 
     if (error) {
-      setError(error.message);
+      console.error(error.message);
     }
 
     router.refresh();

@@ -150,7 +150,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
         resetLocalSessionData();
         setFinalSessions([]);
       }
-    } catch (error) {
+    } catch {
       setError("Failed to add sessions");
     } finally {
       setLoading(false);
@@ -166,7 +166,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   const getSeasonWeeks = async (seasonId: string) => {
     const seasonWeeks = weeks.filter((w) => w.season_id === seasonId);
-    const { data: sessions, error } = await db
+    const { data: sessions } = await db
       .from("cash_session")
       .select("week_id")
       .eq("season_id", seasonId);
@@ -216,7 +216,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div className="flex px-2 max-w-(--breakpoint-lg) mx-auto top-0 h-[50px] bg-background z-10 items-center justify-between">
+      <div className="flex px-2 max-w-(--breakpoint-lg) mx-auto top-0 h-12.5 bg-background z-10 items-center justify-between">
         <h2 className="text-base md:text-xl font-semibold">
           Add new cash sessions
         </h2>

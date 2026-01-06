@@ -1,7 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 import EditSessionForm from "../../../../_components/edit-session-form";
-import SessionsList from "@/components/admin/stats/sessions-list";
 interface Params {
   params: Promise<{ seasonId: string; weekId: string }>;
 }
@@ -14,14 +13,14 @@ async function Page({ params }: Params) {
     console.error("Invalid UUIDs passed to Supabase function.");
   }
 
-  const { data: members, error: membersError } = await db
-    .from("members")
-    .select("*")
-    .order("first_name", { ascending: true });
+  // const { data: members, error: membersError } = await db
+  //   .from("members")
+  //   .select("*")
+  //   .order("first_name", { ascending: true });
 
-  if (membersError) {
-    return <p>Error fetching Members: {membersError.message}</p>;
-  }
+  // if (membersError) {
+  //   return <p>Error fetching Members: {membersError.message}</p>;
+  // }
 
   const { data: sessions, error: sessionError } = await db
     .from("cash_session")

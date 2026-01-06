@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { CashSessionWeekData } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
-import React, { memo } from "react";
 import { Card, CardTitle } from "../ui/card";
 import MemberImage from "../members/member-image";
 import Link from "next/link";

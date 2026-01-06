@@ -1,4 +1,3 @@
-import CashGameTable from "@/components/stats/cash/cashgame-table";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
 
@@ -18,24 +17,24 @@ async function Page({ params }: Params) {
     return <p>Error fetching Season: {seasonError.message}</p>;
   }
 
-  const { data: members, error: memberError } = await db
-    .from("members")
-    .select("*")
-    .order("first_name", { ascending: true });
+  // const { data: members, error: memberError } = await db
+  //   .from("members")
+  //   .select("*")
+  //   .order("first_name", { ascending: true });
 
-  if (memberError) {
-    return <p>Error fetching Members: {memberError.message}</p>;
-  }
+  // if (memberError) {
+  //   return <p>Error fetching Members: {memberError.message}</p>;
+  // }
 
   return (
     <>
       <h2>{season[0].year} Sessions</h2>
-      <CashGameTable
+      {/* <CashGameTable
         isAdmin={true}
         seasonId={seasonId}
         year={season[0].year}
         members={members}
-      />
+      /> */}
     </>
   );
 }

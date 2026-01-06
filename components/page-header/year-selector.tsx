@@ -18,7 +18,14 @@ const YearSelectorTrigger = React.forwardRef<
   React.ComponentProps<typeof DropdownMenuTrigger>
 >(({ ...props }, ref) => {
   return (
-    <DropdownMenuTrigger ref={ref} className={cn(props.className)} {...props} />
+    <DropdownMenuTrigger
+      ref={ref}
+      className={cn(
+        "font-bold flex items-center justify-center gap-2 text-xl",
+        props.className
+      )}
+      {...props}
+    />
   );
 });
 YearSelectorTrigger.displayName = "YearSelectorTrigger";

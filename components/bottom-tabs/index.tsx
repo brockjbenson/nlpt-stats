@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { FaTrophy, FaMoneyBill, FaUsers } from "react-icons/fa";
+import { FaTrophy, FaUsers } from "react-icons/fa";
 import { FaRankingStar } from "react-icons/fa6";
 import { usePathname } from "next/navigation";
 import { TbWorldStar } from "react-icons/tb";
 import { cn } from "@/lib/utils";
 import BottomTab from "./tab";
+import { LineChart } from "lucide-react";
 
 function BottomTabs() {
   const pathname = usePathname();
@@ -21,10 +22,10 @@ function BottomTabs() {
   const ticking = useRef(false);
 
   React.useEffect(() => {
-    if (pathname.includes("cash")) {
-      setActive("cash+stats");
+    if (pathname.includes("stats")) {
+      setActive("stats");
     } else if (pathname.includes("tournament")) {
-      setActive("tournament+stats");
+      setActive("tournament");
     } else if (pathname.includes("members")) {
       setActive("members");
     } else if (pathname.includes("poy")) {
@@ -33,8 +34,6 @@ function BottomTabs() {
       setActive("nlpi");
     } else if (pathname === "/") {
       setActive("home");
-    } else if (pathname.includes("stats")) {
-      setActive("stats");
     }
   }, [pathname]);
 
@@ -126,21 +125,21 @@ function BottomTabs() {
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
           <BottomTab
             onClick={() => {
-              setActive("cash+stats");
+              setActive("stats");
             }}
-            id="cash+stats"
+            id="stats"
             active={active}
-            href="/stats/cash">
-            <FaMoneyBill className="w-5 h-5 mt-1" />
-            Cash
+            href="/stats">
+            <LineChart className="w-6 h-6" />
+            Stats
           </BottomTab>
         </li>
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
           <BottomTab
             onClick={() => {
-              setActive("tournament+stats");
+              setActive("tournament");
             }}
-            id="tournament+stats"
+            id="tournament"
             active={active}
             href="/tournaments">
             <FaTrophy className="w-5 h-5 mt-1" />
