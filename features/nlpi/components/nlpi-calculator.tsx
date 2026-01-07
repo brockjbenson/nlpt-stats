@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { NLPIData } from "../lib/types";
+import { ChevronDown } from "lucide-react";
 
 interface Props {
   nlpiData: NLPIData[];
@@ -36,16 +37,17 @@ function NLPICalculator({ nlpiData }: Props) {
 
   return (
     <Drawer>
-      <DrawerTrigger className="underline text-left">
-        Session Coming Off
+      <DrawerTrigger className="text-sm underline text-muted">
+        Session being dropped
       </DrawerTrigger>
       <DrawerContent>
         <DrawerTitle>NLPI Session Coming Off</DrawerTitle>
         <div className="mt-6">
           <Label>Members</Label>
           <Select onValueChange={(value) => handleMemberDataChange(value)}>
-            <SelectTrigger>
+            <SelectTrigger className="border mt-2 border-border">
               <SelectValue placeholder="Select a member" />
+              <ChevronDown />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

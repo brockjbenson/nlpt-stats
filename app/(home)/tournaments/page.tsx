@@ -72,7 +72,7 @@ async function page() {
           </YearSelectorTrigger>
           <YearSelectorContent>
             <YearSelectorItem href={`/tournaments`} active={true}>
-              All
+              All Tournaments
             </YearSelectorItem>
             {seasons
               .sort((a, b) => b.year - a.year)
@@ -81,7 +81,7 @@ async function page() {
                   key={season.id}
                   active={false}
                   href={`/tournaments/${season.year}`}>
-                  {season.year}
+                  {season.year} Tournaments
                 </YearSelectorItem>
               ))}
           </YearSelectorContent>

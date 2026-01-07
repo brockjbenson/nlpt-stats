@@ -2,7 +2,7 @@ import ErrorHandler from "@/components/error-handler";
 import NLPICalculator from "@/features/nlpi/components/nlpi-calculator";
 import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { NLPIDataTable } from "@/features/nlpi/components/table/table";
 import { columns } from "@/features/nlpi/components/table/columns";
@@ -69,11 +69,12 @@ async function NLPI() {
       <PageHeader>
         <NLPIInfo />
       </PageHeader>
-      <div className="w-full px-2 mt-4 max-w-(--breakpoint-xl) mx-auto">
-        <div className="my-4 grid grid-cols-2">
-          <NLPICalculator nlpiData={nlpiData} />
-        </div>
+      <div className="w-full px-2 max-w-(--breakpoint-xl) mx-auto">
         <Card className="w-full mb-8">
+          <CardHeader className="justify-between">
+            <CardTitle>NLPI Rankings - {currentYear}</CardTitle>
+            <NLPICalculator nlpiData={nlpiData} />
+          </CardHeader>
           <CardContent>
             <NLPIDataTable
               columns={columns}
