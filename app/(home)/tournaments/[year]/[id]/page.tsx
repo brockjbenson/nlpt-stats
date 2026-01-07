@@ -2,41 +2,15 @@ import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
 import TournamentInfo from "@/features/tournaments/components/tournament-info-card";
 import TournamentSessions from "@/features/tournaments/components/tournament-sessions";
-import { createStaticClient } from "@/utils/supabase/static";
+import { createClient } from "@/utils/supabase/server";
 
 interface Props {
   params: Promise<{ year: string; id: string }>;
 }
 
-export async function generateStaticParams() {
-  const db = createStaticClient();
-  const { data: tournaments } = await db
-    .from("tournaments")
-    .select("id, season_id");
-  const { data: seasons } = await db.from("season").select("year, id");
-
-  if (!seasons) {
-    return [];
-  }
-
-  if (!tournaments) {
-    return [];
-  }
-
-  return tournaments.map((tournament) => ({
-    year:
-      seasons
-        .find((season) => season.id === tournament.season_id)
-        ?.year.toString() || "",
-    id: tournament.id.toString(),
-  }));
-}
-
-export const dynamic = "force-static";
-
 async function Page({ params }: Props) {
   const { id } = await params;
-  const db = createStaticClient();
+  const db = await createClient();
   const { data: majorData, error: majorError } = await db.rpc(
     "get_major_data",
     {

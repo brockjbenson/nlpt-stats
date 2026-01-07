@@ -1,12 +1,9 @@
 import ErrorHandler from "@/components/error-handler";
 import StatsMain from "@/features/stats/components/main";
-import { createStaticClient } from "@/utils/supabase/static";
-
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
+import { createClient } from "@/utils/supabase/server";
 
 async function page() {
-  const db = createStaticClient();
+  const db = await createClient();
 
   const [
     { data: seasons, error: seasonsError },

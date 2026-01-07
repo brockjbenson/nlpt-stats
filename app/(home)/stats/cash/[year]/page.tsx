@@ -1,9 +1,6 @@
 import ErrorHandler from "@/components/error-handler";
 import StatsMain from "@/features/stats/components/main";
-import { createStaticClient } from "@/utils/supabase/static";
-
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
+import { createClient } from "@/utils/supabase/server";
 
 interface PageProps {
   params: Promise<{
@@ -11,21 +8,9 @@ interface PageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  // Use service role client for static generation
-  const db = createStaticClient();
-  const { data: seasons } = await db.from("season").select("year");
-
-  return (
-    seasons?.map((season) => ({
-      year: season.year.toString(),
-    })) ?? []
-  );
-}
-
 async function page({ params }: PageProps) {
   const { year } = await params;
-  const db = createStaticClient();
+  const db = await createClient();
 
   const [
     { data: seasons, error: seasonsError },

@@ -7,13 +7,11 @@ import {
   YearSelectorTrigger,
 } from "@/components/page-header/year-selector";
 import TournamentsMain from "@/features/tournaments/components/tournaments-main";
-import { createStaticClient } from "@/utils/supabase/static";
+import { createClient } from "@/utils/supabase/server";
 import { ChevronDown } from "lucide-react";
 
-export const dynamic = "force-static";
-
 async function page() {
-  const db = createStaticClient();
+  const db = await createClient();
   const [
     { data: seasons, error: seasonsError },
     { data: members, error: membersError },

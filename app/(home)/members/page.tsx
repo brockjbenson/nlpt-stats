@@ -4,17 +4,14 @@ import PageHeader from "@/components/page-header/page-header";
 import { Member } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
-import { createStaticClient } from "@/utils/supabase/static";
+import { createClient } from "@/utils/supabase/server";
 
 type MemberWithDebut = Member & {
   debutDate: string | null;
 };
 
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
-
 async function Members() {
-  const db = createStaticClient();
+  const db = await createClient();
 
   const { data, error } = await db
     .from("members")

@@ -18,35 +18,18 @@ import {
 import { columns } from "@/features/poy/components/table/columns";
 import { POYDataTable } from "@/features/poy/components/table/table";
 import POYInfo from "@/features/poy/components/poy-info";
-import { createStaticClient } from "@/utils/supabase/static";
+import { createClient } from "@/utils/supabase/server";
 
 interface Params {
   params: Promise<{ year: string }>;
 }
-
-// Generate static params for all available years
-export async function generateStaticParams() {
-  // Use service role client for static generation
-  const db = createStaticClient();
-  const { data: seasons } = await db.from("season").select("year");
-
-  return (
-    seasons?.map((season) => ({
-      year: season.year.toString(),
-    })) ?? []
-  );
-}
-
-// Enable static generation
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
 
 async function Page({ params }: Params) {
   const { year } = await params;
   const currentYear = Number(year);
 
   // Use service role client for static generation
-  const db = createStaticClient();
+  const db = await createClient();
 
   const [{ data: seasons, error: seasonError }] = await Promise.all([
     db.from("season").select("*"),

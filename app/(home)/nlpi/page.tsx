@@ -7,15 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NLPIDataTable } from "@/features/nlpi/components/table/table";
 import { columns } from "@/features/nlpi/components/table/columns";
 import { NLPIData } from "@/features/nlpi/lib/types";
-import { createStaticClient } from "@/utils/supabase/static";
-
-// Enable static generation
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
+import { createClient } from "@/utils/supabase/server";
 
 async function NLPI() {
   // Use service role client for static generation
-  const db = createStaticClient();
+  const db = await createClient();
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;

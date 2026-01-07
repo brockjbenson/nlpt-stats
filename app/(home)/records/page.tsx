@@ -1,12 +1,10 @@
 import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
 import RecordsComponent from "@/features/records/components/main";
-import { createStaticClient } from "@/utils/supabase/static";
-
-export const dynamic = "force-static";
+import { createClient } from "@/utils/supabase/server";
 
 async function Records() {
-  const db = createStaticClient();
+  const db = await createClient();
   const [
     { data: recordsData, error: recordsError },
     { data: nlpiRecords, error: membersError },

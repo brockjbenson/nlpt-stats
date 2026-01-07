@@ -2,7 +2,7 @@ import ErrorHandler from "@/components/error-handler";
 import MemberMain from "@/components/members/member-main";
 import PageHeader from "@/components/page-header/page-header";
 import { Season } from "@/utils/types";
-import { createStaticClient } from "@/utils/supabase/static";
+import { createClient } from "@/utils/supabase/server";
 
 interface EditMemberProps {
   params: Promise<{
@@ -10,25 +10,8 @@ interface EditMemberProps {
   }>;
 }
 
-// Generate static params for all members
-export async function generateStaticParams() {
-  const db = createStaticClient();
-
-  const { data: members } = await db.from("members").select("id");
-
-  return (
-    members?.map((member) => ({
-      id: member.id,
-    })) ?? []
-  );
-}
-
-// Enable static generation
-export const dynamic = "force-static";
-export const revalidate = 3600; // Revalidate every hour (optional)
-
 async function Member({ params }: EditMemberProps) {
-  const db = createStaticClient();
+  const db = await createClient();
 
   const { id } = await params;
 
