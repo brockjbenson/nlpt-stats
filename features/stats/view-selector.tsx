@@ -9,7 +9,7 @@ function ViewSelector({
   currentYear,
 }: {
   currentView: string;
-  activeSeason: Season | null;
+  activeSeason: Season | undefined;
   currentYear: string | number;
 }) {
   const yearParam = activeSeason?.year ?? currentYear;
@@ -23,7 +23,7 @@ function ViewSelector({
               "relative after:w-full after:bg-transparent after:absolute after:h-px after:left-0 after:-bottom-1.75 px-2",
               currentView === "cumulative" && "text-primary after:bg-primary"
             )}
-            href={`/stats/?year=${yearParam}&view=cumulative`}>
+            href={`/stats/cumulative/${yearParam}`}>
             Cumulative
           </Link>
         </li>
@@ -33,7 +33,7 @@ function ViewSelector({
               "relative after:w-full after:bg-transparent after:absolute after:h-px after:left-0 after:-bottom-1.75 px-2",
               currentView === "cash" && "text-primary after:bg-primary"
             )}
-            href={`/stats/?year=${yearParam}&view=cash`}>
+            href={`/stats/cash/${yearParam}`}>
             Cash
           </Link>
         </li>
@@ -43,7 +43,7 @@ function ViewSelector({
               "relative after:w-full after:bg-transparent after:absolute after:h-px after:left-0 after:-bottom-1.75 px-2",
               currentView === "tournament" && "text-primary after:bg-primary"
             )}
-            href={`/stats/?year=${yearParam}&view=tournament`}>
+            href={`/stats/tournament/${yearParam}`}>
             Tournament
           </Link>
         </li>

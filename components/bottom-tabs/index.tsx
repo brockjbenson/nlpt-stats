@@ -38,7 +38,10 @@ function BottomTabs() {
       }}>
       <ul className="w-full grid gap-4 grid-cols-5">
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <BottomTab id="stats" active={active} href="/stats">
+          <BottomTab
+            id="stats"
+            active={active}
+            href={`/stats/cumulative/${currentYear}`}>
             <LineChart className="w-6 h-6" />
             Stats
           </BottomTab>

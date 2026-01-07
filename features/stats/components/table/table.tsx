@@ -55,7 +55,8 @@ export function StatsTable<TData, TValue>({
       <Card>
         <CardHeader>
           <CardTitle>
-            {year} {view.charAt(0).toUpperCase() + view.slice(1)} Stats
+            {year === "career" ? "Career" : year}{" "}
+            {view.charAt(0).toUpperCase() + view.slice(1)} Stats
           </CardTitle>
         </CardHeader>
 

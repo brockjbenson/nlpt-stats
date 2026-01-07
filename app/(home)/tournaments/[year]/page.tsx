@@ -9,7 +9,6 @@ import {
 import TournamentsMain from "@/features/tournaments/components/tournaments-main";
 import { createStaticClient } from "@/utils/supabase/static";
 import { ChevronDown } from "lucide-react";
-import React from "react";
 
 export const dynamic = "force-static";
 
@@ -89,14 +88,19 @@ async function page({ params }: Props) {
             <ChevronDown className="inline-block ml-2 mb-1" size={16} />
           </YearSelectorTrigger>
           <YearSelectorContent>
-            {seasons.map((season) => (
-              <YearSelectorItem
-                key={season.id}
-                active={season.year === Number(year)}
-                href={`/tournaments/${season.year}`}>
-                {season.year}
-              </YearSelectorItem>
-            ))}
+            <YearSelectorItem href={`/tournaments`} active={false}>
+              All
+            </YearSelectorItem>
+            {seasons
+              .sort((a, b) => b.year - a.year)
+              .map((season) => (
+                <YearSelectorItem
+                  key={season.id}
+                  active={season.year === Number(year)}
+                  href={`/tournaments/${season.year}`}>
+                  {season.year}
+                </YearSelectorItem>
+              ))}
           </YearSelectorContent>
         </YearSelector>
       </PageHeader>

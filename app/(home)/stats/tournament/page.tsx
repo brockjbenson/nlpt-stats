@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 export const dynamic = "force-static";
 
-export default function POYRedirect() {
+export default function TournamentStatsRedirect() {
   const currentYear = new Date().getFullYear();
-  redirect(`/poy/${currentYear}`);
+  redirect(`/stats/tournament/${currentYear}`);
 }
