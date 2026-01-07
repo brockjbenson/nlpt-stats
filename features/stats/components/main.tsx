@@ -80,9 +80,7 @@ function StatsMain({ year, seasons, members, stats, isCareer, view }: Props) {
               No {view === "cumulative" ? "cash or tournament" : view} data has
               been added for {year}. Once{" "}
               {view === "cumulative" ? "cash or tournament" : view} data has
-              been added for {year}. Once{" "}
-              {view === "cumulative" ? "cash or tournament" : view} data is
-              added, it will appear here.
+              been added for {year}.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
