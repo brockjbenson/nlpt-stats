@@ -29,7 +29,7 @@ function TournamentCard({ data, isAdmin, members }: Props) {
             href={
               isAdmin
                 ? `/admin/tournaments/${data.id}`
-                : `/tournaments/${data.id}`
+                : `/tournaments/${data.season.year}/${data.id}`
             }>
             {data.name}
           </Link>

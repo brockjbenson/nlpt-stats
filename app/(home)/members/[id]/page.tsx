@@ -183,7 +183,7 @@ async function Member({ params }: EditMemberProps) {
 
   return (
     <>
-      <PageHeader className="mb-0" title="Member" />
+      <PageHeader showBackButton className="mb-0" title="Member" />
       <MemberMain
         advancedSkills={memberAdvancedSkills[0]}
         avgData={statsAvg[0]}

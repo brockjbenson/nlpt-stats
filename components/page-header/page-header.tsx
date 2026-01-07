@@ -5,15 +5,23 @@ import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
 import MobileNav from "../header/nav/mobile";
+import { BackButton } from "../ui/back-button";
 
 interface props {
   children?: React.ReactNode;
   skeleton?: boolean;
   title?: string;
   className?: string;
+  showBackButton?: boolean;
 }
 
-function PageHeader({ className, children, skeleton = false, title }: props) {
+function PageHeader({
+  className,
+  children,
+  skeleton = false,
+  title,
+  showBackButton = false,
+}: props) {
   if (skeleton) {
     return (
       <PageHeaderWrapper className={cn(className)}>
@@ -28,15 +36,19 @@ function PageHeader({ className, children, skeleton = false, title }: props) {
   return (
     <PageHeaderWrapper className={cn(className)}>
       <div className="grid grid-cols-[65px_1fr_65px] items-center gap-2 w-full">
-        <Link href="/">
-          <Image
-            className="ml-1"
-            src="/favicon.svg"
-            alt="logo"
-            width={26}
-            height={26}
-          />
-        </Link>
+        {showBackButton ? (
+          <BackButton />
+        ) : (
+          <Link href="/">
+            <Image
+              className="ml-1"
+              src="/favicon.svg"
+              alt="logo"
+              width={26}
+              height={26}
+            />
+          </Link>
+        )}
         {title && (
           <h1 className="text-xl text-center md:text-2xl font-bold">{title}</h1>
         )}

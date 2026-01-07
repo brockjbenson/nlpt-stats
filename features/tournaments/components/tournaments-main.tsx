@@ -13,18 +13,13 @@ import {
 
 interface Props {
   tournamentsData: MajorsData[];
-  year: number | null;
   members?: Member[];
 }
 
-function TournamentsMain({ tournamentsData, year, members }: Props) {
+function TournamentsMain({ tournamentsData, members }: Props) {
+  const year = tournamentsData[0]?.season.year.toString();
   return (
     <>
-      <div className="flex items-center justify-end md:justify-between px-2">
-        <h1 className="text-xl hidden md:block font-semibold">
-          {year === null ? "All" : year} Tournaments
-        </h1>
-      </div>
       <div className="grid grid-cols-1 px-2 pb-4 md:grid-cols-2 gap-4 md:gap-8">
         {tournamentsData.length > 0 ? (
           tournamentsData.map((tournament: MajorsData) => (

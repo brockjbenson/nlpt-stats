@@ -45,7 +45,10 @@ function BottomTabs() {
         </li>
 
         <li className="w-full aspect-square h-14 flex justify-center items-center max-w-16 mx-auto">
-          <BottomTab id="tournament" active={active} href="/tournaments">
+          <BottomTab
+            id="tournament"
+            active={active}
+            href={`/tournaments/${currentYear}`}>
             <FaTrophy className="w-5 h-5 mt-1" />
             {"Tourney's"}
           </BottomTab>

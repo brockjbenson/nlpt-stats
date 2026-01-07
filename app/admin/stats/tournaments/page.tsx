@@ -91,11 +91,7 @@ async function Page({
           </DropdownMenuContent>
         </DropdownMenu>
       </PageHeader>
-      <TournamentsMain
-        members={members}
-        year={yearNumber}
-        tournamentsData={tournamentsData}
-      />
+      <TournamentsMain members={members} tournamentsData={tournamentsData} />
     </>
   );
 }

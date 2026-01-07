@@ -36,7 +36,7 @@ const YearSelectorContent = ({
 }: React.ComponentProps<typeof DropdownMenuContent>) => {
   return (
     <DropdownMenuContent
-      className={cn("w-full mt-2 min-w-50", className)}
+      className={cn("w-full h-fit mt-2 min-w-50", className)}
       {...props}
     />
   );

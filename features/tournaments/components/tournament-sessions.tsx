@@ -4,8 +4,8 @@ import React from "react";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { PiMedalFill } from "react-icons/pi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table } from "lucide-react";
 import {
+  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -93,7 +93,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
                 <TableHead className="sticky left-0 z-10 bg-card">
                   Place
                 </TableHead>
-                <TableHead className="sticky left-12 z-10 bg-card">
+                <TableHead className="sticky left-14 z-10 bg-card">
                   Member
                 </TableHead>
                 <TableHead>Buy in</TableHead>
@@ -111,10 +111,10 @@ function TournamentSessions({ data, isAdmin }: Props) {
                 .map((session) => {
                   return (
                     <TableRow key={session.member_id}>
-                      <TableCell className="font-bold sticky left-0 z-10">
+                      <TableCell className="font-bold sticky bg-card left-0 z-10">
                         {renderPlacementMedal(session.place)}
                       </TableCell>
-                      <TableCell className="font-bold sticky left-12 z-10">
+                      <TableCell className="font-bold sticky bg-card left-14 z-10">
                         <Link
                           className="underline"
                           href={`/members/${session.member_id}`}>

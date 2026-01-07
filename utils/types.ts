@@ -252,6 +252,9 @@ export type MajorsData = {
     poy_points: number;
     place: number;
   }[];
+  season: {
+    year: number;
+  };
 };
 
 export type CareerData = {
