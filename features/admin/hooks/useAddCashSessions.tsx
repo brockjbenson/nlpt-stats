@@ -1,6 +1,6 @@
 import useLocalStorageState from "@/hooks/use-local-storage";
 import { CashSessionNoId, Member, Season, Week } from "@/utils/types";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
 import { calculatePOYPoints, rankSessions } from "@/utils/utils";
@@ -96,6 +96,11 @@ function useAddCashSessions({
     [selectedSeason, selectedWeek]
   );
 
+  // Get buy-in amount for a member
+  const getBuyInAmount = useCallback((member: Member): number => {
+    return member.first_name === "Josh" ? JOSH_BUY_IN : DEFAULT_BUY_IN;
+  }, []);
+
   // Fetch used weeks for a season
   const getSeasonWeeks = useCallback(
     async (seasonId: string) => {
@@ -128,26 +133,38 @@ function useAddCashSessions({
     [weeks, db, setSelectWeeks]
   );
 
+  // Auto-load weeks when season is selected on mount
+  useEffect(() => {
+    if (selectedSeasonId) {
+      getSeasonWeeks(selectedSeasonId);
+    }
+  }, [selectedSeasonId, getSeasonWeeks]);
+
   // Handle season selection
   const handleSeasonChange = useCallback(
     (seasonId: string) => {
       setSelectedSeasonId(seasonId);
       setSelectedWeekId(null);
-      getSeasonWeeks(seasonId);
+      setError(undefined); // Clear errors on season change
     },
-    [setSelectedSeasonId, setSelectedWeekId, getSeasonWeeks]
+    [setSelectedSeasonId, setSelectedWeekId]
   );
-
-  // Get buy-in amount for a member
-  const getBuyInAmount = useCallback((member: Member) => {
-    return member.first_name === "Josh" ? JOSH_BUY_IN : DEFAULT_BUY_IN;
-  }, []);
 
   // Add a new session
   const addNewSession = useCallback(
     (member: Member) => {
       if (!selectedSeason || !selectedWeek) {
-        console.warn("Cannot add session: season or week not selected");
+        setError("Please select a season and week first");
+        return;
+      }
+
+      // Check if member already has a session
+      const existingSession = sessionsToAdd.find(
+        (s) => s.member_id === member.id
+      );
+
+      if (existingSession) {
+        setError(`${member.first_name} already has a session for this week`);
         return;
       }
 
@@ -164,8 +181,15 @@ function useAddCashSessions({
       };
 
       setSessionsToAdd((prev) => [...prev, newSession]);
+      setError(undefined); // Clear any previous errors
     },
-    [selectedSeason, selectedWeek, getBuyInAmount, setSessionsToAdd]
+    [
+      selectedSeason,
+      selectedWeek,
+      sessionsToAdd,
+      getBuyInAmount,
+      setSessionsToAdd,
+    ]
   );
 
   // Remove session by member ID
@@ -174,11 +198,12 @@ function useAddCashSessions({
       setSessionsToAdd((prev) =>
         prev.filter((session) => session.member_id !== memberId)
       );
+      setError(undefined); // Clear errors when removing
     },
     [setSessionsToAdd]
   );
 
-  // Remove session by index (kept for backwards compatibility)
+  // Remove session by index
   const removeSessionByIndex = useCallback(
     (index: number) => {
       if (index < 0 || index >= sessionsToAdd.length) {
@@ -187,8 +212,9 @@ function useAddCashSessions({
       }
 
       setSessionsToAdd((prev) => prev.filter((_, i) => i !== index));
+      setError(undefined);
     },
-    [sessionsToAdd, setSessionsToAdd]
+    [sessionsToAdd.length, setSessionsToAdd]
   );
 
   // Reset all form data
@@ -197,6 +223,8 @@ function useAddCashSessions({
     setSelectedSeasonId(null);
     setSelectedWeekId(null);
     setSelectWeeks([]);
+    setUsedWeekIds([]);
+    setError(undefined);
   }, [
     setSessionsToAdd,
     setSelectedSeasonId,
@@ -206,12 +234,12 @@ function useAddCashSessions({
 
   // Process sessions and calculate points
   const processSessionsWithPoints = useCallback(
-    (sessions: CashSessionNoId[]) => {
+    (sessions: CashSessionNoId[]): CashSessionNoId[] => {
       const sortedSessions = rankSessions(sessions);
 
-      return sortedSessions.map((session) => ({
+      return sortedSessions.map(({ rank, ...session }) => ({
         ...session,
-        nlpi_points: calculateNLPIPoints(session.rank!, session.net_profit),
+        nlpi_points: calculateNLPIPoints(rank!, session.net_profit),
         poy_points: calculatePOYPoints(session.net_profit),
       }));
     },
@@ -249,49 +277,56 @@ function useAddCashSessions({
       return;
     }
 
-    // Group sessions by week and season
-    const groupedSessions = sessionsToAdd.reduce<
-      Record<string, CashSessionNoId[]>
-    >((acc, session) => {
-      const key = `${session.week_id}_${session.season_id}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(session);
-      return acc;
-    }, {});
+    setLoading(true);
+    setError(undefined);
 
-    // Process each group
-    const allSessionsToAdd: CashSessionNoId[] = [];
-
-    Object.entries(groupedSessions).forEach(([key, currentSessions]) => {
-      const [week_id, season_id] = key.split("_");
-
-      // Get member IDs with sessions
-      const memberIdsWithSessions = new Set(
-        currentSessions.map((session) => session.member_id)
-      );
-
-      // Create placeholder sessions for missing members
-      const placeholderSessions = createPlaceholderSessions(
-        memberIdsWithSessions,
-        week_id,
-        season_id
-      );
-
-      // Process sessions with points
-      const sessionsWithPoints = processSessionsWithPoints(currentSessions);
-
-      allSessionsToAdd.push(...sessionsWithPoints, ...placeholderSessions);
-    });
-
-    // Submit to server
     try {
-      setLoading(true);
-      setError(undefined);
+      // Group sessions by week and season
+      const groupedSessions = sessionsToAdd.reduce<
+        Record<string, CashSessionNoId[]>
+      >((acc, session) => {
+        const key = `${session.week_id}_${session.season_id}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(session);
+        return acc;
+      }, {});
 
+      // Process each group
+      const allSessionsToAdd: CashSessionNoId[] = [];
+
+      for (const [key, currentSessions] of Object.entries(groupedSessions)) {
+        const [week_id, season_id] = key.split("_");
+
+        // Get member IDs with sessions
+        const memberIdsWithSessions = new Set(
+          currentSessions.map((session) => session.member_id)
+        );
+
+        // Create placeholder sessions for missing members
+        const placeholderSessions = createPlaceholderSessions(
+          memberIdsWithSessions,
+          week_id,
+          season_id
+        );
+
+        // Process sessions with points
+        const sessionsWithPoints = processSessionsWithPoints(currentSessions);
+
+        allSessionsToAdd.push(...sessionsWithPoints, ...placeholderSessions);
+      }
+
+      console.log(allSessionsToAdd);
+
+      // Submit to server
       const result = await addSessionAction(allSessionsToAdd);
 
       if (!result.success) {
         setError(result.message || "Failed to add sessions");
+        toast({
+          title: "Error",
+          description: result.message || "Failed to add sessions",
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Success",
@@ -300,8 +335,15 @@ function useAddCashSessions({
         resetLocalSessionData();
       }
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
       console.error("Error adding sessions:", err);
-      setError("An unexpected error occurred while adding sessions");
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
       setConfirmAdd(false);

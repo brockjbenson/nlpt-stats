@@ -20,7 +20,7 @@ function ConfirmDialog({
 }) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent className="w-[calc(100vw-1rem)]">
         <AlertCircleIcon className="w-16 h-16 mx-auto text-primary" />
         <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
         <AlertDialogDescription>
@@ -28,9 +28,7 @@ function ConfirmDialog({
         </AlertDialogDescription>
         <AlertDialogFooter>
           <AlertDialogCancel>No, Go Back</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-primary px-12 mx-auto"
-            onClick={onConfirm}>
+          <AlertDialogAction onClick={onConfirm}>
             Yes, Add Sessions
           </AlertDialogAction>
         </AlertDialogFooter>

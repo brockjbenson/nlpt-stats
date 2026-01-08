@@ -1,5 +1,3 @@
-import { Tournament, TournamentSession } from "./types";
-
 const NLPIPointsMap: Record<number, number> = {
   1: 10.5,
   2: 9,
@@ -18,19 +16,6 @@ const NLPIPointsMap: Record<number, number> = {
   15: 1,
   16: 1,
   17: 1,
-};
-
-type NLPISession = {
-  memberId: string;
-  nlpiPoints: number;
-  week: {
-    weekNumber: number;
-    id: string;
-  }[];
-  season: {
-    year: number;
-    id: string;
-  }[];
 };
 
 export const calculateNLPIPoints = (rank: number, netProfit: number) => {

@@ -15,8 +15,8 @@ const getRankChangeInfo = (
     return {
       positive: false,
       change: 0,
-      color: "text-green-600",
-      icon: <ArrowUp size={16} />,
+      color: "text-foreground",
+      icon: <Minus size={16} />,
     };
   }
   if (currentRank === lastWeekRank) {
@@ -88,8 +88,15 @@ export const columns: ColumnDef<POYData>[] = [
     ),
     cell: ({ row }) => {
       const lastWeekRank = parseInt(row.getValue("last_week_rank"));
-      const displayValue =
-        lastWeekRank === 0 ? <Minus size={14} /> : lastWeekRank;
+
+      let displayValue;
+
+      if (isNaN(lastWeekRank)) {
+        displayValue = <Minus size={14} />;
+      } else {
+        displayValue = lastWeekRank === 0 ? <Minus size={14} /> : lastWeekRank;
+      }
+
       return <span>{displayValue}</span>;
     },
   },
@@ -192,7 +199,8 @@ export const columns: ColumnDef<POYData>[] = [
       />
     ),
     cell: ({ row }) => {
-      return <>{row.original.major_points.toFixed(2)}</>;
+      const majorPoints = row.original.major_points || 0;
+      return <>{majorPoints.toFixed(2)}</>;
     },
   },
   {
@@ -206,7 +214,8 @@ export const columns: ColumnDef<POYData>[] = [
       />
     ),
     cell: ({ row }) => {
-      return <>{row.original.avg_major_points.toFixed(2)}</>;
+      const avgMajorPoints = row.original.avg_major_points || 0;
+      return <>{avgMajorPoints.toFixed(2)}</>;
     },
   },
   {
@@ -234,7 +243,8 @@ export const columns: ColumnDef<POYData>[] = [
       />
     ),
     cell: ({ row }) => {
-      return <>{row.original.majors_played.toFixed(2)}</>;
+      const majorsPlayed = row.original.majors_played || 0;
+      return <>{majorsPlayed.toFixed(2)}</>;
     },
   },
 ];

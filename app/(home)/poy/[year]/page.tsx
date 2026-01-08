@@ -58,6 +58,7 @@ async function Page({ params }: Params) {
 
   const { data: poyData, error: poyError } = await db.rpc("get_poy_info", {
     current_season_id: activeSeason.id,
+    target_member_id: null,
   });
 
   if (poyError) {
