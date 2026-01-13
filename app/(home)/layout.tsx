@@ -7,7 +7,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-
       <MainWrapper>
         <div className="max-w-(--breakpoint-lg) mx-auto w-full">{children}</div>
       </MainWrapper>

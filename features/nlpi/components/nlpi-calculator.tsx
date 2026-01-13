@@ -76,7 +76,7 @@ function NLPICalculator({ nlpiData }: Props) {
               <div className="flex flex-col items-start gap-2">
                 <p className="text-sm text-muted">NLPI Points</p>
                 <p className={cn("text-2xl font-bold")}>
-                  {selectedMemberData.nlpi_points}
+                  {selectedMemberData.nlpi_points.toFixed(3)}
                 </p>
               </div>
               <div className="flex flex-col items-start gap-2">

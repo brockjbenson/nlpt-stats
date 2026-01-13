@@ -17,16 +17,13 @@ import { MenuIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { FaMoneyBill, FaPlus, FaTrophy, FaUsers } from "react-icons/fa";
+import { FaList, FaMoneyBill, FaPlus, FaTrophy, FaUsers } from "react-icons/fa";
 import {
   FaBookBookmark,
   FaGlobe,
   FaRankingStar,
   FaUserShield,
 } from "react-icons/fa6";
-import { LuList, LuListPlus } from "react-icons/lu";
-import { TiPlus, TiPlusOutline } from "react-icons/ti";
-import { GoPlus } from "react-icons/go";
 
 async function MobileNav() {
   const supabase = await createClient();
@@ -110,6 +107,13 @@ async function MobileNav() {
                   </AccordionTrigger>
                   <AccordionContent className="w-full mt-2">
                     <ul className="flex border-l-2 border-neutral-500 ml-1 pl-6 flex-col gap-4">
+                      <li>
+                        <Link
+                          className="flex items-center gap-4"
+                          href="/admin/seasons">
+                          <FaList className="w-5 h-5" /> Seasons
+                        </Link>
+                      </li>
                       <li>
                         <Link
                           className="flex items-center gap-4"
