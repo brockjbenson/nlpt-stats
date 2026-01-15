@@ -106,7 +106,7 @@ export async function updateSeason(
     } else if (numWeeks < currentCount) {
       // Get the weeks that will be deleted
       const { data: weeksToDelete, error: weeksError } = await db
-        .from("week_testing")
+        .from("week")
         .select("id")
         .eq("season_id", seasonId)
         .gt("week_number", numWeeks);
@@ -125,7 +125,7 @@ export async function updateSeason(
 
       // Check if any sessions exist for these weeks
       const { count: sessionCount, error: sessionError } = await db
-        .from("cash_session_testing")
+        .from("cash_session")
         .select("*", { count: "exact", head: true })
         .in("week_id", weekIds);
 
@@ -144,7 +144,7 @@ export async function updateSeason(
       // If confirmed, delete sessions first
       if (confirmDelete && sessionCount && sessionCount > 0) {
         const { error: deleteSessionsError } = await db
-          .from("cash_session_testing")
+          .from("cash_session")
           .delete()
           .in("week_id", weekIds);
 
@@ -157,7 +157,7 @@ export async function updateSeason(
 
       // Now remove the weeks
       const { error: deleteError } = await db
-        .from("week_testing")
+        .from("week")
         .delete()
         .eq("season_id", seasonId)
         .gt("week_number", numWeeks);
@@ -171,6 +171,110 @@ export async function updateSeason(
     return { success: true };
   } catch (error) {
     console.error("Error updating season:", error);
+    return {
+      error:
+        error instanceof Error ? error.message : "An unexpected error occurred",
+    };
+  }
+}
+
+export async function deleteSeason(
+  seasonId: string,
+  confirmDelete: boolean = false
+): Promise<
+  | { success: true }
+  | { error: string }
+  | {
+      requiresConfirmation: true;
+      affectedWeeks: number;
+      affectedSessions: number;
+    }
+> {
+  // Validation
+  if (!seasonId?.trim()) {
+    return { error: "Season ID is required" };
+  }
+
+  const db = await createClient();
+
+  try {
+    // Get all weeks for this season
+    const { data: weeks, error: weeksError } = await db
+      .from("week")
+      .select("id")
+      .eq("season_id", seasonId);
+
+    if (weeksError) {
+      return { error: `Failed to fetch weeks: ${weeksError.message}` };
+    }
+
+    const weekCount = weeks?.length ?? 0;
+
+    if (weekCount > 0) {
+      const weekIds = weeks.map((w) => w.id);
+
+      // Check if any sessions exist for these weeks
+      const { count: sessionCount, error: sessionError } = await db
+        .from("cash_session")
+        .select("*", { count: "exact", head: true })
+        .in("week_id", weekIds);
+
+      if (sessionError) {
+        return { error: `Failed to check sessions: ${sessionError.message}` };
+      }
+
+      // If weeks/sessions exist and user hasn't confirmed, ask for confirmation
+      if (!confirmDelete) {
+        return {
+          requiresConfirmation: true,
+          affectedWeeks: weekCount,
+          affectedSessions: sessionCount ?? 0,
+        };
+      }
+
+      // If confirmed, delete sessions first
+      if (sessionCount && sessionCount > 0) {
+        const { error: deleteSessionsError } = await db
+          .from("cash_session")
+          .delete()
+          .in("week_id", weekIds);
+
+        if (deleteSessionsError) {
+          return {
+            error: `Failed to delete sessions: ${deleteSessionsError.message}`,
+          };
+        }
+      }
+
+      // Delete all weeks for this season
+      const { error: deleteWeeksError } = await db
+        .from("week")
+        .delete()
+        .eq("season_id", seasonId);
+
+      if (deleteWeeksError) {
+        return {
+          error: `Failed to delete weeks: ${deleteWeeksError.message}`,
+        };
+      }
+    }
+
+    // Finally, delete the season itself
+    const { error: deleteSeasonError } = await db
+      .from("season")
+      .delete()
+      .eq("id", seasonId);
+
+    if (deleteSeasonError) {
+      return {
+        error: `Failed to delete season: ${deleteSeasonError.message}`,
+      };
+    }
+
+    revalidatePath("/admin/seasons");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting season:", error);
     return {
       error:
         error instanceof Error ? error.message : "An unexpected error occurred",

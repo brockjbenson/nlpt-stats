@@ -1,7 +1,7 @@
 "use client";
 
 import { updateSeason } from "@/app/admin/seasons/actions";
-import { SeasonWithWeeks } from "@/components/admin/seasons/seasons";
+import { SeasonWithWeeks } from "@/app/admin/seasons/page";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,

@@ -1,25 +1,45 @@
-import AddWeeks from "@/components/admin/seasons/add-weeks";
-import Season from "@/components/admin/seasons/season";
-import Seasons from "@/components/admin/seasons/seasons";
-import React from "react";
+import Seasons from "@/features/admin/components/seasons/seasons";
+import ErrorHandler from "@/components/error-handler";
+import { createClient } from "@/utils/supabase/server";
 
-interface Params {
-  year?: string;
-  newweek?: string;
+export interface SeasonWithWeeks {
+  id: string;
+  year: number;
+  week: Array<{
+    id: string;
+    week_number: number;
+  }>;
+  cash_session: Array<{
+    id: string;
+    buy_in: number;
+  }>;
 }
 
-async function Page(props: { searchParams: Promise<Params | null> }) {
-  const searchParams = await props.searchParams;
+async function Page() {
+  const db = await createClient();
+  const { data, error } = await db
+    .from("season")
+    .select(
+      `
+      *,
+      week(*),
+      cash_session(id, buy_in)
+    `
+    )
+    .order("year", { ascending: false });
 
-  if (searchParams?.year && !searchParams?.newweek) {
-    return <Season year={searchParams.year} />;
-  } else if (searchParams?.newweek && searchParams?.year) {
+  if (error) {
     return (
-      <AddWeeks year={searchParams.year} seasonId={searchParams.newweek} />
+      <ErrorHandler
+        title="Error fetching seasons"
+        errorMessage={error.message}
+        pageTitle="Seasons"
+      />
     );
-  } else {
-    return <Seasons />;
   }
+
+  const seasons = (data ?? []) as SeasonWithWeeks[];
+  return <Seasons seasons={seasons} />;
 }
 
 export default Page;

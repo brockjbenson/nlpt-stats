@@ -1,4 +1,4 @@
-import ErrorHandler from "@/components/error-handler";
+import { SeasonWithWeeks } from "@/app/admin/seasons/page";
 import PageHeader from "@/components/page-header/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,49 +11,20 @@ import {
 } from "@/components/ui/empty";
 import EditSeasonDrawer from "@/features/admin/components/seasons/edit-season-drawer";
 import NewSeasonDrawer from "@/features/admin/components/seasons/new-season-drawer";
-import { createClient } from "@/utils/supabase/server";
-import { CashSession } from "@/utils/types";
 import { AlertCircle } from "lucide-react";
+import RemoveSeason from "./remove-season";
 
-export interface SeasonWithWeeks {
-  id: string;
-  year: number;
-  week: Array<{
-    id: string;
-    week_number: number;
-  }>;
+interface Props {
+  seasons: SeasonWithWeeks[];
 }
 
-async function Seasons() {
-  const db = await createClient();
-  const { data, error } = await db
-    .from("season")
-    .select(
-      `
-      *,
-      week(*),
-      cash_session(id, buy_in)
-    `
-    )
-    .order("year", { ascending: false });
-
-  if (error) {
-    return (
-      <ErrorHandler
-        title="Error fetching seasons"
-        errorMessage={error.message}
-        pageTitle="Seasons"
-      />
-    );
-  }
-
-  const seasonsWithCounts = data?.map((season) => ({
+async function Seasons({ seasons }: Props) {
+  const seasonsWithCounts = seasons?.map((season) => ({
     ...season,
     sessions_count:
-      season.cash_session?.filter((s: CashSession) => s.buy_in > 0).length ?? 0,
+      season.cash_session?.filter((s: { buy_in: number }) => s.buy_in > 0)
+        .length ?? 0,
   }));
-
-  const seasons = (data ?? []) as SeasonWithWeeks[];
 
   return (
     <>
@@ -84,7 +55,7 @@ async function Seasons() {
           <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 w-full gap-4">
             {seasons.map((season) => (
               <li className="w-full" key={season.id}>
-                <Card>
+                <Card className="relative">
                   <CardHeader>
                     <CardTitle>{season.year}</CardTitle>
                   </CardHeader>
@@ -97,8 +68,9 @@ async function Seasons() {
                           ?.sessions_count ?? 0}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex absolute top-1/2 -translate-y-1/2 right-2 items-center gap-2">
                       <EditSeasonDrawer seasons={seasons} season={season} />
+                      <RemoveSeason id={season.id} />
                     </div>
                   </CardContent>
                 </Card>
