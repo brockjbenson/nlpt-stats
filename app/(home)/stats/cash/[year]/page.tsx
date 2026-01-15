@@ -44,12 +44,38 @@ async function page({ params }: PageProps) {
     (season) => season.year.toString() === year
   );
 
-  const [{ data: stats, error: statsError }] = await Promise.all([
+  const [
+    { data: stats, error: statsError },
+    { data: sessions, error: sessionsError },
+    { data: weeks, error: weeksError },
+  ] = await Promise.all([
     db.rpc("get_career_stats", {
       target_view: "cash",
       target_season: activeSeason?.id, // ✅ Pass "career" or season_id as string
     }),
+    db.from("cash_session").select("*").eq("season_id", activeSeason?.id),
+    db.from("week").select("*").eq("season_id", activeSeason?.id),
   ]);
+
+  if (sessionsError) {
+    return (
+      <ErrorHandler
+        title="Error fetching cash sessions"
+        errorMessage={sessionsError.message}
+        pageTitle="Cash Stats"
+      />
+    );
+  }
+
+  if (weeksError) {
+    return (
+      <ErrorHandler
+        title="Error fetching weeks"
+        errorMessage={weeksError.message}
+        pageTitle="Cash Stats"
+      />
+    );
+  }
 
   if (statsError) {
     return (
@@ -65,6 +91,8 @@ async function page({ params }: PageProps) {
     <StatsMain
       view="cash"
       year={year}
+      weeks={weeks}
+      sessions={sessions}
       seasons={seasons}
       members={members}
       stats={stats}

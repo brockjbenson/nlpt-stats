@@ -9,7 +9,7 @@ import { AlertCircle, ChevronDown } from "lucide-react";
 import React from "react";
 import StatCards from "./cards";
 import ViewSelector from "../view-selector";
-import { Member, Season } from "@/utils/types";
+import { CashSession, Member, Season, Week } from "@/utils/types";
 import { StatsData } from "../lib/types";
 import { StatsTable } from "./table/table";
 import { columns } from "./table/columns";
@@ -20,20 +20,33 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import SessionsTable from "./sessions-table";
 
 interface Props {
   year: string;
   seasons: Season[];
   members: Member[];
   stats: StatsData[];
+  sessions?: CashSession[];
+  weeks?: Week[];
   isCareer: boolean;
   view: "cumulative" | "cash" | "tournament";
 }
 
-function StatsMain({ year, seasons, members, stats, isCareer, view }: Props) {
+async function StatsMain({
+  year,
+  seasons,
+  members,
+  stats,
+  sessions,
+  weeks,
+  isCareer,
+  view,
+}: Props) {
   const activeSeason = seasons?.find(
     (season) => season.year.toString() === year
   );
+
   return (
     <>
       <PageHeader className="pb-0">
@@ -88,6 +101,14 @@ function StatsMain({ year, seasons, members, stats, isCareer, view }: Props) {
         <>
           <StatCards members={members} data={stats} />
           <StatsTable year={year} view={view} columns={columns} data={stats} />
+          {view === "cash" && sessions && weeks && (
+            <SessionsTable
+              year={year}
+              data={sessions}
+              members={members}
+              weeks={weeks}
+            />
+          )}
         </>
       )}
     </>

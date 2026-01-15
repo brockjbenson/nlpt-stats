@@ -28,7 +28,7 @@ export const columns: ColumnDef<StatsData>[] = [
     cell: ({ row }) => {
       const id = row.getValue("member_id");
       return (
-        <Link className="p-0" href={`/members/${id}`}>
+        <Link className="p-0 font-semibold" href={`/members/${id}`}>
           {row.getValue("first_name")}
         </Link>
       );
