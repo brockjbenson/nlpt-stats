@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import SortButton from "@/components/ui/sort-button";
 import Link from "next/link";
-import { StatsData } from "../../lib/types";
+import { StatsData } from "../../_lib/types";
 
 export const columns: ColumnDef<StatsData>[] = [
   {

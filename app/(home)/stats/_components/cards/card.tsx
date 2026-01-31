@@ -7,9 +7,9 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { StatsData } from "../../_lib/types";
 import { Member } from "@/utils/types";
 import Link from "next/link";
-import { StatsData } from "../../lib/types";
 
 type StatItem = StatsData;
 
@@ -59,7 +59,7 @@ function StatCard<T extends StatItem>({
           <div className="flex flex-col gap-4">
             {topThree.map((item, index) => {
               const memberData = members?.find(
-                (member) => member.id === item.member_id
+                (member) => member.id === item.member_id,
               );
 
               return (

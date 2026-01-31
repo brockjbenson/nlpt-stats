@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/carousel";
 import React from "react";
 import StatCard from "./card";
-import { StatsData, StatsLeaders } from "../../lib/types";
-import { getStatsLeaders } from "../../lib/utils";
 import { Member } from "@/utils/types";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import Link from "next/link";
+import { StatsData, StatsLeaders } from "../../_lib/types";
+import { getStatsLeaders } from "../../_lib/utils/getStatsLeaders";
 
 interface StatCardsProps {
   data: StatsData[];
@@ -37,7 +37,7 @@ function StatCards({ data, members }: StatCardsProps) {
                 <p
                   className={cn(
                     "font-semibold text-lg md:text-xl",
-                    getProfitTextColor(item.net_profit)
+                    getProfitTextColor(item.net_profit),
                   )}>
                   {formatMoney(item.net_profit)}
                 </p>
@@ -60,7 +60,7 @@ function StatCards({ data, members }: StatCardsProps) {
                   <p
                     className={cn(
                       "font-semibold text-base md:text-lg text-end",
-                      getProfitTextColor(item.net_profit)
+                      getProfitTextColor(item.net_profit),
                     )}>
                     {formatMoney(item.net_profit)}
                   </p>
@@ -79,7 +79,7 @@ function StatCards({ data, members }: StatCardsProps) {
                     "font-semibold text-lg md:text-xl",
                     item.win_percentage >= 50
                       ? "text-green-500"
-                      : "text-red-500"
+                      : "text-red-500",
                   )}>
                   {item.win_percentage.toFixed(2)}%
                 </p>
@@ -108,7 +108,7 @@ function StatCards({ data, members }: StatCardsProps) {
                       "font-semibold text-end text-base md:text-lg",
                       item.win_percentage >= 50
                         ? "text-green-500"
-                        : "text-red-500"
+                        : "text-red-500",
                     )}>
                     {item.win_percentage.toFixed(2)}%
                   </p>
@@ -125,7 +125,7 @@ function StatCards({ data, members }: StatCardsProps) {
                 <p
                   className={cn(
                     "font-semibold text-lg md:text-xl",
-                    getProfitTextColor(item.gross_profit)
+                    getProfitTextColor(item.gross_profit),
                   )}>
                   {formatMoney(item.gross_profit)}
                 </p>
@@ -148,7 +148,7 @@ function StatCards({ data, members }: StatCardsProps) {
                   <p
                     className={cn(
                       "font-semibold text-base md:text-lg",
-                      getProfitTextColor(item.gross_profit)
+                      getProfitTextColor(item.gross_profit),
                     )}>
                     {formatMoney(item.gross_profit)}
                   </p>
@@ -165,7 +165,7 @@ function StatCards({ data, members }: StatCardsProps) {
                 <p
                   className={cn(
                     "font-semibold text-lg md:text-xl",
-                    getProfitTextColor(item.session_avg)
+                    getProfitTextColor(item.session_avg),
                   )}>
                   {formatMoney(item.session_avg)}
                 </p>
@@ -192,7 +192,7 @@ function StatCards({ data, members }: StatCardsProps) {
                   <p
                     className={cn(
                       "font-semibold text-base md:text-lg text-end",
-                      getProfitTextColor(item.session_avg)
+                      getProfitTextColor(item.session_avg),
                     )}>
                     {formatMoney(item.session_avg)}
                   </p>

@@ -1,10 +1,10 @@
-import { StatsData } from "./types";
+import { StatsData } from "../types";
 
 export const getStatsLeaders = (data: StatsData[]) => {
   const netProfit = [...data].sort((a, b) => b.net_profit - a.net_profit);
 
   const winPercentage = [...data].sort(
-    (a, b) => b.win_percentage - a.win_percentage
+    (a, b) => b.win_percentage - a.win_percentage,
   );
 
   const grossProfit = [...data].sort((a, b) => b.gross_profit - a.gross_profit);
@@ -13,7 +13,7 @@ export const getStatsLeaders = (data: StatsData[]) => {
 
   const wins = [...data].sort((a, b) => b.wins - a.wins);
   const sessionsPlayed = [...data].sort(
-    (a, b) => b.sessions_played - a.sessions_played
+    (a, b) => b.sessions_played - a.sessions_played,
   );
 
   return {
