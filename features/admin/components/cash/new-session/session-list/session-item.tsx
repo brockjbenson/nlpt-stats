@@ -1,3 +1,5 @@
+"use client";
+
 import { Card } from "@/components/ui/card";
 import { CashSession, Member } from "@/utils/types";
 import React from "react";
@@ -22,15 +24,25 @@ function SessionItem({
   removeSession,
 }: SessionItemProps) {
   const hasSession = sessionsToAdd.some(
-    (session) => session.member_id === member.id
+    (session) => session.member_id === member.id,
   );
 
   const correspondingSession = sessionsToAdd.find(
-    (session) => session.member_id === member.id
+    (session) => session.member_id === member.id,
   );
+
+  const emptySessionHeight = 66;
+  const filledSessionHeight = 114;
   return (
     <li className="w-full">
-      <Card>
+      <Card
+        className="overflow-hidden"
+        style={{
+          height: hasSession
+            ? filledSessionHeight + "px"
+            : emptySessionHeight + "px",
+          transition: "height 0.15s",
+        }}>
         {hasSession ? (
           <FilledSession
             member={member}

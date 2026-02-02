@@ -16,7 +16,8 @@ async function Members() {
   const { data, error } = await db
     .from("members")
     .select("*")
-    .order("first_name", { ascending: true });
+    .order("first_name", { ascending: true })
+    .eq("visible", true);
 
   if (error) {
     return (
@@ -37,13 +38,13 @@ async function Members() {
         ...member,
         debutDate: debutDate?.[0]?.created_at || null,
       };
-    })
+    }),
   );
 
   return (
     <>
       <PageHeader title="Members" />
-      <div className="w-full mt-4 px-2 max-w-(--breakpoint-xl) md:mt-8 mx-auto">
+      <div className="w-full px-2 max-w-(--breakpoint-xl) md:mt-8 mx-auto">
         <h1 className="text-2xl font-semibold hidden mb-4 md:block">Members</h1>
         <ul className="w-full grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-4">
           {memberDebutDates.map((member) => (

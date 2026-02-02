@@ -37,7 +37,7 @@ function FilledSession({
     Record<string, string>
   >({});
   const [buyInInputs, setBuyInInputs] = React.useState<Record<string, string>>(
-    {}
+    {},
   );
 
   const rawCashOut =
@@ -70,20 +70,25 @@ function FilledSession({
             className="p-0 h-fit w-full border-0 bg-transparent text-center"
             id={`buyIn-${member.id}`}
             value={`$${rawBuyIn}`}
+            type="text"
             ref={(el) => {
               buyInInputRefs.current[member.id] = el;
             }}
-            type="text"
             inputMode="decimal"
-            onFocus={(e) => {
-              if (rawBuyIn === "0" || rawBuyIn === "0.00") {
+            onFocus={() => {
+              if (rawBuyIn === correspondingSession.buy_in.toFixed(2)) {
                 setBuyInInputs((prev) => ({
                   ...prev,
                   [member.id]: "",
                 }));
+              } else {
+                requestAnimationFrame(() => {
+                  const input = buyInInputRefs.current[member.id];
+                  if (input) {
+                    input.select(); // ✅ Highlights all text
+                  }
+                });
               }
-
-              e.target.select();
             }}
             onChange={(e) => {
               const raw = e.target.value.replace(/^\$/, ""); // remove leading $
@@ -97,7 +102,7 @@ function FilledSession({
                 if (!isNaN(parsedBuyIn)) {
                   const parsedCashOut = parseFloat(
                     cashOutInputs[member.id] ??
-                      correspondingSession?.cash_out.toFixed(2).toString()
+                      correspondingSession?.cash_out.toFixed(2).toString(),
                   );
 
                   const newNetProfit =
@@ -113,8 +118,8 @@ function FilledSession({
                             buy_in: parsedBuyIn,
                             net_profit: newNetProfit,
                           }
-                        : session
-                    )
+                        : session,
+                    ),
                   );
                 }
               }
@@ -169,7 +174,7 @@ function FilledSession({
                 if (!isNaN(parsedCashOut)) {
                   const parsedBuyIn = parseFloat(
                     buyInInputs[member.id] ??
-                      correspondingSession?.buy_in.toFixed(2).toString()
+                      correspondingSession?.buy_in.toFixed(2).toString(),
                   );
 
                   const newNetProfit =
@@ -185,8 +190,8 @@ function FilledSession({
                             cash_out: parsedCashOut,
                             net_profit: newNetProfit,
                           }
-                        : session
-                    )
+                        : session,
+                    ),
                   );
                 }
               }
@@ -212,8 +217,8 @@ function FilledSession({
                 prevSessions.map((session) =>
                   session.member_id === member.id
                     ? { ...session, rebuys: parseFloat(value) }
-                    : session
-                )
+                    : session,
+                ),
               );
             }}>
             <SelectTrigger
@@ -231,7 +236,7 @@ function FilledSession({
                       <SelectItem key={i} value={i.toString()}>
                         {i}
                       </SelectItem>
-                    )
+                    ),
                 )}
               </SelectGroup>
             </SelectContent>
@@ -244,7 +249,7 @@ function FilledSession({
           <p
             className={cn(
               "text-base font-semibold",
-              getProfitTextColor(correspondingSession.net_profit)
+              getProfitTextColor(correspondingSession.net_profit),
             )}>
             ${formatMoney(correspondingSession.net_profit)}
           </p>

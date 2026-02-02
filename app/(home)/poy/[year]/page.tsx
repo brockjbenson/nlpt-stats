@@ -94,7 +94,7 @@ async function Page({ params }: Params) {
           </YearSelector>
         </div>
       </PageHeader>
-      <div className="w-full mt-4 mb-8 max-w-(--breakpoint-xl) mx-auto px-2">
+      <div className="w-full mb-8 max-w-(--breakpoint-xl) mx-auto px-2">
         {poyData.length === 0 ? (
           <Empty>
             <EmptyHeader>

@@ -20,8 +20,8 @@ function PageHeaderWrapper({
       ref={headerRef}
       id="page-header-wrapper"
       className={cn(
-        "w-full border-b bg-background z-20 sticky md:relative top-0 border-neutral-700 mb-4 px-2 pb-4 flex md:hidden items-center justify-between",
-        className
+        "w-full border-b bg-background z-20 fixed md:relative top-0 border-neutral-700 mb-4 px-2 pb-4 flex md:hidden items-center justify-between",
+        className,
       )}
       style={{
         willChange: "transform",

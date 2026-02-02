@@ -28,8 +28,8 @@ function getHeaderHeight() {
   return (
     parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue(
-        "--header-height"
-      )
+        "--header-height",
+      ),
     ) || 0
   );
 }
@@ -38,8 +38,8 @@ function getNavHeight() {
   return (
     parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue(
-        "--nav-height"
-      )
+        "--nav-height",
+      ),
     ) || 0
   );
 }
@@ -64,8 +64,58 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   const targetNavY = useRef(0);
 
   const animating = useRef(false);
+  const isInputFocused = useRef(false);
+  const isTouching = useRef(false);
 
   const SMOOTHING = 0.21; // 0.12 = floaty, 0.18 = iOS-like, 0.25 = snappy
+
+  // 🔹 Track input focus state
+  useEffect(() => {
+    const handleFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        isInputFocused.current = true;
+      }
+    };
+
+    const handleFocusOut = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        isInputFocused.current = false;
+
+        // Reset header and nav to visible when keyboard closes
+        currentHeaderY.current = 0;
+        currentNavY.current = 0;
+        targetHeaderY.current = 0;
+        targetNavY.current = 0;
+
+        setHeaderTranslateY(0);
+        setNavTranslateY(0);
+
+        // Update lastScrollY to current position
+        const el = mainContainerRef.current;
+        if (el) {
+          lastScrollY.current = el.scrollTop;
+        }
+      }
+    };
+
+    document.addEventListener("focusin", handleFocusIn);
+    document.addEventListener("focusout", handleFocusOut);
+
+    return () => {
+      document.removeEventListener("focusin", handleFocusIn);
+      document.removeEventListener("focusout", handleFocusOut);
+    };
+  }, []);
 
   // 🔹 Measure header + nav and store in CSS variables (robust across routes)
   useEffect(() => {
@@ -86,12 +136,12 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       const update = () => {
         document.documentElement.style.setProperty(
           "--header-height",
-          `${header.offsetHeight}px`
+          `${header.offsetHeight}px`,
         );
         setHeaderHeight(header.offsetHeight);
         document.documentElement.style.setProperty(
           "--nav-height",
-          `${nav.offsetHeight}px`
+          `${nav.offsetHeight}px`,
         );
         setNavHeight(nav.offsetHeight);
       };
@@ -179,7 +229,52 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const snapOnRelease = () => {
+      const headerHeight = getHeaderHeight();
+      const navHeight = getNavHeight();
+      if (!headerHeight || !navHeight) return;
+
+      // Calculate visibility percentages for both header and nav
+      // Header: translateY ranges from 0 (visible) to -headerHeight (hidden)
+      const headerVisibleAmount = headerHeight + targetHeaderY.current;
+      const headerVisiblePercentage = headerVisibleAmount / headerHeight;
+
+      // Nav: translateY ranges from 0 (visible) to navHeight (hidden)
+      const navVisibleAmount = navHeight - targetNavY.current;
+      const navVisiblePercentage = navVisibleAmount / navHeight;
+
+      // Use the minimum of the two percentages to determine overall visibility
+      // This ensures both are synchronized and considers the slower-to-appear element
+      const overallVisibility = Math.min(
+        headerVisiblePercentage,
+        navVisiblePercentage,
+      );
+
+      const VISIBILITY_THRESHOLD = 0.99; // Both must be 99% visible to stay shown
+
+      // Only keep both visible if BOTH are fully visible
+      if (overallVisibility >= VISIBILITY_THRESHOLD) {
+        targetHeaderY.current = 0;
+        targetNavY.current = 0;
+      } else {
+        targetHeaderY.current = -headerHeight;
+        targetNavY.current = navHeight;
+      }
+
+      // Start animation if not already running
+      if (!animating.current) {
+        animating.current = true;
+        requestAnimationFrame(animate);
+      }
+    };
+
     const handleScroll = () => {
+      // Skip scroll handling if an input is focused
+      if (isInputFocused.current) {
+        lastScrollY.current = el.scrollTop;
+        return;
+      }
+
       const headerHeight = getHeaderHeight();
       const navHeight = getNavHeight();
       if (!headerHeight || !navHeight) return;
@@ -201,14 +296,19 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       } else {
         const damped = delta * 0.9;
 
+        // Apply the same damped delta to both, scaled to their respective heights
+        // This keeps them visually synchronized despite different heights
+        const headerDelta = damped;
+        const navDelta = damped;
+
         targetHeaderY.current = Math.max(
           -headerHeight,
-          Math.min(0, targetHeaderY.current - damped)
+          Math.min(0, targetHeaderY.current - headerDelta),
         );
 
         targetNavY.current = Math.max(
           0,
-          Math.min(navHeight, targetNavY.current + damped)
+          Math.min(navHeight, targetNavY.current + navDelta),
         );
       }
 
@@ -220,8 +320,38 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const handleTouchStart = () => {
+      isTouching.current = true;
+    };
+
+    const handleTouchEnd = () => {
+      isTouching.current = false;
+      snapOnRelease();
+    };
+
+    // Also handle mouse for desktop testing
+    const handleMouseDown = () => {
+      isTouching.current = true;
+    };
+
+    const handleMouseUp = () => {
+      isTouching.current = false;
+      snapOnRelease();
+    };
+
     el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
+    el.addEventListener("touchstart", handleTouchStart, { passive: true });
+    el.addEventListener("touchend", handleTouchEnd, { passive: true });
+    el.addEventListener("mousedown", handleMouseDown);
+    el.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+      el.removeEventListener("touchstart", handleTouchStart);
+      el.removeEventListener("touchend", handleTouchEnd);
+      el.removeEventListener("mousedown", handleMouseDown);
+      el.removeEventListener("mouseup", handleMouseUp);
+    };
   }, [pathname]);
 
   return (

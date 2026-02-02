@@ -14,7 +14,8 @@ async function MembersAdmin() {
   const { data, error } = await db
     .from("members")
     .select("*")
-    .order("last_name", { ascending: true });
+    .order("last_name", { ascending: true })
+    .eq("visible", true);
 
   if (error) {
     return <p>Error fetching members: {error.message}</p>;
@@ -29,7 +30,7 @@ async function MembersAdmin() {
         ...member,
         debutDate: debutDate?.[0]?.created_at || null,
       };
-    })
+    }),
   );
 
   return (

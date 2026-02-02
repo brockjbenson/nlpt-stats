@@ -64,7 +64,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       <div
         className={cn(
           "w-full px-2 mt-4 max-w-(--breakpoint-lg) mx-auto transition-all",
-          canAddSessions && "pb-13 md:pb-20"
+          canAddSessions && "pb-13 md:pb-20",
         )}>
         {/* Season & Week Selector */}
         <SeasonWeekSelector
@@ -115,12 +115,11 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
       {loading && <LoadingOverlay />}
 
       {/* Floating Action Button */}
-      {canAddSessions && (
-        <FloatingAddButton
-          sessions={sessionsToAdd}
-          onClick={() => setConfirmAdd(true)}
-        />
-      )}
+      <FloatingAddButton
+        show={canAddSessions}
+        sessions={sessionsToAdd}
+        onClick={() => setConfirmAdd(true)}
+      />
     </>
   );
 }

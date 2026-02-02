@@ -7,7 +7,8 @@ async function page() {
   const { data: members, error: membersError } = await db
     .from("members")
     .select("*")
-    .order("first_name", { ascending: true });
+    .order("first_name", { ascending: true })
+    .eq("visible", true);
   if (membersError) {
     return <p>Error fetching Members data: {membersError.message}</p>;
   }
