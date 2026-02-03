@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { NLPIData } from "../lib/types";
-import { ChevronDown } from "lucide-react";
 
 interface Props {
   nlpiData: NLPIData[];
@@ -47,7 +46,6 @@ function NLPICalculator({ nlpiData }: Props) {
           <Select onValueChange={(value) => handleMemberDataChange(value)}>
             <SelectTrigger className="border mt-2 border-border">
               <SelectValue placeholder="Select a member" />
-              <ChevronDown />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -68,7 +66,7 @@ function NLPICalculator({ nlpiData }: Props) {
                 <p
                   className={cn(
                     "text-2xl font-bold",
-                    getProfitTextColor(selectedMemberData.net_profit)
+                    getProfitTextColor(selectedMemberData.net_profit),
                   )}>
                   {formatMoney(selectedMemberData.net_profit)}
                 </p>

@@ -8,7 +8,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import {
   YearSelector,
   YearSelectorContent,
@@ -79,7 +79,6 @@ async function Page({ params }: Params) {
           <YearSelector>
             <YearSelectorTrigger className="font-bold text-xl">
               {activeSeason.year} POY
-              <ChevronDown className="inline-block ml-2 mb-1" size={16} />
             </YearSelectorTrigger>
             <YearSelectorContent>
               {seasons.map((season) => (
