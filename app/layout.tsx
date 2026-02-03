@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Viewport } from "next";
 import InstallPrompt from "@/components/install-prompt";
 import { ScrollProvider } from "./providers/scroll-context";
+import { RouteVisitTracker } from "@/lib/route-visited-wrapper";
 
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
@@ -126,6 +127,8 @@ export const metadata = {
   },
 };
 
+const ROUTES_TO_TRACK = ["/compare"];
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -160,14 +163,18 @@ export default function RootLayout({
       </head>
       <body className="bg-background overflow-x-hidden min-h-screen text-foreground">
         <ScrollProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange>
-            {children}
-            <InstallPrompt />
-          </ThemeProvider>
+          <RouteVisitTracker
+            routesToTrack={ROUTES_TO_TRACK}
+            storageKey="nlpt-visited-routes">
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange>
+              {children}
+              <InstallPrompt />
+            </ThemeProvider>
+          </RouteVisitTracker>
         </ScrollProvider>
         <Toaster />
       </body>
