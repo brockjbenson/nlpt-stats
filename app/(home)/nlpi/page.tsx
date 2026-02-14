@@ -44,7 +44,7 @@ async function NLPI() {
 
   const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
     current_season_id: activeSeason.id,
-    target_filter_date: new Date().toISOString(),
+    target_filter_date: null,
   });
 
   if (nlpiError) {
