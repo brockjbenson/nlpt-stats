@@ -44,6 +44,7 @@ async function NLPI() {
 
   const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
     current_season_id: activeSeason.id,
+    target_filter_date: new Date().toISOString(),
   });
 
   if (nlpiError) {
@@ -57,7 +58,7 @@ async function NLPI() {
   }
 
   const ineligibleMembers = nlpiData.filter(
-    (data: NLPIData) => data.total_points === 0
+    (data: NLPIData) => data.total_points === 0,
   );
 
   return (
@@ -78,7 +79,7 @@ async function NLPI() {
                 .map((row: NLPIData) => ({ ...row, previousYear }))
                 .filter(
                   (row: NLPIData & { previousYear: number | null }) =>
-                    row.total_points > 0
+                    row.total_points > 0,
                 )}
             />
           </CardContent>
@@ -96,7 +97,8 @@ async function NLPI() {
             return (
               <div
                 key={data.member_id}
-                className="flex items-center justify-between">
+                className="flex items-center justify-between"
+              >
                 <h3 className="text-lg font-medium">{data.first_name}</h3>
               </div>
             );
