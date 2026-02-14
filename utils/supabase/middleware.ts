@@ -16,17 +16,17 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // Do not run code between createServerClient and
@@ -51,7 +51,13 @@ export async function updateSession(request: NextRequest) {
   // }
 
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const userRole = user?.user_metadata?.role;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+  const userRole = profile?.role;
 
   if (isAdminRoute && userRole !== "admin") {
     const url = request.nextUrl.clone();

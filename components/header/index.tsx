@@ -14,11 +14,17 @@ async function Header() {
     data: { user },
   } = await db.auth.getUser();
 
+  const { data: userRole } = await db
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
   return (
     <header className="border-t-2 hidden md:block sticky top-0 py-6 bg-background/50 backdrop-blur-xl z-50 border-t-primary border-b border-b-neutral-600">
       <div className=" max-w-(--breakpoint-xl) grid grid-cols-[100px_1fr_100px] px-4 justify-between items-center mx-auto">
         <Logo />
-        <Nav excludeAdmin={!user} />
+        <Nav excludeAdmin={userRole?.role !== "admin"} />
         <div className="hidden md:block">
           {user ? (
             <form action={signOutAction}>

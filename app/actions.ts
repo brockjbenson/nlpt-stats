@@ -4,8 +4,13 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { Invitation } from "./(auth-pages)/sign-up/page";
 
-export const signUpAction = async (formData: FormData) => {
+export const signUpAction = async (
+  formData: FormData,
+  invitation: Invitation,
+) => {
+  const validEmail = invitation.email;
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   const supabase = await createClient();
@@ -15,7 +20,15 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/sign-up",
-      "Email and password are required"
+      "Email and password are required",
+    );
+  }
+
+  if (email !== validEmail) {
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Email does not match the invitation",
     );
   }
 
@@ -34,7 +47,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect(
       "success",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link."
+      "Thanks for signing up! Please check your email for a verification link.",
     );
   }
 };
@@ -75,7 +88,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/forgot-password",
-      "Could not reset password"
+      "Could not reset password",
     );
   }
 
@@ -86,7 +99,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     "/forgot-password",
-    "Check your email for a link to reset your password."
+    "Check your email for a link to reset your password.",
   );
 };
 
@@ -100,7 +113,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password and confirm password are required"
+      "Password and confirm password are required",
     );
   }
 
@@ -108,7 +121,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Passwords do not match"
+      "Passwords do not match",
     );
   }
 
@@ -120,7 +133,7 @@ export const resetPasswordAction = async (formData: FormData) => {
     encodedRedirect(
       "error",
       "/protected/reset-password",
-      "Password update failed"
+      "Password update failed",
     );
   }
 
@@ -144,7 +157,7 @@ export const addMemberAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       "/admin/members/add",
-      "First name and last name are required"
+      "First name and last name are required",
     );
   }
 
@@ -184,7 +197,7 @@ export const editMemberAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       `/admin/members/edit/${id}`,
-      "First name and last name are required"
+      "First name and last name are required",
     );
   }
 
@@ -200,7 +213,7 @@ export const editMemberAction = async (formData: FormData) => {
   return encodedRedirect(
     "success",
     `/admin/members`,
-    "Member updated successfully"
+    "Member updated successfully",
   );
 };
 
@@ -214,7 +227,7 @@ export const addWeeksAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       `/admin/seasons?year=${year}&newweek=${season_id}`,
-      "Season ID and number of weeks are required"
+      "Season ID and number of weeks are required",
     );
   }
 
@@ -229,7 +242,7 @@ export const addWeeksAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       `/admin/seasons?year=${year}&newweek=${season_id}`,
-      `Failed to fetch existing weeks: ${fetchError.message}`
+      `Failed to fetch existing weeks: ${fetchError.message}`,
     );
   }
 
@@ -246,7 +259,7 @@ export const addWeeksAction = async (formData: FormData) => {
     return encodedRedirect(
       "error",
       `/admin/seasons?year=${year}&newweek=${season_id}`,
-      insertError.message
+      insertError.message,
     );
   }
 

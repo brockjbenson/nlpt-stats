@@ -1,12 +1,9 @@
 import BottomTabs from "@/components/bottom-tabs";
 import Header from "@/components/header";
 import MainWrapper from "@/components/main-wrapper";
+import React from "react";
 
-export default async function Layout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />

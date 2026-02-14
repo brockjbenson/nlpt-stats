@@ -11,7 +11,7 @@ function MainWrapper({ children }: { children: React.ReactNode }) {
       ref={ref}
       id="main-wrapper"
       style={{
-        paddingTop: `${headerHeight + 16}px`,
+        paddingTop: `${headerHeight ? headerHeight + 16 : 81}px`,
       }}
       className="flex flex-col mx-auto pb-8 w-full lg:px-4 items-center">
       {children}

@@ -21,6 +21,12 @@ async function MobileNav() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
   return (
     <Sheet>
       <SheetTrigger className="relative">
@@ -37,7 +43,7 @@ async function MobileNav() {
           />
           NLPT Stats
         </SheetTitle>
-        <NavLinks showAdmin={!!user} />
+        <NavLinks showAdmin={profile?.role === "admin"} />
         {user ? (
           <form
             className="flex mt-auto w-64 items-start mx-auto justify-center"

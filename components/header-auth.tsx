@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { RxHamburgerMenu } from "react-icons/rx";
+import { isatty } from "tty";
 
 export default async function AuthButton() {
   const supabase = await createClient();
@@ -12,7 +13,13 @@ export default async function AuthButton() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isAdmin = user?.user_metadata.role === "admin";
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user?.id)
+    .single();
+
+  const isAdmin = profile?.role === "admin";
 
   return (
     <Sheet>

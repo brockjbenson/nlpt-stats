@@ -9,11 +9,11 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Check } from "lucide-react";
 
-const YearSelector = ({ ...props }) => {
+const HeaderSelector = ({ ...props }) => {
   return <DropdownMenu {...props} />;
 };
 
-const YearSelectorTrigger = React.forwardRef<
+const HeaderSelectorTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<typeof DropdownMenuTrigger>
 >(({ ...props }, ref) => {
@@ -22,15 +22,15 @@ const YearSelectorTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         "font-bold flex items-center justify-center gap-2 text-xl",
-        props.className
+        props.className,
       )}
       {...props}
     />
   );
 });
-YearSelectorTrigger.displayName = "YearSelectorTrigger";
+HeaderSelectorTrigger.displayName = "HeaderSelectorTrigger";
 
-const YearSelectorContent = ({
+const HeaderSelectorContent = ({
   className,
   ...props
 }: React.ComponentProps<typeof DropdownMenuContent>) => {
@@ -41,17 +41,17 @@ const YearSelectorContent = ({
     />
   );
 };
-YearSelectorContent.displayName = "YearSelectorContent";
+HeaderSelectorContent.displayName = "HeaderSelectorContent";
 
-interface YearSelectorItemProps
+interface HeaderSelectorItemProps
   extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   className?: string;
   href: string;
   active?: boolean;
 }
-const YearSelectorItem = React.forwardRef<
+const HeaderSelectorItem = React.forwardRef<
   HTMLAnchorElement,
-  YearSelectorItemProps
+  HeaderSelectorItemProps
 >(({ active, className, href, ...props }, ref) => {
   return (
     <DropdownMenuItem asChild>
@@ -59,7 +59,7 @@ const YearSelectorItem = React.forwardRef<
         className={cn(
           "w-full rounded p-3 text-base!",
           active && "bg-card",
-          className
+          className,
         )}
         ref={ref}
         href={href}
@@ -70,11 +70,11 @@ const YearSelectorItem = React.forwardRef<
     </DropdownMenuItem>
   );
 });
-YearSelectorItem.displayName = "YearSelectorItem";
+HeaderSelectorItem.displayName = "HeaderSelectorItem";
 
 export {
-  YearSelector,
-  YearSelectorTrigger,
-  YearSelectorContent,
-  YearSelectorItem,
+  HeaderSelector,
+  HeaderSelectorTrigger,
+  HeaderSelectorContent,
+  HeaderSelectorItem,
 };

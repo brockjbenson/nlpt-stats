@@ -1,64 +1,81 @@
-import { signUpAction } from "@/app/actions";
-import { FormMessage, Message } from "@/components/form-message";
-import { SubmitButton } from "@/components/submit-button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { createClient } from "@/utils/supabase/server";
-import Link from "next/link";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { redirect } from "next/navigation";
+import InvalidInvitation from "./_components/invalid-invitation";
+import SignUpForm from "./_components/sign-up-form";
+import { Message } from "@/components/form-message";
 
-export default async function Signup(props: {
-  searchParams: Promise<Message>;
+export type Invitation = {
+  id: string;
+  email: string;
+  role: "admin" | "user";
+  token: string;
+  expires_at: string | null;
+  accepted: string | null;
+  created_at: string;
+};
+
+export default async function Signup({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    inviteToken?: string;
+    error?: string; // ✅ Change to string
+    error_description?: string;
+  }>;
 }) {
-  const searchParams = await props.searchParams;
-  if ("message" in searchParams) {
-    return (
-      <div className="w-full flex-1 flex items-center h-screen sm:max-w-md justify-center gap-2 p-4">
-        <FormMessage message={searchParams} />
-      </div>
-    );
-  }
+  const { inviteToken, error, error_description } = await searchParams;
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect("/sign-in");
+  if (user) {
+    redirect("/");
   }
 
+  if (!inviteToken) {
+    return (
+      <InvalidInvitation
+        title="No Valid Invitation"
+        message="No valid invitation found. In order to sign up for an account you need a valid invitation from your administrator."
+      />
+    );
+  }
+
+  const { data: invitation, error: invitationError } = await supabase
+    .from("invitations")
+    .select("*")
+    .eq("token", inviteToken)
+    .single();
+
+  if (invitationError || !invitation) {
+    return (
+      <InvalidInvitation
+        title="No Valid Invitation"
+        message="No valid invitation found. In order to sign up for an account you need a valid invitation from your administrator."
+      />
+    );
+  }
+
+  if (invitation.accepted_at !== null) {
+    return (
+      <InvalidInvitation
+        title="Invitation Already Used"
+        message="This invitation has already been used to create an account. If you believe this is an error, please contact your administrator."
+      />
+    );
+  }
+
+  // ✅ Create message object from URL params
+  const message: Message | undefined = error
+    ? { error: error_description || error }
+    : undefined;
+
   return (
-    <form className="w-full max-w-sm max-h-fit flex flex-col">
-      <h1 className="text-2xl font-medium">Sign up</h1>
-      <div className="flex flex-col gap-2 [&>input]:mb-3 mt-8">
-        <Label htmlFor="email">Email</Label>
-        <Input name="email" placeholder="you@example.com" required />
-        <Label htmlFor="password">Password</Label>
-        <Input
-          type="password"
-          name="password"
-          placeholder="Your password"
-          minLength={6}
-          required
-        />
-        <SubmitButton
-          className="mt-1 h-12 font-semibold"
-          formAction={signUpAction}
-          pendingText="Signing up...">
-          Sign up
-        </SubmitButton>
-        <p className="text-sm text text-foreground">
-          Already have an account?{" "}
-          <Link
-            className="text-foreground hover:text-primary font-medium underline"
-            href="/sign-in">
-            Sign in
-          </Link>
-        </p>
-        <FormMessage message={searchParams} />
-      </div>
-    </form>
+    <>
+      <SignUpForm invitation={invitation} message={message} />
+    </>
   );
 }

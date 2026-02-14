@@ -1,9 +1,9 @@
 import PageHeader from "@/components/page-header/page-header";
 import {
-  YearSelector,
-  YearSelectorContent,
-  YearSelectorItem,
-  YearSelectorTrigger,
+  HeaderSelector,
+  HeaderSelectorContent,
+  HeaderSelectorItem,
+  HeaderSelectorTrigger,
 } from "@/components/page-header/year-selector";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
@@ -21,20 +21,20 @@ interface StatsHeaderProps {
 function StatsHeader({ triggerLabel, view, isCareer, year }: StatsHeaderProps) {
   return (
     <PageHeader className="pb-0">
-      <YearSelector>
-        <YearSelectorTrigger>
+      <HeaderSelector>
+        <HeaderSelectorTrigger>
           {triggerLabel === "career" ? "Career" : triggerLabel} Stats
           <ChevronDown className="ml-1 size-4" />
-        </YearSelectorTrigger>
-        <YearSelectorContent>
-          <YearSelectorItem href={`/stats/${view}/career`} active={isCareer}>
+        </HeaderSelectorTrigger>
+        <HeaderSelectorContent>
+          <HeaderSelectorItem href={`/stats/${view}/career`} active={isCareer}>
             Career Stats
-          </YearSelectorItem>
+          </HeaderSelectorItem>
           <Suspense>
             <YearSelectContent year={year} view={view} />
           </Suspense>
-        </YearSelectorContent>
-      </YearSelector>
+        </HeaderSelectorContent>
+      </HeaderSelector>
 
       <Suspense>
         <ViewSelector currentYear={year} currentView={view} />
@@ -63,12 +63,12 @@ async function YearSelectContent({
       {seasons
         .sort((a, b) => b.year - a.year)
         .map((season) => (
-          <YearSelectorItem
+          <HeaderSelectorItem
             key={season.id}
             active={season.year.toString() === year}
             href={`/stats/${view}/${season.year}`}>
             {season.year} Stats
-          </YearSelectorItem>
+          </HeaderSelectorItem>
         ))}
     </>
   );

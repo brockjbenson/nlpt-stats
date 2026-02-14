@@ -64,6 +64,11 @@ const NAV_LINKS: NavLink[] = [
 
 const ADMIN_LINKS: NavLink[] = [
   {
+    href: "/admin/users",
+    label: "Users",
+    icon: <FaUsers className="w-5 h-5" />,
+  },
+  {
     href: "/admin/seasons",
     label: "Seasons",
     icon: <FaList className="w-5 h-5" />,

@@ -27,7 +27,7 @@ export default function Login(props: {
 
   return (
     <form className="w-full max-w-sm max-h-fit flex flex-col">
-      <h1 className="md:text-2xl font-semibold">Sign in</h1>
+      <h1 className="text-2xl font-bold">Sign in</h1>
       <div className="flex w-full flex-col gap-2 [&>input]:mb-3 mt-8">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -64,7 +64,7 @@ export default function Login(props: {
           Sign in
         </SubmitButton>
         <p className="text-sm text-foreground">
-          Don't have an account? Contact admin for account access
+          {"Don't"} have an account? Contact admin for account access
         </p>
         {message && <FormMessage message={message} />}{" "}
         {/* Ensure message is valid */}
