@@ -218,14 +218,14 @@ function StatCards({ data, members }: StatCardsProps) {
               )}
               renderDrawerRows={(item) => (
                 <div
-                  className="w-full grid grid-cols-3 py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-avg`}>
+                  className="w-full grid grid-cols-2 py-3 border-b border-neutral-600"
+                  key={`${item.member_id}-sessions`}>
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
                     </Link>
                   </h3>
-                  <p className="font-semibold text-base md:text-lg">
+                  <p className="font-semibold text-base md:text-lg text-end">
                     {item.sessions_played}
                   </p>
                 </div>
