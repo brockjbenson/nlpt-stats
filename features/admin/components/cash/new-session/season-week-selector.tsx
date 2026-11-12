@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SeasonWeekSelectorProps {
@@ -41,7 +40,6 @@ export default function SeasonWeekSelector({
         <Select value={selectedSeasonId || ""} onValueChange={onSeasonChange}>
           <SelectTrigger className="border border-border" id="season">
             <SelectValue placeholder="Select a season" />
-            <ChevronDown className="ml-auto size-4 opacity-50" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
@@ -67,7 +65,6 @@ export default function SeasonWeekSelector({
             id="week"
             disabled={!selectedSeason}>
             <SelectValue placeholder="Select a week" />
-            <ChevronDown className="ml-auto size-4 opacity-50" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
