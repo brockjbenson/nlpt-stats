@@ -9,8 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircleIcon, CalendarIcon, ChevronDown } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { AlertCircleIcon, CalendarIcon } from "lucide-react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -40,14 +40,13 @@ interface Props {
   members: Member[];
 }
 
-function NewTournamentForm({ seasons, members }: Props) {
+function NewTournamentForm({ seasons }: Props) {
   const db = createClient();
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [newTournamentId, setNewTournamentId] = useState<string | null>(null);
   const [addSessionsDialogOpen, setAddSessionsDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    date: date,
     season_id: "",
     money_in_play: 0,
     buy_ins: 0,
@@ -56,19 +55,12 @@ function NewTournamentForm({ seasons, members }: Props) {
     places_payed: 0,
   });
 
-  useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      date: date,
-    }));
-  }, [date]);
-
   const addTournament = async () => {
     const { data, error } = await db
       .from("tournaments")
       .upsert({
         name: formData.name,
-        date: formData.date,
+        date: date,
         season_id: formData.season_id,
         money_in_play: formData.money_in_play,
         buy_ins: formData.buy_ins,
@@ -84,9 +76,9 @@ function NewTournamentForm({ seasons, members }: Props) {
       setNewTournamentId(data[0].id);
       setAddSessionsDialogOpen(true);
     }
+    setDate(new Date());
     setFormData({
       name: "",
-      date: new Date(),
       season_id: "",
       money_in_play: 0,
       buy_ins: 0,
@@ -112,7 +104,6 @@ function NewTournamentForm({ seasons, members }: Props) {
             }}>
             <SelectTrigger id="season">
               <SelectValue placeholder="Select a season" />
-              <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
