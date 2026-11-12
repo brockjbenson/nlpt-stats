@@ -1,6 +1,5 @@
 "use client";
-import _, { set } from "lodash";
-import MemberImage from "@/components/members/member-image";
+import _ from "lodash";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,14 +9,6 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { CashSession, Member, Season, Week } from "@/utils/types";
@@ -26,18 +17,15 @@ import {
   formatMoney,
   getProfitTextColor,
 } from "@/utils/utils";
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import {
   AlertCircleIcon,
-  Check,
   ChevronDown,
   Loader2,
-  Pencil,
   PlusCircle,
   X,
   XCircle,
 } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { calculateNLPIPoints } from "@/utils/nlpi-utils";
 import { useToast } from "@/hooks/use-toast";
 import { editSessionAction } from "@/features/admin/actions/edit-session";
@@ -63,21 +51,35 @@ interface Props {
   sessions: ExtendedCashSession[];
 }
 
+// Played sessions (rebuys > 0) first, ordered by net profit; unplayed after.
+function sortSessions(sessions: ExtendedCashSession[]): ExtendedCashSession[] {
+  return [...sessions].sort((a, b) => {
+    if (a.rebuys > 0 && b.rebuys === 0) return -1;
+    if (a.rebuys === 0 && b.rebuys > 0) return 1;
+
+    if (a.rebuys > 0 && b.rebuys > 0) {
+      return b.net_profit - a.net_profit;
+    }
+
+    return 0;
+  });
+}
+
 function EditSessionForm({ sessions }: Props) {
   const { toast } = useToast();
   const cashOutInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const buyInInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [currentSessions, setCurrentSessions] = useState<ExtendedCashSession[]>(
-    []
+    () => sortSessions(sessions),
   );
   const [editingSessions, setEditingSessions] = useState<ExtendedCashSession[]>(
-    []
+    () => sortSessions(sessions),
   );
   const [cashOutInputs, setCashOutInputs] = React.useState<
     Record<string, string>
   >({});
   const [buyInInputs, setBuyInInputs] = React.useState<Record<string, string>>(
-    {}
+    {},
   );
   const [sessionsToRemove, setSessionsToRemove] = useState<
     ExtendedCashSession[]
@@ -85,63 +87,28 @@ function EditSessionForm({ sessions }: Props) {
 
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
   const [removeSessionId, setRemoveSessionId] = useState<string>("");
-  const [hasEdits, setHasEdits] = useState<boolean>(false);
-  const [isMounted, setIsMounted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = React.useState<
     string | PostgrestSingleResponse<null>[]
   >("");
 
-  useEffect(() => {
-    const sortedSessions = [...sessions].sort((a, b) => {
-      if (a.rebuys > 0 && b.rebuys === 0) return -1;
-      if (a.rebuys === 0 && b.rebuys > 0) return 1;
-
-      if (a.rebuys > 0 && b.rebuys > 0) {
-        return b.net_profit - a.net_profit;
-      }
-
-      return 0;
-    });
-    setCurrentSessions(sortedSessions);
-    setEditingSessions(sortedSessions);
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      if (!_.isEqual(editingSessions, currentSessions)) {
-        setHasEdits(true);
-      } else {
-        setHasEdits(false);
-      }
-    }
-  }, [editingSessions, currentSessions, isMounted]);
+  const hasEdits = !_.isEqual(editingSessions, currentSessions);
 
   const removeSession = () => {
     setSessionsToRemove((prev) => {
       const sessionToRemove = currentSessions.find(
-        (session) => session.id === removeSessionId
+        (session) => session.id === removeSessionId,
       );
       return sessionToRemove ? [...prev, sessionToRemove] : prev; // Only add if found
     });
 
     setCurrentSessions((prev) =>
-      prev.filter((session) => session.id !== removeSessionId)
+      prev.filter((session) => session.id !== removeSessionId),
     );
   };
 
   const saveEdits = async () => {
-    const sortedSessions = [...editingSessions].sort((a, b) => {
-      if (a.rebuys > 0 && b.rebuys === 0) return -1;
-      if (a.rebuys === 0 && b.rebuys > 0) return 1;
-
-      if (a.rebuys > 0 && b.rebuys > 0) {
-        return b.net_profit - a.net_profit;
-      }
-
-      return 0;
-    });
+    const sortedSessions = sortSessions(editingSessions);
 
     const sessionsWithPoints = sortedSessions.map((session, index) => ({
       id: session.id,
@@ -208,21 +175,19 @@ function EditSessionForm({ sessions }: Props) {
                   "calc(env(safe-area-inset-bottom, 0px) + 0.5rem + 79px)",
               }}
               onClick={saveEdits}
-              className="flex fixed bottom-0 w-full text-sm pt-4 md:text-base items-center justify-center px-3 h-fit text-white bg-primary hover:bg-primary-hover font-bold">
+              className="flex fixed bottom-0 w-full text-sm pt-4 md:text-base items-center justify-center px-3 h-fit text-white bg-primary hover:bg-primary-hover font-bold"
+            >
               Save Edits
             </button>,
-            document.body
+            document.body,
           )}
       </div>
       <div className="relative px-2">
         <ul className="flex flex-col mb-8">
           {editingSessions.map((session, index) => {
             const originalSession = currentSessions.find(
-              (s) => s.id === session.id
+              (s) => s.id === session.id,
             );
-
-            const isPlayedSession =
-              originalSession && originalSession.rebuys > 0;
 
             const isEdited =
               session.buy_in !== originalSession?.buy_in ||
@@ -243,19 +208,21 @@ function EditSessionForm({ sessions }: Props) {
             return (
               <li
                 className={cn("grid grid-cols-[min-content_1fr] pb-4 gap-6")}
-                key={session.member_id + index}>
+                key={session.member_id + index}
+              >
                 {session.rebuys > 0 ? (
                   <Card
                     className={cn(
                       "col-span-2 relative flex flex-col items-center gap-2",
                       isEdited && !isRemoved && "bg-primary/15 border-primary",
-                      isRemoved && "bg-red-500/15 border-red-600"
-                    )}>
+                      isRemoved && "bg-red-500/15 border-red-600",
+                    )}
+                  >
                     {isRemoved ? (
                       <button
                         onClick={() => {
                           setSessionsToRemove((prev) =>
-                            prev.filter((s) => s.id !== session.id)
+                            prev.filter((s) => s.id !== session.id),
                           );
 
                           if (!originalSession) return;
@@ -272,8 +239,8 @@ function EditSessionForm({ sessions }: Props) {
                                     poy_points: originalSession.poy_points,
                                     nlpi_points: originalSession.nlpi_points,
                                   }
-                                : s
-                            )
+                                : s,
+                            ),
                           );
                           setCashOutInputs((prev) => {
                             const updated = { ...prev };
@@ -287,7 +254,8 @@ function EditSessionForm({ sessions }: Props) {
                             return updated;
                           });
                         }}
-                        className="p-1 whitespace-nowrap absolute top-2 underline right-3">
+                        className="p-1 whitespace-nowrap absolute top-2 underline right-3"
+                      >
                         Keep
                       </button>
                     ) : (
@@ -306,12 +274,13 @@ function EditSessionForm({ sessions }: Props) {
                                     nlpi_points: 0,
                                     poy_points: 0,
                                   }
-                                : s
+                                : s,
                             );
                             return updatedSessions;
                           });
                         }}
-                        className="h-4 w-4 absolute top-3 right-4">
+                        className="h-4 w-4 absolute top-3 right-4"
+                      >
                         <X />
                       </button>
                     )}
@@ -330,8 +299,8 @@ function EditSessionForm({ sessions }: Props) {
                                     rebuys: originalSession.rebuys,
                                     net_profit: originalSession.net_profit,
                                   }
-                                : s
-                            )
+                                : s,
+                            ),
                           );
 
                           setBuyInInputs((prev) => {
@@ -346,7 +315,8 @@ function EditSessionForm({ sessions }: Props) {
                             return updated;
                           });
                         }}
-                        className="p-2 absolute top-2 underline left-3">
+                        className="p-2 absolute top-2 underline left-3"
+                      >
                         Revert
                       </button>
                     )}
@@ -359,7 +329,8 @@ function EditSessionForm({ sessions }: Props) {
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`buyIn-${session.member_id}`}>
+                            htmlFor={`buyIn-${session.member_id}`}
+                          >
                             Buy In
                           </Label>
                           <input
@@ -371,7 +342,7 @@ function EditSessionForm({ sessions }: Props) {
                             disabled={isRemoved}
                             type="text"
                             inputMode="decimal"
-                            onFocus={(e) => {
+                            onFocus={() => {
                               if (rawBuyIn === "0" || rawBuyIn === "0.00") {
                                 setBuyInInputs((prev) => ({
                                   ...prev,
@@ -385,13 +356,13 @@ function EditSessionForm({ sessions }: Props) {
                                   const valueLength = input.value.length;
                                   input.setSelectionRange(
                                     valueLength,
-                                    valueLength
+                                    valueLength,
                                   );
                                 }
                               });
                             }}
                             onChange={(e) => {
-                              let raw = e.target.value.replace(/^\$/, ""); // remove leading $
+                              const raw = e.target.value.replace(/^\$/, ""); // remove leading $
                               setBuyInInputs((prev) => ({
                                 ...prev,
                                 [session.member_id]: raw,
@@ -402,7 +373,7 @@ function EditSessionForm({ sessions }: Props) {
                                 if (!isNaN(parsedBuyIn)) {
                                   const parsedCashOut = parseFloat(
                                     cashOutInputs[session.member_id] ??
-                                      session?.cash_out.toFixed(2).toString()
+                                      session?.cash_out.toFixed(2).toString(),
                                   );
 
                                   const newNetProfit =
@@ -418,8 +389,8 @@ function EditSessionForm({ sessions }: Props) {
                                             buy_in: parsedBuyIn,
                                             net_profit: newNetProfit,
                                           }
-                                        : s
-                                    )
+                                        : s,
+                                    ),
                                   );
                                 }
                               }
@@ -438,7 +409,8 @@ function EditSessionForm({ sessions }: Props) {
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`cashOut-${session.member_id}`}>
+                            htmlFor={`cashOut-${session.member_id}`}
+                          >
                             Cash Out
                           </Label>
                           <input
@@ -450,7 +422,7 @@ function EditSessionForm({ sessions }: Props) {
                               cashOutInputRefs.current[session.member_id] = el;
                             }}
                             inputMode="decimal"
-                            onFocus={(e) => {
+                            onFocus={() => {
                               if (rawCashOut === "0" || rawCashOut === "0.00") {
                                 setCashOutInputs((prev) => ({
                                   ...prev,
@@ -464,13 +436,13 @@ function EditSessionForm({ sessions }: Props) {
                                   const valueLength = input.value.length;
                                   input.setSelectionRange(
                                     valueLength,
-                                    valueLength
+                                    valueLength,
                                   );
                                 }
                               });
                             }}
                             onChange={(e) => {
-                              let raw = e.target.value.replace(/^\$/, ""); // remove leading $
+                              const raw = e.target.value.replace(/^\$/, ""); // remove leading $
                               setCashOutInputs((prev) => ({
                                 ...prev,
                                 [session.member_id]: raw,
@@ -481,7 +453,7 @@ function EditSessionForm({ sessions }: Props) {
                                 if (!isNaN(parsedCashOut)) {
                                   const parsedBuyIn = parseFloat(
                                     buyInInputs[session.member_id] ??
-                                      session?.buy_in.toFixed(2).toString()
+                                      session?.buy_in.toFixed(2).toString(),
                                   );
 
                                   const newNetProfit =
@@ -497,8 +469,8 @@ function EditSessionForm({ sessions }: Props) {
                                             cash_out: parsedCashOut,
                                             net_profit: newNetProfit,
                                           }
-                                        : s
-                                    )
+                                        : s,
+                                    ),
                                   );
                                 }
                               }
@@ -519,7 +491,8 @@ function EditSessionForm({ sessions }: Props) {
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`rebuys-${session.member_id}`}>
+                            htmlFor={`rebuys-${session.member_id}`}
+                          >
                             Rebuys
                           </Label>
                           <Select
@@ -530,13 +503,15 @@ function EditSessionForm({ sessions }: Props) {
                                 prevSessions.map((s) =>
                                   s.member_id === session.member_id
                                     ? { ...s, rebuys: parseFloat(value) }
-                                    : s
-                                )
+                                    : s,
+                                ),
                               );
-                            }}>
+                            }}
+                          >
                             <SelectTrigger
                               id={`rebuys-${session.member_id}`}
-                              className="text-base gap-1 bg-transparent relative -top-[2px] text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
+                              className="text-base gap-1 bg-transparent relative -top-[2px] text-white font-semibold py-0 h-fit border-none flex items-center justify-center"
+                            >
                               <SelectValue className="text-base font-semibold text-white" />
                               <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
                             </SelectTrigger>
@@ -559,8 +534,9 @@ function EditSessionForm({ sessions }: Props) {
                             className={cn(
                               "text-base font-semibold",
                               getProfitTextColor(session.net_profit),
-                              isRemoved && "line-through opacity-25"
-                            )}>
+                              isRemoved && "line-through opacity-25",
+                            )}
+                          >
                             ${formatMoney(session.net_profit)}
                           </p>
                         </div>
@@ -580,13 +556,14 @@ function EditSessionForm({ sessions }: Props) {
                                   buy_in: 25,
                                   cash_out: 0,
                                   rebuys: 1,
-                                  net_profit: 0,
+                                  net_profit: -25,
                                 }
-                              : s
-                          )
+                              : s,
+                          ),
                         );
                       }}
-                      className="w-full h-full px-4 aspect-square flex items-center justify-between">
+                      className="w-full h-full px-4 aspect-square flex items-center justify-between"
+                    >
                       <h2 className="text-sm md:text-base whitespace-nowrap">
                         {session.member.first_name}{" "}
                         {session.member.last_name.slice(0, 1)}.
@@ -604,7 +581,8 @@ function EditSessionForm({ sessions }: Props) {
 
       <AlertDialog
         open={confirmDeleteOpen}
-        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}>
+        onOpenChange={() => setConfirmDeleteOpen(!confirmDeleteOpen)}
+      >
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>
@@ -622,7 +600,8 @@ function EditSessionForm({ sessions }: Props) {
               onClick={() => {
                 setConfirmDeleteOpen(false);
                 removeSession();
-              }}>
+              }}
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -632,7 +611,8 @@ function EditSessionForm({ sessions }: Props) {
         open={
           !!error &&
           (typeof error === "string" ? error.trim() !== "" : error.length > 0)
-        }>
+        }
+      >
         <AlertDialogContent className="border-red-500">
           <XCircle className="w-16 h-16  mx-auto text-theme-red" />
           <AlertDialogTitle>Error Saving Session Edits</AlertDialogTitle>
@@ -642,7 +622,8 @@ function EditSessionForm({ sessions }: Props) {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError("")}>
+              onClick={() => setError("")}
+            >
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>

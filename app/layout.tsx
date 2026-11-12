@@ -21,7 +21,7 @@ export const metadata = {
   other: { "apple-mobile-web-app-capable": "yes" },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "black",
     startupImage: [
       {
         url: "/splash_screens/iPhone_16_Pro_Max_landscape.png",

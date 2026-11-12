@@ -51,8 +51,15 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [navTranslateY, setNavTranslateY] = useState(0);
   const [navHeight, setNavHeight] = useState(0);
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  const mainContainerRef = useRef<HTMLElement | null>(null);
+  // 🔹 Reset header + nav position on route change (during render, not in an effect)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setHeaderTranslateY(0);
+    setNavTranslateY(0);
+  }
+
   const lastScrollY = useRef(0);
 
   // Current rendered positions
@@ -100,11 +107,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         setHeaderTranslateY(0);
         setNavTranslateY(0);
 
-        // Update lastScrollY to current position
-        const el = mainContainerRef.current;
-        if (el) {
-          lastScrollY.current = el.scrollTop;
-        }
+        lastScrollY.current = window.scrollY;
       }
     };
 
@@ -164,45 +167,18 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     };
   }, [pathname]);
 
-  // 🔹 Rebind scroll container on route change
+  // 🔹 Reset scroll tracking refs on route change
   useEffect(() => {
-    let cancelled = false;
+    lastScrollY.current = window.scrollY;
 
-    const tryAttach = () => {
-      if (cancelled) return;
-
-      const el = document.getElementById("main-wrapper");
-      if (!el) {
-        requestAnimationFrame(tryAttach);
-        return;
-      }
-
-      mainContainerRef.current = el;
-
-      lastScrollY.current = el.scrollTop;
-
-      // Reset everything
-      currentHeaderY.current = 0;
-      currentNavY.current = 0;
-      targetHeaderY.current = 0;
-      targetNavY.current = 0;
-
-      setHeaderTranslateY(0);
-      setNavTranslateY(0);
-    };
-
-    tryAttach();
-
-    return () => {
-      cancelled = true;
-    };
+    currentHeaderY.current = 0;
+    currentNavY.current = 0;
+    targetHeaderY.current = 0;
+    targetNavY.current = 0;
   }, [pathname]);
 
   // 🔹 Scroll handler
   useEffect(() => {
-    const el = mainContainerRef.current;
-    if (!el) return;
-
     const animate = () => {
       // LERP current -> target
       currentHeaderY.current +=
@@ -271,7 +247,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     const handleScroll = () => {
       // Skip scroll handling if an input is focused
       if (isInputFocused.current) {
-        lastScrollY.current = el.scrollTop;
+        lastScrollY.current = window.scrollY;
         return;
       }
 
@@ -279,9 +255,9 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       const navHeight = getNavHeight();
       if (!headerHeight || !navHeight) return;
 
-      const currentScrollY = el.scrollTop;
-      const scrollHeight = el.scrollHeight;
-      const clientHeight = el.clientHeight;
+      const currentScrollY = window.scrollY;
+      const scrollHeight = document.documentElement.scrollHeight;
+      const clientHeight = window.innerHeight;
       const delta = currentScrollY - lastScrollY.current;
 
       const isAtBottom = currentScrollY + clientHeight >= scrollHeight - 5;
@@ -339,18 +315,18 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       snapOnRelease();
     };
 
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    el.addEventListener("touchstart", handleTouchStart, { passive: true });
-    el.addEventListener("touchend", handleTouchEnd, { passive: true });
-    el.addEventListener("mousedown", handleMouseDown);
-    el.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      el.removeEventListener("scroll", handleScroll);
-      el.removeEventListener("touchstart", handleTouchStart);
-      el.removeEventListener("touchend", handleTouchEnd);
-      el.removeEventListener("mousedown", handleMouseDown);
-      el.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [pathname]);
 
@@ -361,7 +337,8 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         navTranslateY,
         headerHeight,
         navHeight,
-      }}>
+      }}
+    >
       {children}
     </ScrollContext.Provider>
   );

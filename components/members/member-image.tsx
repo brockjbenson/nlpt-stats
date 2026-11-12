@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image, { ImageProps } from "next/image";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { UserRound } from "lucide-react";
 
 type ZoomValues = "1.5" | "2" | "2.5";
 
@@ -36,12 +37,27 @@ const MemberImage: React.FC<Props> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(true);
 
+  if (!props.src) {
+    return (
+      <figure
+        aria-label={alt}
+        className={cn(
+          "flex items-center justify-center w-full aspect-square overflow-hidden rounded-full relative bg-muted",
+          className,
+        )}
+      >
+        <UserRound className="w-1/2 h-1/2 text-muted-foreground" />
+      </figure>
+    );
+  }
+
   return (
     <figure
       className={cn(
         "flex items-center justify-center w-full aspect-square overflow-hidden rounded-full relative",
-        className
-      )}>
+        className,
+      )}
+    >
       {/* Shimmer skeleton */}
       {isLoading && (
         <div className="absolute inset-0 bg-linear-to-r from-muted via-muted/50 to-muted animate-pulse bg-size-[200%_100%]" />
@@ -53,7 +69,7 @@ const MemberImage: React.FC<Props> = ({
           "w-full h-auto transition-opacity duration-300",
           isLoading ? "opacity-0" : "opacity-100",
           zoomStyles({ zoom }),
-          imageClassName
+          imageClassName,
         )}
         width={500}
         height={500}
