@@ -57,8 +57,9 @@ function MemberCard({
     <span
       className={cn(
         "flex flex-col justify-start gap-2 w-full",
-        allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]"
-      )}>
+        allowEdit ? "grid-cols-[80px_1fr_min-content]" : "grid-cols-[80px_1fr]",
+      )}
+    >
       <MemberImage
         className="w-full relative aspect-6/7 rounded-[8px] overflow-hidden"
         imageClassName="object-cover absolute w-full h-full"
@@ -72,10 +73,12 @@ function MemberCard({
         </li>
         <li className="text-muted text-sm">
           Joined:{" "}
-          {new Date(debutDate ? debutDate : "").toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-          })}
+          {debutDate
+            ? new Date(debutDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "short",
+              })
+            : "—"}
         </li>
         <li className="text-muted text-sm">Nickname: {member.nickname}</li>
       </ul>
@@ -88,7 +91,8 @@ function MemberCard({
                   onEdit(member.id);
                 }
               }}
-              className="hover:text-primary hover:underline h-fit m-0 p-0 transition">
+              className="hover:text-primary hover:underline h-fit m-0 p-0 transition"
+            >
               Edit
             </button>
           </DialogTrigger>
@@ -98,8 +102,9 @@ function MemberCard({
               <DialogTitle
                 className={cn(
                   loading ? "hidden" : "block",
-                  "text-xl text-center"
-                )}>
+                  "text-xl text-center",
+                )}
+              >
                 Edit Member
               </DialogTitle>
               {loading ? (
@@ -159,7 +164,8 @@ function MemberCard({
                       <DialogClose
                         className="bg-primary hover:bg-primary-hover h-12 rounded text-background font-semibold"
                         type="submit"
-                        onClick={onSave}>
+                        onClick={onSave}
+                      >
                         Save
                       </DialogClose>
                     </div>

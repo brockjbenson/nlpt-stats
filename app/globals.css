@@ -84,11 +84,6 @@
     @apply border-border outline-ring/50;
   }
 
-  html,
-  body {
-    overflow: hidden;
-  }
-
   body {
     @apply bg-background text-foreground;
   }
@@ -152,10 +147,7 @@
 
   /* Layout utilities */
   #main-wrapper {
-    height: 100svh;
     padding-bottom: 1rem;
-    overflow-y: scroll;
-    overflow-x: hidden;
   }
 
   #page-header-wrapper {

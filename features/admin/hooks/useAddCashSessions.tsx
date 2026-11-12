@@ -168,10 +168,11 @@ function useAddCashSessions({
         return;
       }
 
+      const buyIn = getBuyInAmount(member);
       const newSession: CashSessionNoId = {
-        buy_in: getBuyInAmount(member),
+        buy_in: buyIn,
         cash_out: 0,
-        net_profit: 0,
+        net_profit: -buyIn,
         rebuys: 1,
         week_id: selectedWeek.id,
         season_id: selectedSeason.id,
