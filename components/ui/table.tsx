@@ -9,7 +9,7 @@ const Table = React.forwardRef<
   <div data-table className="relative w-full overflow-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn("w-full caption-bottom text-sm border-separate border-spacing-0", className)}
       {...props}
     />
   </div>
@@ -59,7 +59,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-8 pr-4 last:pr-0 border-b border-border align-middle text-left text-muted text-xs whitespace-nowrap first:left-0 first:z-10 font-normal [&:has([role=checkbox])]:pr-0",
+      "h-8 pr-4 last:pr-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-border after:content-[''] align-middle text-left text-muted text-xs whitespace-nowrap first:left-0 first:z-10 font-normal [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -74,7 +74,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "h-12 pr-4 last:pr-0 border-b border-border relative align-middle text-left text-sm whitespace-nowrap first:left-0 first:z-10 font-normal [&:has([role=checkbox])]:pr-0",
+      "h-12 pr-4 last:pr-0 relative after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-border after:content-[''] [tr:last-child>&]:after:hidden align-middle text-left text-sm whitespace-nowrap first:left-0 first:z-10 font-normal [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}

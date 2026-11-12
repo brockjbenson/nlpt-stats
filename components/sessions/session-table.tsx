@@ -45,7 +45,7 @@ function SessionTable({ data, className }: Props) {
               {sessions.map((session) => {
                 return (
                   <TableRow key={session.member_id}>
-                    <TableCell className="font-bold sticky left-0 z-10">
+                    <TableCell className="font-bold sticky left-0 z-10 bg-card">
                       <Link
                         scroll={true}
                         className="hover:text-primary underline"

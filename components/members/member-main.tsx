@@ -71,7 +71,8 @@ function MemberMain({
 
   return (
     <>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* -mt-4 cancels MainWrapper's 16px top spacing so the portrait sits flush under the mobile header */}
+      <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 max-md:-mt-4">
         <MemberHeader member={member} joinDate={joinDate} />
         <div>
           <MemberViewCarousel setView={setView} view={view} />
@@ -89,9 +90,15 @@ function MemberMain({
                 data={{
                   avg_rebuys: {
                     nlpt: avgData.avg_rebuys,
-                    member:
-                      careerStats.cash_stats.total_rebuys /
-                      careerStats.cash_stats.sessions,
+                    // total_rebuys counts the initial buy-in once per session
+                    member: careerStats.cash_stats.sessions
+                      ? Math.max(
+                          careerStats.cash_stats.total_rebuys /
+                            careerStats.cash_stats.sessions -
+                            1,
+                          0,
+                        )
+                      : 0,
                   },
                   session_avg: {
                     nlpt: avgData.session_avg,
@@ -149,9 +156,10 @@ function MemberMain({
                       className={cn(
                         "font-semibold text-lg",
                         getProfitTextColor(
-                          advancedSkills.avg_net_profit_after_loss
-                        )
-                      )}>
+                          advancedSkills.avg_net_profit_after_loss,
+                        ),
+                      )}
+                    >
                       {formatMoney(advancedSkills.avg_net_profit_after_loss)}
                     </span>
                   </li>
@@ -160,22 +168,25 @@ function MemberMain({
                     <span
                       className={cn(
                         "font-semibold text-lg",
-                        getProfitTextColor(advancedSkills.largest_bounce_back)
-                      )}>
+                        getProfitTextColor(advancedSkills.largest_bounce_back),
+                      )}
+                    >
                       {formatMoney(advancedSkills.largest_bounce_back)}
                     </span>
                   </li>
                   <li className="flex items-center text-muted-foreground justify-between text-base">
                     Avg Rebuys Following Loss
                     <span
-                      className={cn("font-semibold text-foreground text-lg")}>
+                      className={cn("font-semibold text-foreground text-lg")}
+                    >
                       {advancedSkills.avg_rebuys_after_loss}
                     </span>
                   </li>
                   <li className="flex items-center text-muted-foreground justify-between text-base">
                     Rebuy Rate Following Loss
                     <span
-                      className={cn("font-semibold text-foreground text-lg")}>
+                      className={cn("font-semibold text-foreground text-lg")}
+                    >
                       {advancedSkills.rebuy_rate.toFixed(2)}%
                     </span>
                   </li>
@@ -195,8 +206,9 @@ function MemberMain({
                     <span
                       className={cn(
                         "font-semibold text-lg",
-                        getProfitTextColor(advancedSkills.rebuy_avg_net_profit)
-                      )}>
+                        getProfitTextColor(advancedSkills.rebuy_avg_net_profit),
+                      )}
+                    >
                       {formatMoney(advancedSkills.rebuy_avg_net_profit)}
                     </span>
                   </li>
@@ -206,9 +218,10 @@ function MemberMain({
                       className={cn(
                         "font-semibold text-lg",
                         getProfitTextColor(
-                          advancedSkills.rebuy_largest_net_profit
-                        )
-                      )}>
+                          advancedSkills.rebuy_largest_net_profit,
+                        ),
+                      )}
+                    >
                       {formatMoney(advancedSkills.rebuy_largest_net_profit)}
                     </span>
                   </li>
@@ -229,9 +242,10 @@ function MemberMain({
                       className={cn(
                         "font-semibold text-lg",
                         getProfitTextColor(
-                          advancedSkills.no_rebuy_avg_net_profit
-                        )
-                      )}>
+                          advancedSkills.no_rebuy_avg_net_profit,
+                        ),
+                      )}
+                    >
                       {formatMoney(advancedSkills.no_rebuy_avg_net_profit)}
                     </span>
                   </li>
@@ -241,9 +255,10 @@ function MemberMain({
                       className={cn(
                         "font-semibold text-lg",
                         getProfitTextColor(
-                          advancedSkills.no_rebuy_largest_net_profit
-                        )
-                      )}>
+                          advancedSkills.no_rebuy_largest_net_profit,
+                        ),
+                      )}
+                    >
                       {formatMoney(advancedSkills.no_rebuy_largest_net_profit)}
                     </span>
                   </li>
