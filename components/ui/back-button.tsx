@@ -20,12 +20,12 @@ const BackButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         onClick={() => router.back()}
         className={cn(
-          "size-8 ml-1 rounded-full border border-border flex items-center justify-center",
+          "size-8 ml-1 flex items-center justify-center",
           className
         )}
         ref={ref}
         {...props}>
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="size-full" />
       </Comp>
     );
   }

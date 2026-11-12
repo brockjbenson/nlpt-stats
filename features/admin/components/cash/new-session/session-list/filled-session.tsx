@@ -12,7 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CashSession, Member } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
-import { ChevronDown, X } from "lucide-react";
+import { X } from "lucide-react";
 import React, { useRef } from "react";
 
 interface FilledSessionProps {
@@ -225,7 +225,6 @@ function FilledSession({
               id={`rebuys-${member.id}`}
               className="text-base gap-1 relative -top-0.5 text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
               <SelectValue className="text-base font-semibold text-white" />
-              <ChevronDown className="text-white pointer-events-none w-auto aspect-auto h-3/4 hover:text-primary-hover" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>

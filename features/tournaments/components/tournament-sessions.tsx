@@ -90,7 +90,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 z-10 bg-card">
+                <TableHead className="sticky left-0 z-10 bg-card w-14 min-w-14 max-w-14">
                   Place
                 </TableHead>
                 <TableHead className="sticky left-14 z-10 bg-card">
@@ -111,7 +111,7 @@ function TournamentSessions({ data, isAdmin }: Props) {
                 .map((session) => {
                   return (
                     <TableRow key={session.member_id}>
-                      <TableCell className="font-bold sticky bg-card left-0 z-10">
+                      <TableCell className="font-bold sticky bg-card left-0 z-10 w-14 min-w-14 max-w-14">
                         {renderPlacementMedal(session.place)}
                       </TableCell>
                       <TableCell className="font-bold sticky bg-card left-14 z-10">

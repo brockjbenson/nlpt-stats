@@ -2,7 +2,6 @@
 import { cn } from "@/lib/utils";
 import { CareerData, Season } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
-import { ChevronDown } from "lucide-react";
 import React from "react";
 import { Select, SelectContent, SelectTrigger } from "../ui/select";
 
@@ -49,12 +48,6 @@ function MemberCashStats({ careerStats, seasons }: Props) {
         <Select open={dropDownOpen} onOpenChange={setDropDownOpen}>
           <SelectTrigger className="border w-28 border-neutral-700 rounded-full py-2 px-3 bg-transparent h-fit flex items-center gap-1 text-base font-normal">
             {currentDropDownLabel}
-            <ChevronDown
-              className={cn(
-                "w-6 h-6 ml-2 transition-transform duration-150",
-                dropDownOpen ? "rotate-180" : "rotate-0"
-              )}
-            />
           </SelectTrigger>
           <SelectContent>
             <div className="flex w-full flex-col">

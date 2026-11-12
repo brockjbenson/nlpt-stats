@@ -2,7 +2,6 @@
 
 import { Member, Season, Week } from "@/utils/types";
 import React, { Suspense } from "react";
-import { cn } from "@/lib/utils";
 import useAddCashSessions from "../../../hooks/useAddCashSessions";
 import Sessions from "./session-list/sessions";
 import SeasonWeekSelector from "./season-week-selector";
@@ -61,11 +60,7 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
   return (
     <>
-      <div
-        className={cn(
-          "w-full px-2 mt-4 max-w-(--breakpoint-lg) mx-auto transition-all",
-          canAddSessions && "pb-13 md:pb-20",
-        )}>
+      <div className="w-full px-2 mt-4 max-w-(--breakpoint-lg) mx-auto">
         {/* Season & Week Selector */}
         <SeasonWeekSelector
           seasons={seasons}
@@ -90,7 +85,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
           <Suspense
             fallback={
               <div className="h-96 bg-muted/50 animate-pulse rounded" />
-            }>
+            }
+          >
             <Sessions
               removeSession={removeSession}
               setSessionsToAdd={setSessionsToAdd}

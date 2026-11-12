@@ -54,7 +54,7 @@ export function NLPIDataTable<TData, TValue>({
                   <TableHead
                     className={cn(
                       index === 0 && "hidden",
-                      index === 1 && "sticky bg-card z-10 left-0",
+                      index === 1 && "sticky bg-card z-10 left-0 w-12 min-w-12 max-w-12",
                       index === 4 && "sticky bg-card z-10 left-12"
                     )}
                     key={header.id}>
@@ -78,7 +78,7 @@ export function NLPIDataTable<TData, TValue>({
                   <TableCell
                     className={cn(
                       index === 0 && "hidden",
-                      index === 1 && "sticky bg-card z-10 left-0",
+                      index === 1 && "sticky bg-card z-10 left-0 w-12 min-w-12 max-w-12",
                       index === 4 && "sticky bg-card z-10 left-12"
                     )}
                     key={cell.id}>
