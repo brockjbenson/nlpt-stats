@@ -4,6 +4,7 @@ export type Member = {
   last_name: string;
   nickname: string;
   portrait_url: string;
+  visible?: boolean;
 };
 
 export type Tournament = {
