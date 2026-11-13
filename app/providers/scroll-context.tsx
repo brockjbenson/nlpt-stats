@@ -11,14 +11,15 @@ import { usePathname } from "next/navigation";
 
 interface ScrollContextType {
   headerTranslateY: number;
-  navTranslateY: number;
   headerHeight: number;
+  // Height of the bottom tab bar's area (#mobile-nav), for content that has
+  // to sit above it. The bar itself minimizes on scroll (see
+  // components/bottom-tabs) rather than sliding away.
   navHeight: number;
 }
 
 const ScrollContext = createContext<ScrollContextType>({
   headerTranslateY: 0,
-  navTranslateY: 0,
   headerHeight: 0,
   navHeight: 0,
 });
@@ -34,41 +35,27 @@ function getHeaderHeight() {
   );
 }
 
-function getNavHeight() {
-  return (
-    parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue(
-        "--nav-height",
-      ),
-    ) || 0
-  );
-}
-
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const [headerTranslateY, setHeaderTranslateY] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
-  const [navTranslateY, setNavTranslateY] = useState(0);
   const [navHeight, setNavHeight] = useState(0);
   const [prevPathname, setPrevPathname] = useState(pathname);
 
-  // 🔹 Reset header + nav position on route change (during render, not in an effect)
+  // 🔹 Reset header position on route change (during render, not in an effect)
   if (pathname !== prevPathname) {
     setPrevPathname(pathname);
     setHeaderTranslateY(0);
-    setNavTranslateY(0);
   }
 
   const lastScrollY = useRef(0);
 
-  // Current rendered positions
+  // Current rendered position
   const currentHeaderY = useRef(0);
-  const currentNavY = useRef(0);
 
-  // Target positions (smoothed toward)
+  // Target position (smoothed toward)
   const targetHeaderY = useRef(0);
-  const targetNavY = useRef(0);
 
   const animating = useRef(false);
   const isInputFocused = useRef(false);
@@ -98,14 +85,11 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       ) {
         isInputFocused.current = false;
 
-        // Reset header and nav to visible when keyboard closes
+        // Reset header to visible when keyboard closes
         currentHeaderY.current = 0;
-        currentNavY.current = 0;
         targetHeaderY.current = 0;
-        targetNavY.current = 0;
 
         setHeaderTranslateY(0);
-        setNavTranslateY(0);
 
         lastScrollY.current = window.scrollY;
       }
@@ -172,9 +156,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     lastScrollY.current = window.scrollY;
 
     currentHeaderY.current = 0;
-    currentNavY.current = 0;
     targetHeaderY.current = 0;
-    targetNavY.current = 0;
   }, [pathname]);
 
   // 🔹 Scroll handler
@@ -184,57 +166,33 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       currentHeaderY.current +=
         (targetHeaderY.current - currentHeaderY.current) * SMOOTHING;
 
-      currentNavY.current +=
-        (targetNavY.current - currentNavY.current) * SMOOTHING;
-
       setHeaderTranslateY(currentHeaderY.current);
-      setNavTranslateY(currentNavY.current);
 
-      if (
-        Math.abs(targetHeaderY.current - currentHeaderY.current) > 0.1 ||
-        Math.abs(targetNavY.current - currentNavY.current) > 0.1
-      ) {
+      if (Math.abs(targetHeaderY.current - currentHeaderY.current) > 0.1) {
         requestAnimationFrame(animate);
       } else {
         // Snap to exact target
         currentHeaderY.current = targetHeaderY.current;
-        currentNavY.current = targetNavY.current;
         setHeaderTranslateY(currentHeaderY.current);
-        setNavTranslateY(currentNavY.current);
         animating.current = false;
       }
     };
 
     const snapOnRelease = () => {
       const headerHeight = getHeaderHeight();
-      const navHeight = getNavHeight();
-      if (!headerHeight || !navHeight) return;
+      if (!headerHeight) return;
 
-      // Calculate visibility percentages for both header and nav
       // Header: translateY ranges from 0 (visible) to -headerHeight (hidden)
       const headerVisibleAmount = headerHeight + targetHeaderY.current;
       const headerVisiblePercentage = headerVisibleAmount / headerHeight;
 
-      // Nav: translateY ranges from 0 (visible) to navHeight (hidden)
-      const navVisibleAmount = navHeight - targetNavY.current;
-      const navVisiblePercentage = navVisibleAmount / navHeight;
+      const VISIBILITY_THRESHOLD = 0.99; // Must be 99% visible to stay shown
 
-      // Use the minimum of the two percentages to determine overall visibility
-      // This ensures both are synchronized and considers the slower-to-appear element
-      const overallVisibility = Math.min(
-        headerVisiblePercentage,
-        navVisiblePercentage,
-      );
-
-      const VISIBILITY_THRESHOLD = 0.99; // Both must be 99% visible to stay shown
-
-      // Only keep both visible if BOTH are fully visible
-      if (overallVisibility >= VISIBILITY_THRESHOLD) {
+      // Only keep it shown if it's fully visible; otherwise finish hiding it
+      if (headerVisiblePercentage >= VISIBILITY_THRESHOLD) {
         targetHeaderY.current = 0;
-        targetNavY.current = 0;
       } else {
         targetHeaderY.current = -headerHeight;
-        targetNavY.current = navHeight;
       }
 
       // Start animation if not already running
@@ -252,8 +210,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       }
 
       const headerHeight = getHeaderHeight();
-      const navHeight = getNavHeight();
-      if (!headerHeight || !navHeight) return;
+      if (!headerHeight) return;
 
       const currentScrollY = window.scrollY;
       const scrollHeight = document.documentElement.scrollHeight;
@@ -262,29 +219,17 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
 
       const isAtBottom = currentScrollY + clientHeight >= scrollHeight - 5;
 
-      // Compute TARGET positions
+      // Compute TARGET position
       if (currentScrollY < 10) {
         targetHeaderY.current = 0;
-        targetNavY.current = 0;
       } else if (isAtBottom) {
         targetHeaderY.current = -headerHeight;
-        targetNavY.current = navHeight;
       } else {
         const damped = delta * 0.9;
 
-        // Apply the same damped delta to both, scaled to their respective heights
-        // This keeps them visually synchronized despite different heights
-        const headerDelta = damped;
-        const navDelta = damped;
-
         targetHeaderY.current = Math.max(
           -headerHeight,
-          Math.min(0, targetHeaderY.current - headerDelta),
-        );
-
-        targetNavY.current = Math.max(
-          0,
-          Math.min(navHeight, targetNavY.current + navDelta),
+          Math.min(0, targetHeaderY.current - damped),
         );
       }
 
@@ -334,7 +279,6 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     <ScrollContext.Provider
       value={{
         headerTranslateY,
-        navTranslateY,
         headerHeight,
         navHeight,
       }}

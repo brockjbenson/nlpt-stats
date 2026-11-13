@@ -12,7 +12,7 @@ export default function FloatingAddButton({
   onClick: () => void;
   show: boolean;
 }) {
-  const { navTranslateY, navHeight } = useScrollState();
+  const { navHeight } = useScrollState();
   const [shouldTransition, setShouldTransition] = React.useState(false);
   const barRef = React.useRef<HTMLDivElement>(null);
   const [barHeight, setBarHeight] = React.useState(0);
@@ -42,7 +42,7 @@ export default function FloatingAddButton({
   return (
     <>
       {/* In-flow spacer so the last list items can scroll above the fixed bar.
-          The nav is always hidden at the bottom of the page, so its height is excluded. */}
+          The tab bar's height is excluded: the main wrapper already pads for it. */}
       <div
         aria-hidden
         style={{ height: show ? Math.max(0, barHeight - navHeight) : 0 }}
@@ -52,9 +52,8 @@ export default function FloatingAddButton({
         className="bg-background/80 border-t flex flex-col items-center justify-center border-t-muted backdrop-blur-md fixed bottom-0 left-0 right-0 w-full px-4 pt-4 z-9"
         style={{
           paddingBottom: `calc(${navHeight}px + 1rem)`,
-          transform: show
-            ? `translateY(max(0px, calc(${navTranslateY}px - env(safe-area-inset-bottom))))`
-            : "translateY(100%)",
+          // The floating tab bar sits over this bar's bottom padding
+          transform: show ? "translateY(0)" : "translateY(100%)",
           willChange: "transform",
           transition: shouldTransition ? "transform 0.15s ease-out" : undefined,
         }}

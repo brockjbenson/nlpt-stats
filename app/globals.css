@@ -154,8 +154,9 @@
     padding-top: 1rem;
   }
 
+  /* Floating tab bar: sits just inside the home-indicator area, like iOS 26 */
   #mobile-nav {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+    padding-bottom: max(0.5rem, calc(env(safe-area-inset-bottom) - 0.75rem));
   }
 
   #refresh-wrapper {
@@ -164,10 +165,6 @@
 
   /* PWA standalone mode */
   @media (display-mode: standalone) {
-    #mobile-nav {
-      padding-bottom: calc(env(safe-area-inset-bottom) - 1rem);
-    }
-
     #main-wrapper {
       padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
     }
