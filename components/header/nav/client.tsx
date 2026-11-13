@@ -91,7 +91,7 @@ const ADMIN_LINKS: NavLink[] = [
 ];
 
 // Add routes here that you want to track with NEW badges
-const ROUTES_TO_TRACK = ["/compare"];
+const ROUTES_TO_TRACK: string[] = [];
 const STORAGE_KEY = "nlpt-visited-routes";
 
 export function NavLinks({ showAdmin }: { showAdmin: boolean }) {

@@ -3,7 +3,7 @@
 import { getVisitedRoutes } from "@/lib/route-visited-wrapper";
 import { useEffect, useState } from "react";
 
-const ROUTES_TO_TRACK = ["/compare"];
+const ROUTES_TO_TRACK: string[] = [];
 const STORAGE_KEY = "nlpt-visited-routes";
 
 export function MenuNotificationDot() {
