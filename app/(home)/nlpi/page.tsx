@@ -1,7 +1,15 @@
 import ErrorHandler from "@/components/error-handler";
 import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import MemberImage from "@/components/members/member-image";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Link from "next/link";
 
 import NLPIRankings from "@/features/nlpi/components/nlpi-rankings";
 import { NLPIData } from "@/features/nlpi/lib/types";
@@ -94,26 +102,53 @@ async function NLPI() {
             />
           </CardContent>
         </Card>
-        <h2 className="mt-12 mb-2 w-full flex flex-col gap-1 text-base pb-2 border-b border-muted mr-auto">
-          Ineligible Members
-          <span className="text-xs text-muted">
-            (no data for most recent 20 cash sessions or last 4 tournaments)
-          </span>
-        </h2>
-        {ineligibleMembers.length === 0 ? (
-          <p className="mt-4">No members are ineligible for NLPI points.</p>
-        ) : (
-          ineligibleMembers.map((data: NLPIData) => {
-            return (
-              <div
-                key={data.member_id}
-                className="flex items-center justify-between"
-              >
-                <h3 className="text-lg font-medium">{data.first_name}</h3>
-              </div>
-            );
-          })
-        )}
+        {/* Same card and row layout as the rankings, with no rank or points */}
+        <Card className="w-full mb-8">
+          <CardHeader className="flex-col items-start gap-1">
+            <CardTitle>Ineligible Members</CardTitle>
+            <CardDescription className="text-xs text-muted">
+              No data for their most recent 20 cash sessions or last 4
+              tournaments
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {ineligibleMembers.length === 0 ? (
+              <p className="py-3 text-sm text-muted">
+                No members are ineligible for NLPI points.
+              </p>
+            ) : (
+              <ul className="flex flex-col">
+                {ineligibleMembers.map((data: NLPIData) => (
+                  <li
+                    key={data.member_id}
+                    className="border-b border-border last:border-b-0"
+                  >
+                    <Link
+                      href={`/members/${data.member_id}`}
+                      className="grid grid-cols-[2rem_2.5rem_1fr] items-center gap-x-3 py-3"
+                    >
+                      <span
+                        aria-hidden
+                        className="text-center text-base font-bold text-muted"
+                      >
+                        –
+                      </span>
+                      <MemberImage
+                        loading="lazy"
+                        src={portraits[data.member_id] ?? ""}
+                        alt={data.first_name}
+                        className="w-10 h-10"
+                      />
+                      <span className="font-semibold truncate">
+                        {data.first_name} {data.last_name.slice(0, 1)}.
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </>
   );
