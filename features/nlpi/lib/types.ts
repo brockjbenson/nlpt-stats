@@ -12,16 +12,17 @@ export type NLPIData = {
   total_points: number;
   tournament_points: number;
   actual_sessions_played: number;
+  // null when the member has no session about to drop out of the window
   session_coming_off: {
     cash_id: string;
     created_at: string;
     member_id: string;
-    nlpi_points: number;
+    nlpi_points: number | null;
     net_profit: number;
     cash_out: number;
     buy_in: number;
     rebuys: number;
     week: number;
     season: number;
-  };
+  } | null;
 };

@@ -1,11 +1,9 @@
 import ErrorHandler from "@/components/error-handler";
-import NLPICalculator from "@/features/nlpi/components/nlpi-calculator";
 import NLPIInfo from "@/features/nlpi/components/nlpi-info";
 import PageHeader from "@/components/page-header/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { NLPIDataTable } from "@/features/nlpi/components/table/table";
-import { columns } from "@/features/nlpi/components/table/columns";
+import NLPIRankings from "@/features/nlpi/components/nlpi-rankings";
 import { NLPIData } from "@/features/nlpi/lib/types";
 import { createClient } from "@/utils/supabase/server";
 
@@ -42,10 +40,22 @@ async function NLPI() {
     );
   }
 
-  const { data: nlpiData, error: nlpiError } = await db.rpc("get_nlpi_info", {
-    current_season_id: activeSeason.id,
-    target_filter_date: null,
-  });
+  const [{ data: nlpiData, error: nlpiError }, { data: members }] =
+    await Promise.all([
+      db.rpc("get_nlpi_info", {
+        current_season_id: activeSeason.id,
+        target_filter_date: null,
+      }),
+      db.from("members").select("id, portrait_url"),
+    ]);
+
+  // Portraits are optional; cards fall back to a placeholder if missing
+  const portraits: Record<string, string | null> = Object.fromEntries(
+    (members ?? []).map((m: { id: string; portrait_url: string | null }) => [
+      m.id,
+      m.portrait_url,
+    ]),
+  );
 
   if (nlpiError) {
     return (
@@ -68,13 +78,13 @@ async function NLPI() {
       </PageHeader>
       <div className="w-full px-2 max-w-(--breakpoint-xl) mx-auto">
         <Card className="w-full mb-8">
-          <CardHeader className="justify-between">
+          {/* Mobile already shows "NLPI Rankings" in the page header */}
+          <CardHeader className="max-md:hidden">
             <CardTitle>NLPI Rankings - {currentYear}</CardTitle>
-            <NLPICalculator nlpiData={nlpiData} />
           </CardHeader>
           <CardContent>
-            <NLPIDataTable
-              columns={columns}
+            <NLPIRankings
+              portraits={portraits}
               data={nlpiData
                 .map((row: NLPIData) => ({ ...row, previousYear }))
                 .filter(
