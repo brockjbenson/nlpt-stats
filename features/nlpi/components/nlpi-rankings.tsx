@@ -151,17 +151,19 @@ function PointsBreakdown({ row }: { row: NLPIData }) {
 }
 
 // The member's oldest session in the window, which comes off next. A week
-// they missed still counts (as a 0) and still comes off, so it's shown too.
+// they missed still counts (as a 0) and still comes off, so it's shown as
+// "Didn't play". So is a newer member with no session found to come off yet
+// (fewer than 20 cash sessions).
 function DropOffImpact({
   session,
 }: {
   session: NLPIData["session_coming_off"];
 }) {
-  if (session?.week == null) return null;
-  const points = session.nlpi_points ?? 0;
-  const netProfit = session.net_profit ?? 0;
-  // A missed week comes back as a row with no buy-in (and 0 points / $0).
-  const didNotPlay = !session.buy_in;
+  const points = session?.nlpi_points ?? 0;
+  const netProfit = session?.net_profit ?? 0;
+  // A missed week comes back as a row with no buy-in (and 0 points / $0); a
+  // newer member's comes back with no week at all.
+  const didNotPlay = session?.week == null || !session.buy_in;
 
   return (
     <div className="mt-2 pt-3 border-t border-border text-xs">
