@@ -150,18 +150,20 @@ function PointsBreakdown({ row }: { row: NLPIData }) {
   );
 }
 
-// The member's oldest session in the window, which comes off next.
-// Hidden for a week they didn't play.
+// The member's oldest session in the window, which comes off next. A week
+// they missed still counts (as a 0) and still comes off, so it's shown as
+// "Didn't play". So is a newer member with no session found to come off yet
+// (fewer than 20 cash sessions).
 function DropOffImpact({
   session,
 }: {
   session: NLPIData["session_coming_off"];
 }) {
-  if (session?.week == null) return null;
-  const points = session.nlpi_points ?? 0;
-  const netProfit = session.net_profit ?? 0;
-  // Nothing to show for a week the member didn't play
-  if (Math.abs(points) < 0.05 && Math.abs(netProfit) < 0.005) return null;
+  const points = session?.nlpi_points ?? 0;
+  const netProfit = session?.net_profit ?? 0;
+  // A missed week comes back as a row with no buy-in (and 0 points / $0); a
+  // newer member's comes back with no week at all.
+  const didNotPlay = session?.week == null || !session.buy_in;
 
   return (
     <div className="mt-2 pt-3 border-t border-border text-xs">
@@ -175,17 +177,21 @@ function DropOffImpact({
             {points.toFixed(1)}
           </span>
         </span>
-        <span>
-          <span className="text-muted">Net Profit</span>{" "}
-          <span
-            className={cn(
-              "font-semibold tabular-nums",
-              getProfitTextColor(netProfit),
-            )}
-          >
-            {formatMoney(netProfit)}
+        {didNotPlay ? (
+          <span className="text-muted">Didn&apos;t play</span>
+        ) : (
+          <span>
+            <span className="text-muted">Net Profit</span>{" "}
+            <span
+              className={cn(
+                "font-semibold tabular-nums",
+                getProfitTextColor(netProfit),
+              )}
+            >
+              {formatMoney(netProfit)}
+            </span>
           </span>
-        </span>
+        )}
       </p>
     </div>
   );
