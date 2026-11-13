@@ -1,5 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
 import AddCashSessions from "@/features/admin/components/cash/new-session/add-sessions";
+import { CASH_BALANCE_SLOT_ID } from "@/features/admin/components/cash/new-session/session-balance-tracker";
 import { createClient } from "@/utils/supabase/server";
 
 async function page() {
@@ -28,7 +29,15 @@ async function page() {
 
   return (
     <>
-      <PageHeader title="New Cash Session" />
+      <PageHeader title="New Cash Session">
+        {/* Bottom row of the header (like the stats page tabs), filled in by
+            AddCashSessions with buy-ins, cash-outs and the difference. Hidden
+            while empty so the header doesn't grow until there are sessions. */}
+        <div
+          id={CASH_BALANCE_SLOT_ID}
+          className="col-span-3 col-start-1 row-start-2 w-full empty:hidden"
+        />
+      </PageHeader>
       <AddCashSessions members={members} seasons={seasons} weeks={weeks} />
     </>
   );

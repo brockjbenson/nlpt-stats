@@ -6,6 +6,7 @@ import useAddCashSessions from "../../../hooks/useAddCashSessions";
 import Sessions from "./session-list/sessions";
 import SeasonWeekSelector from "./season-week-selector";
 import FloatingAddButton from "./floating-add-button";
+import HeaderBalance from "./header-balance";
 import LoadingOverlay from "./loading-overlay";
 import ConfirmDialog from "./confirm-dialog";
 import ErrorDialog from "./error-dialog";
@@ -75,6 +76,8 @@ function AddCashSessions({ members, seasons, weeks }: Props) {
 
         {/* Sessions List */}
         <div className="w-full relative mt-8">
+          {/* Running difference: in the page header on mobile, here on desktop */}
+          {canAddSessions && <HeaderBalance sessions={sessionsToAdd} />}
           {!isFormValid && (
             <div className="absolute inset-0 z-10 bg-black/50 backdrop-blur-[1px] rounded-lg flex items-center justify-center">
               <p className="text-sm text-muted-foreground text-center px-4">
