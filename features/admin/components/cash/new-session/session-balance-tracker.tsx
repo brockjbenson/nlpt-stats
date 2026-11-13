@@ -3,8 +3,13 @@ import { CashSession } from "@/utils/types";
 import { formatMoney } from "@/utils/utils";
 import React from "react";
 
+// Element id of the header's bottom row on the New Cash Session page that
+// the totals are rendered into (see header-balance.tsx).
+export const CASH_BALANCE_SLOT_ID = "cash-session-balance";
+
 interface Props {
   sessions: Omit<CashSession, "id">[];
+  className?: string;
 }
 
 // Work in cents so float sums like 0.1 + 0.2 don't show as "off by $0.00"
@@ -12,7 +17,9 @@ function toCents(amount: number): number {
   return Math.round((Number.isFinite(amount) ? amount : 0) * 100);
 }
 
-function SessionBalanceTracker({ sessions }: Props) {
+// The night's buy-ins, cash-outs, and the difference between them: "Balanced"
+// in green, or the difference (cash-outs minus buy-ins) in red.
+function SessionBalanceTracker({ sessions, className }: Props) {
   const buyInCents = sessions.reduce((sum, s) => sum + toCents(s.buy_in), 0);
   const cashOutCents = sessions.reduce(
     (sum, s) => sum + toCents(s.cash_out),
@@ -26,7 +33,12 @@ function SessionBalanceTracker({ sessions }: Props) {
     : `${diffCents > 0 ? "+" : "-"}$${formatMoney(Math.abs(diffCents) / 100)}`;
 
   return (
-    <div className="grid grid-cols-3 w-full max-w-(--breakpoint-lg) mb-3 text-center text-xs md:text-sm">
+    <div
+      className={cn(
+        "grid w-full grid-cols-3 text-center text-xs leading-snug",
+        className,
+      )}
+    >
       <div className="flex flex-col">
         <span className="text-muted">Buy Ins</span>
         <span className="font-medium">${formatMoney(buyInCents / 100)}</span>

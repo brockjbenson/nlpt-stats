@@ -12,8 +12,10 @@ function MainWrapper({ children }: { children: React.ReactNode }) {
       id="main-wrapper"
       style={{
         paddingTop: `${headerHeight + 16}px`,
-        // Clear the floating tab bar so the last content can scroll above it
-        paddingBottom: "calc(var(--nav-height, 0px) + 1rem)",
+        // Clear the floating tab bar (and a bottom accessory while it sits
+        // above the bar) so the last content can scroll above it
+        paddingBottom:
+          "calc(var(--nav-height, 0px) + var(--accessory-space, 0px) + 1rem)",
       }}
       className="flex flex-col mx-auto pb-8 w-full lg:px-4 items-center"
     >
