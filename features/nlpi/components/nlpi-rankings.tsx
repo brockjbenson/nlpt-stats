@@ -2,14 +2,11 @@
 
 import MemberImage from "@/components/members/member-image";
 import { cn } from "@/lib/utils";
-import { LayoutList, Table2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { NLPIData } from "../lib/types";
 import RankMovement from "./rank-movement";
-import { NLPIDataTable } from "./table/table";
-import { columns } from "./table/columns";
 
 type RankingRow = NLPIData & { previousYear: number | null };
 
@@ -18,45 +15,11 @@ interface Props {
   portraits: Record<string, string | null>;
 }
 
-const VIEW_STORAGE_KEY = "nlpi-view";
 const MEDAL_COLORS = ["text-amber-400", "text-zinc-300", "text-amber-700"];
 const MEDAL_RINGS = ["ring-amber-400", "ring-zinc-300", "ring-amber-700"];
 
 function avgPoints(row: NLPIData): number {
   return row.divisor ? row.total_points / row.divisor : 0;
-}
-
-type View = "cards" | "table";
-const VIEW_CHANGE_EVENT = "nlpi-view-change";
-
-// The viewer's Cards/Table choice, remembered per device in localStorage.
-// The server snapshot is always "cards" so hydration matches.
-function readSavedView(): View {
-  try {
-    return localStorage.getItem(VIEW_STORAGE_KEY) === "table"
-      ? "table"
-      : "cards";
-  } catch {
-    return "cards";
-  }
-}
-
-function subscribeToView(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(VIEW_CHANGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(VIEW_CHANGE_EVENT, onChange);
-  };
-}
-
-function saveView(next: View) {
-  try {
-    localStorage.setItem(VIEW_STORAGE_KEY, next);
-  } catch {
-    // storage unavailable (private mode etc.); the toggle still works this visit
-  }
-  window.dispatchEvent(new Event(VIEW_CHANGE_EVENT));
 }
 
 type DropWeek = { week: number; season: number };
@@ -86,20 +49,6 @@ function sharedDropWeek(rows: NLPIData[]): DropWeek | null {
 }
 
 function NLPIRankings({ data, portraits }: Props) {
-  const savedView = React.useSyncExternalStore(
-    subscribeToView,
-    readSavedView,
-    () => "cards" as View,
-  );
-  // Fallback for when storage is unavailable and saveView can't persist
-  const [localView, setLocalView] = React.useState<View | null>(null);
-  const view = localView ?? savedView;
-
-  const changeView = (next: View) => {
-    setLocalView(next);
-    saveView(next);
-  };
-
   const ranked = React.useMemo(
     () => [...data].sort((a, b) => a.rank - b.rank),
     [data],
@@ -111,12 +60,11 @@ function NLPIRankings({ data, portraits }: Props) {
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        {view === "cards" ? <PointsLegend /> : <span />}
-        <ViewToggle view={view} onChange={changeView} />
+      <div className="mb-4">
+        <PointsLegend />
       </div>
 
-      {view === "cards" && sharedWeek && (
+      {sharedWeek && (
         <p className="mb-2 text-xs text-muted">
           <span className="font-semibold text-foreground">
             {formatDropWeek(sharedWeek, currentSeason)}
@@ -125,60 +73,16 @@ function NLPIRankings({ data, portraits }: Props) {
         </p>
       )}
 
-      {view === "table" ? (
-        <NLPIDataTable columns={columns} data={data} />
-      ) : (
-        <>
-          <ul className="flex flex-col">
-            {ranked.map((row) => (
-              <RankingCard
-                key={row.member_id}
-                row={row}
-                portrait={portraits[row.member_id]}
-                maxTotal={maxTotal}
-              />
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
-  );
-}
-
-function ViewToggle({
-  view,
-  onChange,
-}: {
-  view: View;
-  onChange: (view: View) => void;
-}) {
-  const options = [
-    { value: "cards" as const, label: "Cards", Icon: LayoutList },
-    { value: "table" as const, label: "Table", Icon: Table2 },
-  ];
-  return (
-    <div
-      role="group"
-      aria-label="Rankings view"
-      className="flex rounded-full border border-border p-0.5"
-    >
-      {options.map(({ value, label, Icon }) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={view === value}
-          onClick={() => onChange(value)}
-          className={cn(
-            "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-            view === value
-              ? "bg-primary text-primary-foreground"
-              : "text-muted hover:text-foreground",
-          )}
-        >
-          <Icon size={14} />
-          {label}
-        </button>
-      ))}
+      <ul className="flex flex-col">
+        {ranked.map((row) => (
+          <RankingCard
+            key={row.member_id}
+            row={row}
+            portrait={portraits[row.member_id]}
+            maxTotal={maxTotal}
+          />
+        ))}
+      </ul>
     </div>
   );
 }
