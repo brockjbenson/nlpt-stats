@@ -127,7 +127,7 @@ export const metadata = {
   },
 };
 
-const ROUTES_TO_TRACK = ["/compare"];
+const ROUTES_TO_TRACK: string[] = [];
 
 export const viewport: Viewport = {
   width: "device-width",
