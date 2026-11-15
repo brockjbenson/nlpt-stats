@@ -16,31 +16,32 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to
+  // debug issues with users being randomly logged out.
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // IMPORTANT: DO NOT REMOVE auth.getClaims(). It refreshes the session when
+  // the access token is about to expire (writing new cookies via setAll), and
+  // verifies the token locally against the project's asymmetric signing key,
+  // so unlike getUser() it doesn't call the Auth server on every request.
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
 
   // if (
-  //   !user &&
+  //   !claims &&
   //   !request.nextUrl.pathname.startsWith("/sign-in") &&
   //   !request.nextUrl.pathname.startsWith("/forgot-password")
   // ) {
@@ -51,7 +52,7 @@ export async function updateSession(request: NextRequest) {
   // }
 
   const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
-  const userRole = user?.user_metadata?.role;
+  const userRole = claims?.user_metadata?.role;
 
   if (isAdminRoute && userRole !== "admin") {
     const url = request.nextUrl.clone();
