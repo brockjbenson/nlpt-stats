@@ -15,9 +15,8 @@ import {
   YearSelectorItem,
   YearSelectorTrigger,
 } from "@/components/page-header/year-selector";
-import { columns } from "@/features/poy/components/table/columns";
-import { POYDataTable } from "@/features/poy/components/table/table";
 import POYInfo from "@/features/poy/components/poy-info";
+import POYRankings from "@/features/poy/components/poy-rankings";
 import { createClient } from "@/utils/supabase/server";
 
 interface Params {
@@ -56,10 +55,22 @@ async function Page({ params }: Params) {
     );
   }
 
-  const { data: poyData, error: poyError } = await db.rpc("get_poy_info", {
-    current_season_id: activeSeason.id,
-    target_member_id: null,
-  });
+  const [{ data: poyData, error: poyError }, { data: members }] =
+    await Promise.all([
+      db.rpc("get_poy_info", {
+        current_season_id: activeSeason.id,
+        target_member_id: null,
+      }),
+      db.from("members").select("id, portrait_url"),
+    ]);
+
+  // Portraits are optional; cards fall back to a placeholder if missing
+  const portraits: Record<string, string | null> = Object.fromEntries(
+    (members ?? []).map((m: { id: string; portrait_url: string | null }) => [
+      m.id,
+      m.portrait_url,
+    ]),
+  );
 
   if (poyError) {
     return (
@@ -85,7 +96,8 @@ async function Page({ params }: Params) {
                 <YearSelectorItem
                   key={season.id}
                   active={season.year === activeSeason.year}
-                  href={`/poy/${season.year}`}>
+                  href={`/poy/${season.year}`}
+                >
                   {season.year}
                 </YearSelectorItem>
               ))}
@@ -109,13 +121,14 @@ async function Page({ params }: Params) {
           </Empty>
         ) : (
           <Card className="w-full">
-            <CardHeader>
+            {/* Mobile already shows "{year} POY" in the page header */}
+            <CardHeader className="max-md:hidden">
               <CardTitle>
                 Player of the Year Standings - {currentYear}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <POYDataTable columns={columns} data={poyData} />
+              <POYRankings data={poyData} portraits={portraits} />
             </CardContent>
           </Card>
         )}

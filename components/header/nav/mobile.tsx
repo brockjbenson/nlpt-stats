@@ -1,6 +1,6 @@
 import { signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/utils/supabase/server";
+import { getCurrentUser } from "@/utils/supabase/user";
 import { MenuIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,11 +10,7 @@ import { MenuNotificationDot } from "./menu-notification-dot";
 import { SwipeNavSheet } from "./swipe-nav-sheet";
 
 async function MobileNav() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   return (
     <SwipeNavSheet
