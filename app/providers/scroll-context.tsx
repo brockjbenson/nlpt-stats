@@ -104,52 +104,64 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // 🔹 Measure header + nav and store in CSS variables (robust across routes)
+  // 🔹 Measure header + nav and store in CSS variables.
+  // The page header can be replaced without a route change: a loading.tsx
+  // skeleton renders its own header, which the page's header swaps out when
+  // the data arrives. So rather than holding on to the first element found,
+  // follow whichever one is in the document now, and never measure one that
+  // has been removed (it reads as 0 and drops the content under the header).
   useEffect(() => {
-    let ro: ResizeObserver | null = null;
-    let cancelled = false;
+    let header: HTMLElement | null = null;
+    let nav: HTMLElement | null = null;
 
-    const tryAttach = () => {
-      if (cancelled) return;
-
-      const header = document.getElementById("page-header-wrapper");
-      const nav = document.getElementById("mobile-nav");
-
-      if (!header || !nav) {
-        requestAnimationFrame(tryAttach);
-        return;
-      }
-
-      const update = () => {
+    const measure = () => {
+      if (header?.isConnected) {
         document.documentElement.style.setProperty(
           "--header-height",
           `${header.offsetHeight}px`,
         );
         setHeaderHeight(header.offsetHeight);
+      }
+      if (nav?.isConnected) {
         document.documentElement.style.setProperty(
           "--nav-height",
           `${nav.offsetHeight}px`,
         );
         setNavHeight(nav.offsetHeight);
-      };
-
-      update();
-
-      ro = new ResizeObserver(update);
-      ro.observe(header);
-      ro.observe(nav);
-
-      window.addEventListener("resize", update);
-      window.addEventListener("orientationchange", update);
+      }
     };
 
-    tryAttach();
+    // Observing an element reports its size once, so a newly attached
+    // header or nav gets measured through this callback.
+    const ro = new ResizeObserver(() => {
+      attach();
+      measure();
+    });
+
+    function attach() {
+      const nextHeader = document.getElementById("page-header-wrapper");
+      if (nextHeader && nextHeader !== header) {
+        if (header) ro.unobserve(header);
+        ro.observe(nextHeader);
+        header = nextHeader;
+      }
+      const nextNav = document.getElementById("mobile-nav");
+      if (nextNav && nextNav !== nav) {
+        if (nav) ro.unobserve(nav);
+        ro.observe(nextNav);
+        nav = nextNav;
+      }
+    }
+
+    const mo = new MutationObserver(attach);
+    mo.observe(document.body, { childList: true, subtree: true });
+    attach();
 
     return () => {
-      cancelled = true;
-      ro?.disconnect();
+      mo.disconnect();
+      ro.disconnect();
     };
-  }, [pathname]);
+  }, []);
 
   // 🔹 Reset scroll tracking refs on route change
   useEffect(() => {
