@@ -3,6 +3,7 @@
 import React from "react";
 import { Input } from "../ui/input";
 import { createClient } from "@/utils/supabase/client";
+import { refreshLeagueData } from "@/lib/data/actions";
 import { useRouter } from "next/navigation";
 import MemberCard from "../members/member-card";
 import { Member } from "@/utils/types";
@@ -78,6 +79,8 @@ function MembersList({ members }: Props) {
 
     if (error) {
       console.error(error.message);
+    } else {
+      await refreshLeagueData();
     }
 
     router.refresh();

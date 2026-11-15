@@ -4,6 +4,8 @@ import { encodedRedirect } from "@/utils/utils";
 import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { updateTag } from "next/cache";
+import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -161,6 +163,7 @@ export const addMemberAction = async (formData: FormData) => {
     return encodedRedirect("error", "/admin/members/add", error.message);
   }
 
+  updateTag(LEAGUE_DATA_TAG);
   return redirect("/admin/members");
 };
 
@@ -197,6 +200,7 @@ export const editMemberAction = async (formData: FormData) => {
     return encodedRedirect("error", `/admin/members/edit/${id}`, error.message);
   }
 
+  updateTag(LEAGUE_DATA_TAG);
   return encodedRedirect(
     "success",
     `/admin/members`,
@@ -250,5 +254,6 @@ export const addWeeksAction = async (formData: FormData) => {
     );
   }
 
+  updateTag(LEAGUE_DATA_TAG);
   return redirect(`/admin/seasons?year=${year}`);
 };

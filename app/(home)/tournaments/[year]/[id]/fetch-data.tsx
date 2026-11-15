@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { getMajorData } from "@/lib/data/league";
 import { MajorData } from "@/utils/types";
 import { PostgrestError } from "@supabase/supabase-js";
 
@@ -21,11 +21,7 @@ export default async function fetchTournamentData({
 }: {
   id?: string;
 }): Promise<TournamentsDataResult> {
-  const db = await createClient();
-
-  const { data, error } = await db.rpc("get_major_data", {
-    target_tournament_id: id,
-  });
+  const { data, error } = await getMajorData(id);
 
   if (error) {
     return { error, title: "Error fetching tournament data" };

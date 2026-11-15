@@ -1,5 +1,11 @@
 import { StatsData } from "../types";
-import { createClient } from "@/utils/supabase/server";
+import {
+  getCareerStats,
+  getCashSessions,
+  getMembers,
+  getSeasons,
+  getWeeks,
+} from "@/lib/data/league";
 import { CashSession, Member, Season, Week } from "@/utils/types";
 import { PostgrestError } from "@supabase/supabase-js";
 
@@ -29,15 +35,10 @@ export async function fetchStatsData(
   view: "cash" | "tournament" | "cumulative",
   year: string,
 ): Promise<StatsDataResult> {
-  const db = await createClient();
-
   const [
     { data: seasons, error: seasonsError },
     { data: members, error: membersError },
-  ] = await Promise.all([
-    db.from("season").select("*"),
-    db.from("members").select("*"),
-  ]);
+  ] = await Promise.all([getSeasons(), getMembers()]);
 
   if (seasonsError) {
     return { error: seasonsError, title: "Error fetching season" };
@@ -53,14 +54,8 @@ export async function fetchStatsData(
 
   const isCareerView = year === "career";
 
-  // Build queries conditionally
-  let cashSessionQuery = db.from("cash_session").select("*");
-  let weekQuery = db.from("week").select("*");
-
-  if (!isCareerView && activeSeason) {
-    cashSessionQuery = cashSessionQuery.eq("season_id", activeSeason.id);
-    weekQuery = weekQuery.eq("season_id", activeSeason.id);
-  }
+  // One season's sessions and weeks, or all of them for career
+  const seasonId = !isCareerView && activeSeason ? activeSeason.id : null;
 
   // Fetch all data in parallel
   const [
@@ -68,12 +63,9 @@ export async function fetchStatsData(
     { data: sessions, error: sessionsError },
     { data: weeks, error: weeksError },
   ] = await Promise.all([
-    db.rpc("get_career_stats", {
-      target_view: view,
-      target_season: activeSeason?.id ?? "career",
-    }),
-    cashSessionQuery,
-    weekQuery,
+    getCareerStats(view, activeSeason?.id ?? "career"),
+    getCashSessions(seasonId),
+    getWeeks(seasonId),
   ]);
 
   if (statsError) {

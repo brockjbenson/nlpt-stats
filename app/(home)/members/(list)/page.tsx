@@ -1,23 +1,13 @@
 import ErrorHandler from "@/components/error-handler";
 import MemberCard from "@/components/members/member-card";
 import PageHeader from "@/components/page-header/page-header";
-import { Member } from "@/utils/types";
 import Link from "next/link";
 import React from "react";
-import { createClient } from "@/utils/supabase/server";
-
-type MemberWithDebut = Member & {
-  debutDate: string | null;
-};
+import { getMemberDirectory } from "@/lib/data/league";
 
 async function Members() {
-  const db = await createClient();
-
-  const { data, error } = await db
-    .from("members")
-    .select("*")
-    .order("first_name", { ascending: true })
-    .eq("visible", true);
+  // Visible members with their debut dates, as one cached lookup
+  const { data: memberDebutDates, error } = await getMemberDirectory();
 
   if (error) {
     return (
@@ -28,18 +18,6 @@ async function Members() {
       />
     );
   }
-
-  const memberDebutDates: MemberWithDebut[] = await Promise.all(
-    data.map(async (member) => {
-      const { data: debutDate } = await db.rpc("get_member_debut_date", {
-        target_member_id: member.id,
-      });
-      return {
-        ...member,
-        debutDate: debutDate?.[0]?.created_at || null,
-      };
-    }),
-  );
 
   return (
     <>

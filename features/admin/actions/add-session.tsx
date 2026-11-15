@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 import { createClient } from "@/utils/supabase/server";
 import { SessionNoId } from "@/utils/tournament/utils";
 import { CashSessionNoId } from "@/utils/types";
@@ -32,7 +33,8 @@ export const addSessionAction = async (sessions: CashSessionNoId[]) => {
     }
   }
 
-  // Revalidate specific pages
+  // Clear cached league data, then revalidate specific pages
+  updateTag(LEAGUE_DATA_TAG);
   revalidatePath("/nlpi");
   revalidatePath("/poy/[year]", "page");
   revalidatePath("/members/[id]", "page");
@@ -81,7 +83,8 @@ export const addTournamentSessionAction = async (sessions: SessionNoId[]) => {
     }
   }
 
-  // Revalidate specific pages
+  // Clear cached league data, then revalidate specific pages
+  updateTag(LEAGUE_DATA_TAG);
   revalidatePath("/nlpi");
   revalidatePath("/poy/[year]", "page");
   revalidatePath("/members/[id]", "page");
