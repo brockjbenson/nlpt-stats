@@ -1,6 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
 import { Suspense } from "react";
-import Loading from "@/components/loading";
+import TournamentSkeleton from "./_components/tournament-skeleton";
 import TournamentMain from "./_components/main";
 
 interface Props {
@@ -13,7 +13,7 @@ async function Page({ params }: Props) {
   return (
     <>
       <PageHeader title={"Tournament"} showBackButton />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<TournamentSkeleton />}>
         <TournamentMain id={id} />
       </Suspense>
     </>

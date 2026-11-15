@@ -1,7 +1,7 @@
 import StatsHeader from "../../_components/header";
 import { Suspense } from "react";
 import StatsMain from "../../_components/main";
-import Loading from "@/components/loading";
+import StatsSkeleton from "../../_components/stats-skeleton";
 
 interface PageProps {
   params: Promise<{
@@ -20,7 +20,7 @@ async function page({ params }: PageProps) {
         isCareer={false}
         year={year}
       />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<StatsSkeleton />}>
         <StatsMain view="cash" year={year} />
       </Suspense>
     </>

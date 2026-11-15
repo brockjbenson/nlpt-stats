@@ -5,11 +5,10 @@ import {
   YearSelectorItem,
   YearSelectorTrigger,
 } from "@/components/page-header/year-selector";
-import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
 import React, { Suspense } from "react";
+import ViewSelector from "./view-selector";
 
 interface StatsHeaderProps {
   triggerLabel: string;
@@ -71,57 +70,6 @@ async function YearSelectContent({
           </YearSelectorItem>
         ))}
     </>
-  );
-}
-
-// Block-level tab whose underline sits on the header's bottom border.
-// The header has pb-0, so the tab's bottom edge is the border's top edge;
-// -bottom-px moves the 1px underline down onto the border itself.
-const TAB_CLASS =
-  "relative block px-2 pt-1 pb-2 after:absolute after:inset-x-0 after:-bottom-px after:h-px after:bg-transparent";
-
-function ViewSelector({
-  currentView,
-  currentYear,
-}: {
-  currentView: string;
-  currentYear: string | number;
-}) {
-  return (
-    <div className="col-start-1 row-start-2 col-span-3 w-full">
-      <ul className="w-full flex items-center justify-start">
-        <li>
-          <Link
-            className={cn(
-              TAB_CLASS,
-              currentView === "cumulative" && "text-primary after:bg-primary",
-            )}
-            href={`/stats/cumulative/${currentYear}`}>
-            Cumulative
-          </Link>
-        </li>
-        <li>
-          <Link
-            className={cn(
-              TAB_CLASS,
-              currentView === "cash" && "text-primary after:bg-primary",
-            )}
-            href={`/stats/cash/${currentYear}`}>
-            Cash
-          </Link>
-        </li>
-        <li>
-          <Link
-            className={cn(
-              TAB_CLASS,
-              currentView === "tournament" && "text-primary after:bg-primary",
-            )}
-            href={`/stats/tournament/${currentYear}`}>
-            Tournament
-          </Link>
-        </li>
-      </ul>
-    </div>
   );
 }
 
