@@ -1,12 +1,10 @@
 "use client";
 
-import MemberImage from "@/components/members/member-image";
+import { PointsLegend, RankingCard } from "@/components/rankings/ranking-card";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
 import React from "react";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { NLPIData } from "../lib/types";
-import RankMovement from "./rank-movement";
 
 type RankingRow = NLPIData & { previousYear: number | null };
 
@@ -14,9 +12,6 @@ interface Props {
   data: RankingRow[];
   portraits: Record<string, string | null>;
 }
-
-const MEDAL_COLORS = ["text-amber-400", "text-zinc-300", "text-amber-700"];
-const MEDAL_RINGS = ["ring-amber-400", "ring-zinc-300", "ring-amber-700"];
 
 function avgPoints(row: NLPIData): number {
   return row.divisor ? row.total_points / row.divisor : 0;
@@ -77,76 +72,23 @@ function NLPIRankings({ data, portraits }: Props) {
         {ranked.map((row) => (
           <RankingCard
             key={row.member_id}
-            row={row}
+            memberId={row.member_id}
+            firstName={row.first_name}
+            lastName={row.last_name}
             portrait={portraits[row.member_id]}
+            rank={row.rank}
+            lastWeekRank={row.last_week_rank}
+            cash={row.cash_points}
+            major={row.tournament_points}
             maxTotal={maxTotal}
-          />
+            total={row.total_points}
+            detail={`${avgPoints(row).toFixed(2)} avg`}
+          >
+            <DropOffImpact session={row.session_coming_off} />
+          </RankingCard>
         ))}
       </ul>
     </div>
-  );
-}
-
-function PointsLegend() {
-  return (
-    <div className="flex items-center gap-3 text-xs text-muted">
-      <span className="flex items-center gap-1">
-        <span className="size-2.5 rounded-sm bg-primary" /> Cash
-      </span>
-      <span className="flex items-center gap-1">
-        <span className="size-2.5 rounded-sm bg-sky-400" /> Major
-      </span>
-    </div>
-  );
-}
-
-function PointsBar({
-  row,
-  maxTotal,
-  className,
-}: {
-  row: NLPIData;
-  maxTotal: number;
-  className?: string;
-}) {
-  const scale = maxTotal > 0 ? 100 / maxTotal : 0;
-  const cashWidth = Math.max(row.cash_points, 0) * scale;
-  const majorWidth = Math.max(row.tournament_points, 0) * scale;
-  return (
-    <div
-      className={cn(
-        "flex h-1.5 w-full rounded-full bg-muted/15 overflow-hidden",
-        className,
-      )}
-      role="img"
-      aria-label={`${row.cash_points.toFixed(1)} cash points, ${row.tournament_points.toFixed(1)} major points`}
-    >
-      <div className="h-full bg-primary" style={{ width: `${cashWidth}%` }} />
-      <div className="h-full bg-sky-400" style={{ width: `${majorWidth}%` }} />
-    </div>
-  );
-}
-
-// Cash and major points under the bar, colored to match it.
-// Negative values (cash can go below zero) show in red.
-function PointsBreakdown({ row }: { row: NLPIData }) {
-  const parts = [
-    { label: "Cash", value: row.cash_points, color: "text-primary" },
-    { label: "Major", value: row.tournament_points, color: "text-sky-400" },
-  ];
-  return (
-    <p className="mt-1 flex items-center gap-3 text-xs tabular-nums">
-      {parts.map(({ label, value, color }) => (
-        <span key={label} className="flex items-center gap-1">
-          <span className="text-muted">{label}</span>
-          <span
-            className={cn("font-semibold", value < 0 ? "text-red-600" : color)}
-          >
-            {value.toFixed(1)}
-          </span>
-        </span>
-      ))}
-    </p>
   );
 }
 
@@ -194,70 +136,6 @@ function DropOffImpact({
         )}
       </p>
     </div>
-  );
-}
-
-function RankingCard({
-  row,
-  portrait,
-  maxTotal,
-}: {
-  row: RankingRow;
-  portrait: string | null | undefined;
-  maxTotal: number;
-}) {
-  const droppingOff = row.session_coming_off;
-  return (
-    <li className="border-b border-border last:border-b-0">
-      <div className="grid grid-cols-[2rem_2.5rem_1fr_auto] items-center gap-x-3 py-3">
-        <span
-          className={cn(
-            // self-start + mt-2: line up with the name/bar/breakdown block
-            "self-start mt-2 h-10 leading-10 text-center text-base font-bold tabular-nums",
-            MEDAL_COLORS[row.rank - 1] ?? "text-muted",
-          )}
-        >
-          {row.rank}
-        </span>
-        <Link
-          href={`/members/${row.member_id}`}
-          aria-label={`View ${row.first_name} ${row.last_name}`}
-          className="self-start mt-2 rounded-full"
-        >
-          <MemberImage
-            loading="lazy"
-            src={portrait ?? ""}
-            alt={row.first_name}
-            className={cn(
-              "w-10 h-10",
-              MEDAL_RINGS[row.rank - 1] && [
-                "ring-2",
-                MEDAL_RINGS[row.rank - 1],
-              ],
-            )}
-          />
-        </Link>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold truncate">
-              {row.first_name} {row.last_name.slice(0, 1)}.
-            </span>
-            <RankMovement rank={row.rank} lastWeekRank={row.last_week_rank} />
-          </div>
-          <PointsBar row={row} maxTotal={maxTotal} className="mt-1.5" />
-          <PointsBreakdown row={row} />
-          <DropOffImpact session={droppingOff} />
-        </div>
-        <div className="text-right">
-          <div className="font-bold tabular-nums">
-            {row.total_points.toFixed(1)}
-          </div>
-          <div className="text-xs text-muted tabular-nums">
-            {avgPoints(row).toFixed(2)} avg
-          </div>
-        </div>
-      </div>
-    </li>
   );
 }
 
