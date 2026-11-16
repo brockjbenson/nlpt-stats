@@ -24,14 +24,15 @@ interface NavLink {
   icon: React.ReactNode;
 }
 
-const NAV_LINKS: NavLink[] = [
+// Same destinations as the tab bar and desktop nav, for the current season.
+const navLinks = (year: number): NavLink[] => [
   {
-    href: "/stats/tournaments",
+    href: `/tournaments/${year}`,
     label: "Tournaments",
     icon: <FaTrophy className="w-5 h-5" />,
   },
   {
-    href: "/stats/cash?year=2025",
+    href: `/stats/cash/${year}`,
     label: "Cash",
     icon: <FaMoneyBill className="w-5 h-5" />,
   },
@@ -41,7 +42,7 @@ const NAV_LINKS: NavLink[] = [
     icon: <FaUsers className="w-5 h-5" />,
   },
   {
-    href: "/poy",
+    href: `/poy/${year}`,
     label: "POY Standings",
     icon: <FaRankingStar className="w-5 h-5" />,
   },
@@ -94,7 +95,13 @@ const ADMIN_LINKS: NavLink[] = [
 const ROUTES_TO_TRACK: string[] = [];
 const STORAGE_KEY = "nlpt-visited-routes";
 
-export function NavLinks({ showAdmin }: { showAdmin: boolean }) {
+export function NavLinks({
+  showAdmin,
+  year,
+}: {
+  showAdmin: boolean;
+  year: number;
+}) {
   const [visitedRoutes, setVisitedRoutes] = useState<string[]>([]);
 
   // Listen for route visit updates
@@ -123,7 +130,7 @@ export function NavLinks({ showAdmin }: { showAdmin: boolean }) {
   return (
     <>
       <ul className="pl-6 flex flex-col gap-4">
-        {NAV_LINKS.map((link) => (
+        {navLinks(year).map((link) => (
           <li key={link.href}>
             <Link
               className="flex items-center gap-4 text-lg font-medium relative"
