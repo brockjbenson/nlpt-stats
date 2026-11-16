@@ -13,6 +13,8 @@ import {
   getSeasons,
   getStatAvgs,
 } from "@/lib/data/league";
+import { getCurrentYear } from "@/lib/data/current-year";
+import { memberParams } from "@/lib/data/static-params";
 
 interface EditMemberProps {
   params: Promise<{
@@ -23,7 +25,7 @@ interface EditMemberProps {
 async function Member({ params }: EditMemberProps) {
   const { id } = await params;
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = await getCurrentYear();
   const [
     { data: seasons, error: seasonsError },
     { data: member, error: memberError },
@@ -50,7 +52,7 @@ async function Member({ params }: EditMemberProps) {
   }
 
   const currentSeason = seasons.find(
-    (season: Season) => season.year === currentYear
+    (season: Season) => season.year === currentYear,
   );
 
   if (!currentSeason) {
@@ -172,5 +174,8 @@ async function Member({ params }: EditMemberProps) {
     </>
   );
 }
+
+// Prebuilt with data at deploy time; see lib/data/static-params.ts.
+export const generateStaticParams = memberParams;
 
 export default Member;

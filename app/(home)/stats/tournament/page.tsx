@@ -1,6 +1,6 @@
+import { getCurrentYear } from "@/lib/data/current-year";
 import { redirect } from "next/navigation";
 
-export default function TournamentStatsRedirect() {
-  const currentYear = new Date().getFullYear();
-  redirect(`/stats/tournament/${currentYear}`);
+export default async function TournamentStatsRedirect() {
+  redirect(`/stats/tournament/${await getCurrentYear()}`);
 }

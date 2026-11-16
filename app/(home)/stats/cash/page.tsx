@@ -1,6 +1,6 @@
+import { getCurrentYear } from "@/lib/data/current-year";
 import { redirect } from "next/navigation";
 
-export default function CashStatsRedirect() {
-  const currentYear = new Date().getFullYear();
-  redirect(`/stats/cash/${currentYear}`);
+export default async function CashStatsRedirect() {
+  redirect(`/stats/cash/${await getCurrentYear()}`);
 }

@@ -115,8 +115,13 @@ const STAT_CONFIGS: StatConfig[] = [
   },
 ];
 
-function CompareContent({ members }: { members: Member[] }) {
-  const currentYear = new Date().getFullYear();
+function CompareContent({
+  members,
+  currentYear,
+}: {
+  members: Member[];
+  currentYear: number;
+}) {
   const db = createClient();
   const [currentSeason, setCurrentSeason] = React.useState<Season | null>(null);
   const [selectedMemberIds, setSelectedMemberIds] = React.useState<string[]>(
@@ -244,7 +249,8 @@ function CompareContent({ members }: { members: Member[] }) {
                 <StatRow key={config.label}>
                   <StatColumn
                     formatter={memberOneStats ? config.formatter : undefined}
-                    colorFormatter={config.colorFormatter}>
+                    colorFormatter={config.colorFormatter}
+                  >
                     {memberOneStats ? (
                       value1
                     ) : (
@@ -254,7 +260,8 @@ function CompareContent({ members }: { members: Member[] }) {
                   <StatLabel leaderSide={side}>{config.label}</StatLabel>
                   <StatColumn
                     formatter={memberTwoStats ? config.formatter : undefined}
-                    colorFormatter={config.colorFormatter}>
+                    colorFormatter={config.colorFormatter}
+                  >
                     {memberTwoStats ? (
                       value2
                     ) : (

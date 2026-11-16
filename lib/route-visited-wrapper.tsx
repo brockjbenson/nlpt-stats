@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 
 interface RouteVisitTrackerProps {
   children: React.ReactNode;
@@ -14,6 +14,26 @@ export function RouteVisitTracker({
   routesToTrack,
   storageKey = "nlpt-visited-routes",
 }: RouteVisitTrackerProps) {
+  // The URL is read in its own <Suspense>: on a page whose URL isn't known
+  // ahead of time, reading it waits for the request, and this wraps the
+  // whole app.
+  return (
+    <>
+      <Suspense fallback={null}>
+        <TrackVisit routesToTrack={routesToTrack} storageKey={storageKey} />
+      </Suspense>
+      {children}
+    </>
+  );
+}
+
+function TrackVisit({
+  routesToTrack,
+  storageKey,
+}: {
+  routesToTrack: string[];
+  storageKey: string;
+}) {
   const pathname = usePathname();
 
   useEffect(() => {
@@ -31,7 +51,7 @@ export function RouteVisitTracker({
     }
   }, [pathname, routesToTrack, storageKey]);
 
-  return <>{children}</>;
+  return null;
 }
 
 // Utility function to mark a route as visited

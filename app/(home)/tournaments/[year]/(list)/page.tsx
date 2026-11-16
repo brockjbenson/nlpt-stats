@@ -3,6 +3,7 @@ import TournamentsHeader from "../../_components/header";
 
 import { Suspense } from "react";
 import TournamentsSkeleton from "../../_components/tournaments-skeleton";
+import { seasonYearParams } from "@/lib/data/static-params";
 
 interface Props {
   params: Promise<{ year: string }>;
@@ -20,5 +21,8 @@ async function page({ params }: Props) {
     </>
   );
 }
+
+// Prebuilt with data at deploy time; see lib/data/static-params.ts.
+export const generateStaticParams = seasonYearParams;
 
 export default page;

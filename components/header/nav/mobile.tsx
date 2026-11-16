@@ -1,6 +1,7 @@
 import { signOutAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/utils/supabase/user";
+import { getCurrentYear } from "@/lib/data/current-year";
 import { MenuIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,7 +11,7 @@ import { MenuNotificationDot } from "./menu-notification-dot";
 import { SwipeNavSheet } from "./swipe-nav-sheet";
 
 async function MobileNav() {
-  const user = await getCurrentUser();
+  const [user, year] = await Promise.all([getCurrentUser(), getCurrentYear()]);
 
   return (
     <SwipeNavSheet
@@ -25,7 +26,7 @@ async function MobileNav() {
         <Image src="/icons/nlpt-no-bg.png" alt="logo" width={40} height={40} />
         NLPT Stats
       </h2>
-      <NavLinks showAdmin={!!user} />
+      <NavLinks showAdmin={!!user} year={year} />
       {user ? (
         <form
           className="flex mt-auto w-64 items-start mx-auto justify-center"

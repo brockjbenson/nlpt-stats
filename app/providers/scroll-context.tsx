@@ -2,8 +2,10 @@
 
 import React, {
   createContext,
+  Suspense,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -35,8 +37,24 @@ function getHeaderHeight() {
   );
 }
 
-export function ScrollProvider({ children }: { children: React.ReactNode }) {
+// Reports the current pathname to the provider. It's a separate component in
+// its own <Suspense> because reading the URL waits for the request on a page
+// whose URL isn't known ahead of time (an admin page for one season), and the
+// provider wraps the whole app: reading it there would hold back every page.
+// The layout effect runs before paint, so a route change still resets the
+// header before the new page shows.
+function PathnameListener({
+  onChange,
+}: {
+  onChange: (pathname: string) => void;
+}) {
   const pathname = usePathname();
+  useLayoutEffect(() => onChange(pathname), [pathname, onChange]);
+  return null;
+}
+
+export function ScrollProvider({ children }: { children: React.ReactNode }) {
+  const [pathname, setPathname] = useState<string | null>(null);
 
   const [headerTranslateY, setHeaderTranslateY] = useState(0);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -105,24 +123,33 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // 🔹 Measure header + nav and store in CSS variables.
-  // The page header can be replaced without a route change: a loading.tsx
-  // skeleton renders its own header, which the page's header swaps out when
-  // the data arrives. So rather than holding on to the first element found,
-  // follow whichever one is in the document now, and never measure one that
-  // has been removed (it reads as 0 and drops the content under the header).
+  // There can be several page headers in the document at once: a loading.tsx
+  // skeleton renders its own header until the page's header replaces it, and
+  // recently visited pages stay mounted but hidden so going back to them is
+  // instant. So watch every header and nav, and measure the one on screen.
+  // Showing or hiding one changes its size, which the ResizeObserver reports.
+  // When none is on screen (a page without a header, or desktop, where it's
+  // hidden), keep the last measurement: measuring a hidden or removed one
+  // reads as 0 and drops the content under the header.
   useEffect(() => {
-    let header: HTMLElement | null = null;
-    let nav: HTMLElement | null = null;
+    const watched = new Set<Element>();
+
+    const onScreen = (id: string) =>
+      Array.from(document.querySelectorAll<HTMLElement>(`[id="${id}"]`)).find(
+        (el) => el.getClientRects().length > 0,
+      );
 
     const measure = () => {
-      if (header?.isConnected) {
+      const header = onScreen("page-header-wrapper");
+      if (header) {
         document.documentElement.style.setProperty(
           "--header-height",
           `${header.offsetHeight}px`,
         );
         setHeaderHeight(header.offsetHeight);
       }
-      if (nav?.isConnected) {
+      const nav = onScreen("mobile-nav");
+      if (nav) {
         document.documentElement.style.setProperty(
           "--nav-height",
           `${nav.offsetHeight}px`,
@@ -131,31 +158,31 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Observing an element reports its size once, so a newly attached
-    // header or nav gets measured through this callback.
-    const ro = new ResizeObserver(() => {
-      attach();
-      measure();
-    });
+    // Observing an element reports its size once, so a new header or nav is
+    // measured through this callback too.
+    const ro = new ResizeObserver(measure);
 
-    function attach() {
-      const nextHeader = document.getElementById("page-header-wrapper");
-      if (nextHeader && nextHeader !== header) {
-        if (header) ro.unobserve(header);
-        ro.observe(nextHeader);
-        header = nextHeader;
-      }
-      const nextNav = document.getElementById("mobile-nav");
-      if (nextNav && nextNav !== nav) {
-        if (nav) ro.unobserve(nav);
-        ro.observe(nextNav);
-        nav = nextNav;
-      }
-    }
+    // Watch headers and navs as they're added; let go of removed ones.
+    const watch = () => {
+      document
+        .querySelectorAll('[id="page-header-wrapper"], [id="mobile-nav"]')
+        .forEach((el) => {
+          if (!watched.has(el)) {
+            watched.add(el);
+            ro.observe(el);
+          }
+        });
+      watched.forEach((el) => {
+        if (!el.isConnected) {
+          watched.delete(el);
+          ro.unobserve(el);
+        }
+      });
+    };
 
-    const mo = new MutationObserver(attach);
+    const mo = new MutationObserver(watch);
     mo.observe(document.body, { childList: true, subtree: true });
-    attach();
+    watch();
 
     return () => {
       mo.disconnect();
@@ -295,6 +322,9 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
         navHeight,
       }}
     >
+      <Suspense fallback={null}>
+        <PathnameListener onChange={setPathname} />
+      </Suspense>
       {children}
     </ScrollContext.Provider>
   );

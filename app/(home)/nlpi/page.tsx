@@ -14,9 +14,10 @@ import Link from "next/link";
 import NLPIRankings from "@/features/nlpi/components/nlpi-rankings";
 import { NLPIData } from "@/features/nlpi/lib/types";
 import { getMembers, getNlpiInfo, getSeasons } from "@/lib/data/league";
+import { getCurrentYear } from "@/lib/data/current-year";
 
 async function NLPI() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = await getCurrentYear();
   const previousYear = currentYear - 1;
 
   const { data: seasons, error: seasonError } = await getSeasons();

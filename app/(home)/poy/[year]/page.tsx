@@ -18,6 +18,7 @@ import {
 import POYInfo from "@/features/poy/components/poy-info";
 import POYRankings from "@/features/poy/components/poy-rankings";
 import { getMembers, getPoyInfo, getSeasons } from "@/lib/data/league";
+import { seasonYearParams } from "@/lib/data/static-params";
 
 interface Params {
   params: Promise<{ year: string }>;
@@ -125,5 +126,8 @@ async function Page({ params }: Params) {
     </>
   );
 }
+
+// Prebuilt with data at deploy time; see lib/data/static-params.ts.
+export const generateStaticParams = seasonYearParams;
 
 export default Page;

@@ -1,6 +1,6 @@
+import { getCurrentYear } from "@/lib/data/current-year";
 import { redirect } from "next/navigation";
 
-export default function POYRedirect() {
-  const currentYear = new Date().getFullYear();
-  redirect(`/poy/${currentYear}`);
+export default async function POYRedirect() {
+  redirect(`/poy/${await getCurrentYear()}`);
 }
