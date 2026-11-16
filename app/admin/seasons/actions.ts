@@ -1,7 +1,8 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 
 export async function createSeason(year: number, numWeeks: number) {
   const db = await createClient();
@@ -34,6 +35,7 @@ export async function createSeason(year: number, numWeeks: number) {
 
     // Revalidate the seasons page
     revalidatePath("/admin/seasons");
+    updateTag(LEAGUE_DATA_TAG);
 
     return { success: true };
   } catch (error) {
@@ -118,6 +120,7 @@ export async function updateSeason(
       if (!weeksToDelete || weeksToDelete.length === 0) {
         // No weeks to delete
         revalidatePath("/admin/seasons");
+        updateTag(LEAGUE_DATA_TAG);
         return { success: true };
       }
 
@@ -168,6 +171,8 @@ export async function updateSeason(
     }
 
     revalidatePath("/admin/seasons");
+
+    updateTag(LEAGUE_DATA_TAG);
     return { success: true };
   } catch (error) {
     console.error("Error updating season:", error);
@@ -272,6 +277,8 @@ export async function deleteSeason(
     }
 
     revalidatePath("/admin/seasons");
+
+    updateTag(LEAGUE_DATA_TAG);
     return { success: true };
   } catch (error) {
     console.error("Error deleting season:", error);

@@ -1,9 +1,7 @@
-import { createClient } from "@/utils/supabase/server";
+import { getMembers } from "@/lib/data/league";
 
 export default async function fetchMembersAction() {
-  const db = await createClient();
-
-  const { data, error } = await db.from("members").select("*");
+  const { data, error } = await getMembers();
 
   return {
     members: data ?? [],

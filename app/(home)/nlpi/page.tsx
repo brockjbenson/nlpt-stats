@@ -13,18 +13,13 @@ import Link from "next/link";
 
 import NLPIRankings from "@/features/nlpi/components/nlpi-rankings";
 import { NLPIData } from "@/features/nlpi/lib/types";
-import { createClient } from "@/utils/supabase/server";
+import { getMembers, getNlpiInfo, getSeasons } from "@/lib/data/league";
 
 async function NLPI() {
-  // Use service role client for static generation
-  const db = await createClient();
-
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
 
-  const { data: seasons, error: seasonError } = await db
-    .from("season")
-    .select("*");
+  const { data: seasons, error: seasonError } = await getSeasons();
 
   if (seasonError) {
     return (
@@ -49,13 +44,7 @@ async function NLPI() {
   }
 
   const [{ data: nlpiData, error: nlpiError }, { data: members }] =
-    await Promise.all([
-      db.rpc("get_nlpi_info", {
-        current_season_id: activeSeason.id,
-        target_filter_date: null,
-      }),
-      db.from("members").select("id, portrait_url"),
-    ]);
+    await Promise.all([getNlpiInfo(activeSeason.id), getMembers()]);
 
   // Portraits are optional; cards fall back to a placeholder if missing
   const portraits: Record<string, string | null> = Object.fromEntries(

@@ -1,5 +1,6 @@
 "use client";
 
+import { refreshLeagueData } from "@/lib/data/actions";
 import { createClient } from "@/utils/supabase/client";
 import { CashSession } from "@/utils/types";
 
@@ -30,6 +31,10 @@ export const editSessionAction = async (
 
   // Combine both operations into a single Promise.all()
   const results = await Promise.all([...deletePromises, ...updatePromises]);
+
+  // Some of these may have saved even if others failed, so clear the cached
+  // league data either way
+  await refreshLeagueData();
 
   const errors = results.filter((result) => result.error);
   if (errors.length > 0) {

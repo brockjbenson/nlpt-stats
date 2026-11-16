@@ -5,7 +5,7 @@ import {
   YearSelectorItem,
   YearSelectorTrigger,
 } from "@/components/page-header/year-selector";
-import { createClient } from "@/utils/supabase/server";
+import { getSeasons } from "@/lib/data/league";
 import { ChevronDown } from "lucide-react";
 
 import { Suspense } from "react";
@@ -42,10 +42,7 @@ function TournamentsHeader({
 }
 
 async function YearSelectContent({ year }: { year: string }) {
-  const db = await createClient();
-  const { data: seasons, error: seasonsError } = await db
-    .from("season")
-    .select("*");
+  const { data: seasons, error: seasonsError } = await getSeasons();
 
   if (seasonsError) {
     throw new Error(`Error fetching seasons: ${seasonsError.message}`);

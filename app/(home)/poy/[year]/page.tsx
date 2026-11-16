@@ -17,7 +17,7 @@ import {
 } from "@/components/page-header/year-selector";
 import POYInfo from "@/features/poy/components/poy-info";
 import POYRankings from "@/features/poy/components/poy-rankings";
-import { createClient } from "@/utils/supabase/server";
+import { getMembers, getPoyInfo, getSeasons } from "@/lib/data/league";
 
 interface Params {
   params: Promise<{ year: string }>;
@@ -27,12 +27,7 @@ async function Page({ params }: Params) {
   const { year } = await params;
   const currentYear = Number(year);
 
-  // Use service role client for static generation
-  const db = await createClient();
-
-  const [{ data: seasons, error: seasonError }] = await Promise.all([
-    db.from("season").select("*"),
-  ]);
+  const { data: seasons, error: seasonError } = await getSeasons();
 
   if (seasonError)
     return (
@@ -56,13 +51,7 @@ async function Page({ params }: Params) {
   }
 
   const [{ data: poyData, error: poyError }, { data: members }] =
-    await Promise.all([
-      db.rpc("get_poy_info", {
-        current_season_id: activeSeason.id,
-        target_member_id: null,
-      }),
-      db.from("members").select("id, portrait_url"),
-    ]);
+    await Promise.all([getPoyInfo(activeSeason.id, null), getMembers()]);
 
   // Portraits are optional; cards fall back to a placeholder if missing
   const portraits: Record<string, string | null> = Object.fromEntries(

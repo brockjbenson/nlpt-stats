@@ -1,6 +1,7 @@
 "use client";
 
 import { Member, Season } from "@/utils/types";
+import { refreshLeagueData } from "@/lib/data/actions";
 import {
   Select,
   SelectContent,
@@ -73,6 +74,7 @@ function NewTournamentForm({ seasons }: Props) {
     if (error) {
       console.error("Error adding tournament:", error);
     } else {
+      await refreshLeagueData();
       setNewTournamentId(data[0].id);
       setAddSessionsDialogOpen(true);
     }

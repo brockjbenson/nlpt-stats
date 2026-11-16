@@ -2,7 +2,17 @@ import ErrorHandler from "@/components/error-handler";
 import MemberMain from "@/components/members/member-main";
 import PageHeader from "@/components/page-header/page-header";
 import { Season } from "@/utils/types";
-import { createClient } from "@/utils/supabase/server";
+import {
+  getCareerData,
+  getMember,
+  getMemberAdvancedSkills,
+  getMemberDebutDate,
+  getMemberNlpiInfo,
+  getNlpiRankRecords,
+  getPoyInfo,
+  getSeasons,
+  getStatAvgs,
+} from "@/lib/data/league";
 
 interface EditMemberProps {
   params: Promise<{
@@ -11,18 +21,13 @@ interface EditMemberProps {
 }
 
 async function Member({ params }: EditMemberProps) {
-  const db = await createClient();
-
   const { id } = await params;
 
   const currentYear = new Date().getFullYear();
   const [
     { data: seasons, error: seasonsError },
     { data: member, error: memberError },
-  ] = await Promise.all([
-    db.from("season").select("*"),
-    db.from("members").select("*").eq("id", id).single(),
-  ]);
+  ] = await Promise.all([getSeasons(), getMember(id)]);
 
   if (seasonsError) {
     return (
@@ -69,29 +74,13 @@ async function Member({ params }: EditMemberProps) {
     { data: statsAvg, error: statsAvgError },
     { data: memberAdvancedSkills, error: memberAdvancedSkillsError },
   ] = await Promise.all([
-    db.rpc("get_nlpi_info", {
-      current_season_id: currentSeasonId,
-      target_filter_date: null,
-      target_member_id: id,
-    }),
-    db.rpc("get_poy_info", {
-      target_member_id: id,
-      current_season_id: currentSeasonId,
-    }),
-    db.rpc("get_career_data", {
-      target_member_id: member.id,
-      current_season_id: currentSeasonId,
-    }),
-    db.rpc("get_member_debut_date", {
-      target_member_id: id,
-    }),
-    db.rpc("get_nlpi_rank_records", {
-      target_member_id: id,
-    }),
-    db.rpc("get_stat_avgs"),
-    db.rpc("get_member_advanced_skills", {
-      target_member_id: id,
-    }),
+    getMemberNlpiInfo(currentSeasonId, id),
+    getPoyInfo(currentSeasonId, id),
+    getCareerData(member.id, currentSeasonId),
+    getMemberDebutDate(id),
+    getNlpiRankRecords(id),
+    getStatAvgs(),
+    getMemberAdvancedSkills(id),
   ]);
 
   if (nlpiError) {
