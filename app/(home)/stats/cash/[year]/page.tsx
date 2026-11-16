@@ -2,6 +2,7 @@ import StatsHeader from "../../_components/header";
 import { Suspense } from "react";
 import StatsMain from "../../_components/main";
 import StatsSkeleton from "../../_components/stats-skeleton";
+import { seasonYearParams } from "@/lib/data/static-params";
 
 interface PageProps {
   params: Promise<{
@@ -26,5 +27,8 @@ async function page({ params }: PageProps) {
     </>
   );
 }
+
+// Prebuilt with data at deploy time; see lib/data/static-params.ts.
+export const generateStaticParams = seasonYearParams;
 
 export default page;

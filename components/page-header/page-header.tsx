@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import PageHeaderWrapper from "./page-header-wrapper";
 import Link from "next/link";
 import Image from "next/image";
@@ -7,6 +7,10 @@ import { cn } from "@/lib/utils";
 import MobileNav from "../header/nav/mobile";
 import { BackButton } from "../ui/back-button";
 import { MenuIcon } from "lucide-react";
+
+// Stands in for the menu button while the real one, which needs the
+// signed-in user, loads.
+const menuPlaceholder = <MenuIcon aria-hidden className="ml-auto" size={32} />;
 
 interface props {
   children?: React.ReactNode;
@@ -53,7 +57,7 @@ function PageHeader({
             !children && <Skeleton className="w-40 mx-auto h-8 rounded" />
           )}
           {children}
-          <MenuIcon aria-hidden className="ml-auto" size={32} />
+          {menuPlaceholder}
         </div>
       </PageHeaderWrapper>
     );
@@ -78,7 +82,11 @@ function PageHeader({
           <h1 className="text-xl text-center md:text-2xl font-bold">{title}</h1>
         )}
         {children && children}
-        <MobileNav />
+        {/* The menu reads the signed-in user from the request, so the prebuilt
+            page shows the static icon until it streams in. */}
+        <Suspense fallback={menuPlaceholder}>
+          <MobileNav />
+        </Suspense>
       </div>
     </PageHeaderWrapper>
   );

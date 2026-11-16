@@ -128,11 +128,12 @@ function animateStyle(
 
 // iOS 26–style floating tab bar: a solid capsule with a sliding selection
 // pill, press-and-slide to switch tabs, and minimize-on-scroll.
-function BottomTabs() {
+// `year` is the current season's year for the tab links, from the layout
+// (a prebuilt page can't read the clock while it renders).
+function BottomTabs({ year }: { year: number }) {
   const pathname = usePathname();
   const router = useRouter();
   const reduceMotion = useReducedMotion() ?? false;
-  const year = new Date().getFullYear();
 
   // Tapped/selected tab, shown before the new page has loaded.
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
