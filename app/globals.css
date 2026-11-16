@@ -269,3 +269,19 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Page transitions (components/page-transition.tsx): the page you navigate to
+   fades in under the header and tab bar, which stay put. In the base layer so
+   an element's own animation (a skeleton's pulse) still wins. */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    :where(.page-transition) > :where(:not(.page-transition, #page-header-wrapper)) {
+      animation: page-fade-in 200ms ease-out;
+    }
+  }
+}
