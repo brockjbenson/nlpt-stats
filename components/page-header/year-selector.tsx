@@ -7,7 +7,7 @@ import {
 } from "../ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 const YearSelector = ({ ...props }) => {
   return <DropdownMenu {...props} />;
@@ -22,13 +22,28 @@ const YearSelectorTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         "font-bold flex items-center justify-center gap-2 text-xl",
-        props.className
+        props.className,
       )}
       {...props}
     />
   );
 });
 YearSelectorTrigger.displayName = "YearSelectorTrigger";
+
+// Static stand-in for the trigger (label and chevron) in loading states,
+// where the menu and its seasons aren't available yet.
+const YearSelectorTriggerSkeleton = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <span className="font-bold flex items-center justify-center gap-2 text-xl">
+      {children}
+      <ChevronDown className="ml-1 size-4" />
+    </span>
+  );
+};
 
 const YearSelectorContent = ({
   className,
@@ -59,11 +74,12 @@ const YearSelectorItem = React.forwardRef<
         className={cn(
           "w-full rounded p-3 text-base!",
           active && "bg-card",
-          className
+          className,
         )}
         ref={ref}
         href={href}
-        {...props}>
+        {...props}
+      >
         {props.children}
         {active && <Check className="ml-auto text-foreground" size={16} />}
       </Link>
@@ -75,6 +91,7 @@ YearSelectorItem.displayName = "YearSelectorItem";
 export {
   YearSelector,
   YearSelectorTrigger,
+  YearSelectorTriggerSkeleton,
   YearSelectorContent,
   YearSelectorItem,
 };

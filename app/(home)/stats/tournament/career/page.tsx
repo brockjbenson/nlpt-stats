@@ -1,7 +1,7 @@
 import StatsMain from "../../_components/main";
 import StatsHeader from "../../_components/header";
 import { Suspense } from "react";
-import Loading from "@/components/loading";
+import StatsSkeleton from "../../_components/stats-skeleton";
 
 function page() {
   return (
@@ -12,7 +12,7 @@ function page() {
         isCareer={true}
         year="career"
       />
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<StatsSkeleton />}>
         <StatsMain view="tournament" year="career" />
       </Suspense>
     </>
