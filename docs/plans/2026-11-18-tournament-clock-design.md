@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Data model agreed; screens, sync details, and phases are a proposal pending review.
+- **Status:** Decisions final; screens, sync details, and phases are a proposal pending review.
 
 ## Goal
 
@@ -19,8 +19,11 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Extras (v1) | Players left (named), avg stack, sounds, prize pool & payouts, full-screen TV mode |
 | Entrants | Members + guests |
 | Money/chips | Set per clock, defaulted from the template |
-| Payouts | Last paid place gets the buy-in back; remainder split by % across places above it; no rounding |
-| Places paid | Default on the template, editable per clock |
+| Payouts | Last paid place gets the clock's buy-in back (whatever it is set to, not a fixed $40); remainder split by % across places above it; no rounding |
+| Places paid | Default on the template, editable per clock; **minimum 3** |
+| Starter default | 3 paid, 65/35 split for 1st/2nd |
+| Player phone view | None in v1; the shared display is enough |
+| Tests | Add Vitest for the pure logic |
 | Guests in results | Counted in the pool and live placing; excluded from saved sessions; members re-ranked |
 
 ### Sync approach (chosen: A)
@@ -37,12 +40,12 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 |---|---|---|
 | `id` | uuid pk | |
 | `name` | text | e.g. "Standard 20-min" |
-| `default_buy_in` | numeric | typically 40 |
+| `default_buy_in` | numeric | e.g. 40; copied to the clock, where it can be changed |
 | `default_rebuy` | numeric | |
 | `default_starting_chips` | int | |
 | `default_rebuy_chips` | int | |
-| `default_places_paid` | int | e.g. 3 |
-| `default_payout_pcts` | numeric[] | split for places 1..N-1, e.g. `{65,35}`; must sum to 100 |
+| `default_places_paid` | int | `>= 3`; starter template uses 3 |
+| `default_payout_pcts` | numeric[] | split for places 1..N-1; starter template uses `{65,35}`; must sum to 100 |
 | `created_at` | timestamptz | |
 
 ### `blind_levels` (template levels)
@@ -71,7 +74,7 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | `paused_remaining_ms` | int, nullable | set while paused |
 | `buy_in`, `rebuy` | numeric | copied from template defaults |
 | `starting_chips`, `rebuy_chips` | int | copied from template defaults |
-| `places_paid` | int | copied, editable until finish |
+| `places_paid` | int | copied, editable until finish; `check (places_paid >= 3)` |
 | `payout_pcts` | numeric[] | copied, editable until finish |
 | `updated_at` | timestamptz | |
 
@@ -97,16 +100,24 @@ Constraint: exactly one of `member_id` / `guest_name` is set; a member appears a
 
 ### Payout rule
 
-Given pool `P`, buy-in `B`, places paid `N`, and `payout_pcts` (length N-1, sums to 100):
+Given pool `P`, the clock's `buy_in` `B`, places paid `N` (≥ 3), and `payout_pcts` (length N-1, sums to 100):
 
-1. Place N receives exactly `B` (buy-in only, regardless of that player's rebuys).
+1. Place N receives exactly `B`: the clock's configured buy-in, never a hardcoded amount. A $50 buy-in clock pays $50 back. It is the buy-in only, regardless of that player's rebuys.
 2. Places 1..N-1 split `P − B` by `payout_pcts`.
 3. No rounding.
-4. If entrants < N, `N` is reduced to the number of entrants for the calculation.
+4. If entrants < N, `N` is reduced to the number of entrants for the calculation. This is the only case below 3 paid.
 
 Example: 12 entrants, $40 buy-in, 4 rebuys at $40 → pool $640. 3 paid, split 65/35 → 3rd $40, 1st $390, 2nd $210.
 
-Validation: if `P − B ≤ 0` (e.g. one paid place), place 1 takes the whole pool.
+Common splits for reference:
+
+| Places paid | Split for places above money-back |
+|---|---|
+| 3 | 65/35 (default), 60/40, 70/30 |
+| 4 | 50/30/20, 55/30/15 |
+| 5 | 45/28/17/10 |
+
+Validation: warn on the clock setup screen if any computed payout above the money-back spot is ≤ `B` (e.g. a 5-way split that leaves 4th tied with the money-back spot).
 
 ### Permissions (RLS)
 
@@ -181,10 +192,10 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 
 ## Testing
 
-The repo has no test runner today. Proposal: add **Vitest** for the pure functions in `features/clock/lib/`, which carry all the tricky logic:
+The repo has no test runner today. Add **Vitest** (dev dependency only) for the pure functions in `features/clock/lib/`, which carry all the tricky logic:
 
 - Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab.
-- Pool, avg stack, and payout rule (incl. entrants < places paid, single paid place).
+- Pool, avg stack, and payout rule (incl. money-back tracks a non-$40 buy-in, entrants < places paid, payouts at or below money-back warning).
 - Finish results: guest re-ranking, true-position cash-outs, net profit.
 
 Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs.
@@ -200,8 +211,6 @@ Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust p
 7. **Finish flow:** review screen → tournament + sessions via existing actions.
 8. **Nav:** admin nav link; link from tournament page when a clock is attached.
 
-## Open questions
+## Out of scope for v1
 
-- Exact default payout split(s) for the starter template.
-- Should players' phones get a lighter "my status" view, or is the shared display enough for v1?
-- Add Vitest as a dev dependency (only new tooling proposed)?
+- A personal "my status" view on players' phones; everyone uses the shared `/clock/[id]` display.
