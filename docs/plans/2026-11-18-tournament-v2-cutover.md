@@ -6,7 +6,7 @@
 
 **Goal:** Move the app's tournament data from `tournaments` / `tournament_sessions` to the v2 tables (`_tournaments`, `_tournament_sessions`, `_tournament_session_points`) with identical stats output, on dev first and then prod.
 
-**Architecture:** SQL migrations live in `supabase/migrations/` and are applied with the Supabase MCP (`apply_migration`). `_tournament_sessions` stores only the source data (`rebuys`, `cash_out`, `place`). The `_tournament_session_points` view calculates buy-in, net profit and points from the tournament's prices and `_tournament_place_points`. The six SQL functions the app calls are rewritten to read v2; dead functions are dropped. A read-only snapshot query (row count + hash per function call) proves output is unchanged before and after. Cash stays on v1.
+**Architecture:** SQL migrations live in `supabase/migrations/` and are applied with the Supabase MCP (`apply_migration`). `_tournament_sessions` stores only the source data (`rebuys`, `cash_out`, `place`). The `_tournament_session_points` view calculates buy-in, net profit and points from the tournament's prices and `_tournament_place_points`. The seven SQL function signatures the app calls are rewritten to read v2; dead functions are dropped. A read-only snapshot query (row count + hash per function call) proves output is unchanged before and after. Cash stays on v1.
 
 **Tech Stack:** Supabase Postgres (RLS, `security_invoker` views, SQL/plpgsql functions), Next.js 16 / React 19 / TypeScript, `@supabase/ssr`.
 
@@ -31,19 +31,21 @@
 - `_tournament_session_points` (`security_invoker=on`) columns: `id, member_id, tournament_id, buy_in, cash_out, net_profit, rebuys, place, week_id, date, tournament_name, poy_points, nlpi_points`. It currently caps points at `LEAST(place, 14)`.
 - Every function and view is `SECURITY INVOKER`. v2 tables only have `SELECT` policies for `authenticated`. v1 tables allow `public` read. **Anonymous public pages will fail on v2 unless Task 3 adds anon read policies.**
 - Write policies use `is_league_admin()` (checks `profiles.role = 'admin'`), the same as v1.
-- The app calls these RPCs: `get_career_data(target_member_id, current_season_id)`, `get_career_stats(target_view, target_season)` (view ∈ `cash|tournament|cumulative`, season = season id or `"career"`), `get_major_data(target_tournament_id)`, `get_nlpi_info(current_season_id, target_filter_date, target_member_id)`, `get_poy_info(current_season_id, target_member_id)`, `get_poy_records()`, `get_member_debut_date`, `get_member_advanced_skills`, `get_nlpi_rank_records`, `get_stat_avgs`, `get_recent_cash_session_info`, `insert_weekly_nlpi_rankings`. Of these, **only the first six read tournament tables** (directly or via functions they call; confirm transitive calls in Task 4).
+- The app calls these RPCs: `get_career_data(target_member_id, current_season_id)`, `get_career_stats(target_view, target_season)` (view ∈ `cash|tournament|cumulative`, season = season id or `"career"`), `get_major_data(target_tournament_id)`, `get_nlpi_info(current_season_id, target_filter_date)` (NLPI page, **2-arg overload**), `get_nlpi_info(current_season_id, target_filter_date, target_member_id)` (member page, 3-arg overload), `get_poy_info(current_season_id, target_member_id)`, `get_poy_records()`, `get_member_debut_date`, `get_member_advanced_skills`, `get_nlpi_rank_records`, `get_stat_avgs`, `get_recent_cash_session_info`, `insert_weekly_nlpi_rankings`. Of these, **only the first seven signatures read tournament tables** (directly or via functions they call; confirm transitive calls in Task 4).
 - `features/admin/actions/add-session.tsx` `addTournamentSessionAction` selects `tournaments.week_id`, which does not exist in v1, so ranking recalculation after tournament saves has silently never run. Moving to `_tournaments.week_id` fixes this.
 
 ---
 
-### Task 1: Snapshot query + "before" baselines
+### Task 1: Snapshot query + "before" baselines ✅ done 2026-11-18
+
+**Result:** 282 calls on each database. Baselines are in `docs/plans/verification/dev-before.txt` (overall md5 `a5cac593…`) and `prod-before.txt` (`a73c872f…`), stored as compact lines rather than JSON. The tournament-only outputs match between dev and prod: `get_major_data` 13/13 and `get_career_stats` tournament 6/6. Every difference is in cash-influenced output (cash/cumulative stats, NLPI, career data for 4 members, POY for season `61e348ff`, POY records), which matches dev's extra cash sessions. **For Tasks 3–5, compare the overall md5 first; diff line by line only if it changes.**
 
 **Files:**
 - Create: `supabase/migrations/.gitkeep`
 - Create: `scripts/db/snapshot-tournament-functions.sql`
-- Create: `docs/plans/verification/dev-before.json`, `docs/plans/verification/prod-before.json`
+- Create: `docs/plans/verification/dev-before.txt`, `docs/plans/verification/prod-before.txt`
 
-**Responsibility:** A single **read-only** SQL query that calls each of the six tournament-reading functions across its full argument domain and returns one row per call: `fn`, `args` (jsonb), `row_count`, `hash`.
+**Responsibility:** A single **read-only** SQL query that calls each of the seven tournament-reading function signatures across its full argument domain and returns one row per call: `fn`, `args` (jsonb), `row_count`, `hash`.
 
 **Key logic:**
 - Argument domains: every season id × every member id for member-scoped functions; `get_career_stats` for each view in `cash|tournament|cumulative` × (each season id + `'career'`); `get_major_data` for every tournament id; `get_nlpi_info` with `target_filter_date = null` and `target_member_id` = null and each member; `get_poy_info` with member null and each member; `get_poy_records()` once.
@@ -95,20 +97,20 @@
 
 **Commit:** `feat: tournament v2 schema, derived session money, public read`
 
-### Task 4: Migration — repoint the six live functions
+### Task 4: Migration — repoint the seven live function signatures
 
 **Files:**
 - Create: `supabase/migrations/<ts>_tournament_functions_v2.sql`
 
-**Responsibility:** `CREATE OR REPLACE` the six functions so they read `_tournament_session_points` / `_tournament_summaries` (or `_tournaments` joined to v1 `week` / `season`) instead of `tournaments` / `tournament_sessions`. **Signatures and return types stay identical**, so the app needs no change for reads that go through RPCs.
+**Responsibility:** `CREATE OR REPLACE` the seven function signatures so they read `_tournament_session_points` / `_tournament_summaries` (or `_tournaments` joined to v1 `week` / `season`) instead of `tournaments` / `tournament_sessions`. **Signatures and return types stay identical**, so the app needs no change for reads that go through RPCs.
 
 **Key logic:**
-- First list the functions each of the six calls (`pg_get_functiondef`, search for `public.` function names). Repoint any transitive callee that reads tournament tables too.
+- First list the functions each of the seven calls (`pg_get_functiondef`, search for `public.` function names). Repoint any transitive callee that reads tournament tables too.
 - Remove the filler-row guards (`buy_in > 0`, `place > 0`) for tournament sessions; they're redundant now. Keep cash-session guards as they are.
 - `tournaments.season_id` becomes `week.season_id` via `_tournaments.week_id`. Use `_tournament_summaries.season_id`.
 - `money_in_play`, `buy_ins`, `rebuys`, `player_count`, `places_payed` are read from `_tournament_summaries`. Keep the output column names unchanged (e.g. still return `places_payed` and `money_in_play` if the function returns them), so the app's types don't change in this task.
 
-**Verify:** run `scripts/db/snapshot-tournament-functions.sql` on dev and save it as `docs/plans/verification/dev-after-functions.json`. Diff it against `dev-before.json`. **Expected:** identical, except calls whose results include the Task 2 rows. Explain every differing call in the commit body. Any unexplained diff blocks the task.
+**Verify:** run `scripts/db/snapshot-tournament-functions.sql` on dev and save it as `docs/plans/verification/dev-after-functions.txt`. Diff it against `dev-before.txt`. **Expected:** identical, except calls whose results include the Task 2 rows. Explain every differing call in the commit body. Any unexplained diff blocks the task.
 
 **Commit:** `feat: read tournament stats from v2 tables`
 
@@ -117,12 +119,12 @@
 **Files:**
 - Create: `supabase/migrations/<ts>_drop_dead_tournament_functions.sql`
 
-**Responsibility:** Drop every `public` function that references `tournaments` or `tournament_sessions` after Task 4 and isn't reachable from the app's RPC list (directly or transitively). Expected candidates include `get_nlpi_info_new`, `get_nlpi_info_updated`, the 2-arg `get_nlpi_info`, the 1-arg `get_poy_info`, the 1-arg `get_career_data`, `get_career_stats()` / `(text)`, `get_general_stats` (both), `get_major_stats`, `get_season_major_stats`, `get_majors_data`, `get_member_nlpi_data`, `get_nlpi_data` (both), `get_poy_data`, `get_player_comparison`, `get_best_nlpi_rank`, `get_recent_tournament_sessions`, `get_tournament_sessions_by_season`.
+**Responsibility:** Drop every `public` function that references `tournaments` or `tournament_sessions` after Task 4 and isn't reachable from the app's RPC list (directly or transitively). Expected candidates include `get_nlpi_info_new`, `get_nlpi_info_updated`, the 1-arg `get_poy_info` (keep **both** `get_nlpi_info` overloads, since the app calls both), the 1-arg `get_career_data`, `get_career_stats()` / `(text)`, `get_general_stats` (both), `get_major_stats`, `get_season_major_stats`, `get_majors_data`, `get_member_nlpi_data`, `get_nlpi_data` (both), `get_poy_data`, `get_player_comparison`, `get_best_nlpi_rank`, `get_recent_tournament_sessions`, `get_tournament_sessions_by_season`.
 
 **Steps:**
 1. Re-grep the app for `rpc(` (including multiline calls) to confirm the call list. Drop only functions not on it and not called by anything on it.
 2. Use exact signatures in `DROP FUNCTION`.
-3. **Verify:** `select proname from pg_proc … where pg_get_functiondef(oid) ~ '\m(tournaments|tournament_sessions)\M'` returns zero rows (filter `prokind = 'f'`). Re-run the snapshot; it must still match `dev-after-functions.json`.
+3. **Verify:** `select proname from pg_proc … where pg_get_functiondef(oid) ~ '\m(tournaments|tournament_sessions)\M'` returns zero rows (filter `prokind = 'f'`). Re-run the snapshot; it must still match `dev-after-functions.txt`.
 
 **Commit:** `chore: drop unused tournament SQL functions`
 
@@ -180,7 +182,7 @@
 ### Task 10: Prod rollout (user-gated)
 
 **Do not start without explicit user approval in this task.**
-1. Re-run the snapshot on prod and save it as `prod-before-rollout.json`. Diff it against `prod-before.json`; investigate if new tournament data has appeared since.
+1. Re-run the snapshot on prod and save it as `prod-before-rollout.txt`. Diff it against `prod-before.txt`; investigate if new tournament data has appeared since.
 2. Prod MCP is read-only, so the user either temporarily removes `&read_only=true` from the prod entry in `.mcp.json` (then restarts or runs `/mcp`), or applies the three migration files themselves in the SQL editor in the same order. Note: applying them through the SQL editor won't record them in the migration history.
 3. Apply the migrations from Tasks 3–5 in order. Re-run the snapshot and diff it; the expected differences are the same as on dev.
 4. Merge the PR and deploy the app. In the gap between migrating and deploying, the old app still works: v1 tables are untouched and the RPCs return the same output.
