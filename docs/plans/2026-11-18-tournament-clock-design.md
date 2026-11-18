@@ -66,7 +66,7 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | `id` | uuid pk | |
 | `name` | text | |
 | `structure_id` | uuid fk, nullable | template it was created from (informational) |
-| `tournament_id` | uuid fk → `tournaments`, nullable | set at creation or by the finish flow |
+| `tournament_id` | uuid fk → `_tournaments`, nullable | set at creation or by the finish flow (v2 table; see Phase 0) |
 | `levels` | jsonb | **snapshot** of the template's levels; editing a template never changes a running clock |
 | `status` | text | `setup` \| `running` \| `paused` \| `finished` |
 | `level_index` | int | last persisted level |
@@ -174,12 +174,9 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 2. Review screen builds results from entrants:
    - **Payouts** use true finishing positions (guests included), via the payout rule.
    - **Members only** are kept; places are **re-ranked** among members (1, 2, 3…). Each member's `cash_out` is the payout of their **true** position. E.g. guest wins 1st → member who finished 2nd is saved as place 1 with the 2nd-place payout.
-   - `buy_in`, `rebuys` per member from the clock; `net_profit = cash_out − buy_in − rebuys × rebuy`.
-   - Points via the existing `assignTournamentSessionPoints` in `utils/tournament/utils.ts`.
-   - Tournament fields prefilled: `player_count` (all entrants incl. guests), `buy_ins`, `rebuys`, `money_in_play` (pool), `places_payed`, `date`, `season_id` (admin picks/confirms), `name`.
-3. Admin edits anything, then confirms → creates (or updates the linked) `tournaments` row and inserts `tournament_sessions`, reusing the existing add-session action path so NLPI/POY ranking recalculation, `updateTag(LEAGUE_DATA_TAG)`, and revalidation all run as they do today.
-
-> To confirm during implementation: whether the existing session flow fills zero-rows for members who didn't play (`fillMissingSessions`-style helper in `utils/tournament/utils.ts`) and whether the clock handoff should do the same.
+   - Per member: `rebuys` (count), `cash_out`, `place`. Buy-in total, net profit, and points are derived by `_tournament_session_points` (Phase 0), not written.
+   - Tournament fields prefilled: `name`, `date`, `week_id` (admin confirms), `places_paid`, `buy_in_amount`, `rebuy_amount`, `player_count` (all entrants incl. guests), `total_rebuys` (incl. guests).
+3. Admin edits anything, then confirms → creates (or updates the linked) `_tournaments` row and inserts `_tournament_sessions` for members who played only (no filler rows), then runs the same ranking recalculation, `updateTag(LEAGUE_DATA_TAG)`, and revalidation as today's tournament save.
 
 ## Error handling
 
@@ -200,17 +197,65 @@ The repo has no test runner today. Add **Vitest** (dev dependency only) for the 
 
 Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs.
 
+## Phase 0: Cut tournaments over to the v2 tables
+
+The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_sessions`, `_tournament_place_points`, `_scoring_settings`, and the `_tournament_session_points` view, but the app and SQL functions still read the old `tournaments` / `tournament_sessions`, and nothing syncs the two. Phase 0 finishes the tournament half of that cutover so the clock is built on the v2 shape. **Cash stays on v1** for now (`_cash_sessions` is stale since 2026-07-24 and is a separate project).
+
+### Findings (prod `mttdnkrtyknlmbnwdoye`, dev `vykeezhlyltsiuyqkode`; tournament data identical on both)
+
+- 87 of 195 `tournament_sessions` rows (45%) are `place = 0` filler rows for members who didn't play. SQL functions guard inconsistently (`buy_in > 0`, `place > 0`, or not at all).
+- `tournament_sessions.buy_in` is total money in (`40 × (1 + rebuys)`); `rebuys` is a count. Exceptions to fix: 2 rows with a buy-in that doesn't match rebuys, 1 row with `net_profit` 143 where `cash_out − buy_in` = 114.
+- Tournament rebuy totals disagree with sessions for Luau 2022, Luau 2024, Thanksgiving 2025.
+- Guests have played before (Thanksgiving Showdown, Kindred Open, Horace Hoedown have more players than member sessions), so tournament totals cannot be derived from member sessions alone.
+- Guest placing is inconsistent historically (Thanksgiving Showdown 2024 skips 4th; others re-ranked). **Decision: leave history as-is.**
+- Nothing outside this web app calls the database. `_push_tokens` / `_notifications` (browser notifications) and `trinkets` are out of scope.
+
+### Schema changes
+
+**`_tournaments`**
+- Add `buy_in_amount numeric not null default 40`, `rebuy_amount numeric not null default 40`; backfill 40 for existing rows.
+- Add `player_count int` and `total_rebuys int` (both include guests), backfilled from old `tournaments`. Prize pool = `player_count × buy_in_amount + total_rebuys × rebuy_amount`.
+- Keep `week_id` required; forms and the clock finish flow pick a week. Verify `_weeks` ids line up with the old `week` table before relying on them.
+
+**`_tournament_sessions`**
+- Source of truth: `member_id`, `tournament_id`, `rebuys`, `cash_out`, `place`.
+- `buy_in` and `net_profit` become derived in the view (`buy_in_amount × (1 + rebuys)`, `cash_out − that`), after fixing the 3 bad rows (before/after shown to the user first).
+- Constraints: `place not null check (place >= 1)`, `tournament_id not null`, `unique (tournament_id, member_id)`.
+
+**Points** — use the code's table as the source of truth: extend `_tournament_place_points` to 16 places (15th: 15 POY / 1 NLPI, 16th: 10 POY / 1 NLPI) and change the view's `LEAST(place, 14)` to `LEAST(place, 16)`. Historical places are unchanged, so historical points are unchanged for every existing tournament (none has more than 14 finishers).
+
+### SQL functions
+
+- Repoint the ~20 functions that read `tournament_sessions` / `tournaments` at `_tournament_session_points` / `_tournaments`; drop the filler-row guards.
+- Delete stale versions after confirming the app doesn't call them (`get_nlpi_info_new`, `get_nlpi_info_updated`, unused overloads).
+
+### App code
+
+- Admin tournament + session forms, tournament pages, `utils/types.ts` move to the v2 tables.
+- Remove `fillInMissingTournamentSessions` and the in-code points maps (points come from the view).
+
+### Rollout
+
+1. Write the migration as SQL files in the repo; apply to **dev** first.
+2. Verify: snapshot the output of every tournament-reading function for every season/member on dev **before** the migration, re-run after, and diff. Expected: identical, except the 3 corrected rows.
+3. Point a local build at dev and click through stats, tournaments, POY, NLPI, member pages, and admin tournament entry.
+4. Apply the same migration to **prod** and re-run the verification.
+5. Rename old tables to `legacy_tournaments` / `legacy_tournament_sessions` (read-only); drop after a few weeks.
+
 ## Implementation phases (proposal)
 
-1. **Schema:** tables, RLS, Realtime publication, `server_now()` RPC; regenerate/extend types.
+0. **Tournament v2 cutover** (see Phase 0; own PR, dev first).
+1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC; regenerate/extend types.
 2. **Pure logic + tests:** `features/clock/lib` with Vitest.
 3. **Templates:** `/admin/clock/structures` CRUD.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only).
 5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
 6. **TV mode & sounds.**
-7. **Finish flow:** review screen → tournament + sessions via existing actions.
+7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.
 8. **Nav:** admin nav link; link from tournament page when a clock is attached.
 
 ## Out of scope for v1
 
 - A personal "my status" view on players' phones; everyone uses the shared `/clock/[id]` display.
+- Cash-session v2 cutover (`_cash_sessions`, rebuys table) — separate project.
+- Browser notifications and trinkets.
