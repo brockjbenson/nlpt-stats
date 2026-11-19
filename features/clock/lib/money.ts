@@ -1,7 +1,7 @@
 import { playersLeft } from "@/features/clock/lib/entrants";
 import type { ClockEntrant, TournamentClock } from "@/features/clock/types";
 
-function totalRebuys(entrants: ClockEntrant[]): number {
+export function totalRebuys(entrants: ClockEntrant[]): number {
   return entrants.reduce((total, entrant) => total + entrant.rebuys, 0);
 }
 
