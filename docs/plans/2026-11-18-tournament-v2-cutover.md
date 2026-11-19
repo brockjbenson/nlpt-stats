@@ -119,7 +119,20 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 
 **Commit:** `feat: tournament v2 schema, derived session money, public read`
 
-### Task 4: Migration — repoint the seven live function signatures
+### Task 4: Migration — repoint the seven live function signatures ✅ applied to dev 2026-11-19
+
+**Result (approach changed from the contract below):** The seven functions aren't hand-rewritten. Two `security_invoker` views reproduce v1's table shapes (names and `real` types) from v2 data, and `20261119133508_tournament_functions_read_v2` rewrites each live definition in place by swapping the table names. The swap aborts unless every function has exactly the expected number of references. This keeps the change identical on dev and prod and keeps the output stable.
+- **`_legacy_tournament_sessions`**: real sessions plus a 0 row (place 0) for each member who had joined by the tournament date (`members.join_date`) and didn't play. This replaces the stored filler rows and keeps the existing rule that a skipped tournament counts as 0 in NLPI's last-4 window, which is the same rule as v2's `nlpi_standings`. The filler guards inside the functions were left alone.
+- **`_legacy_tournaments`**: v1's tournament columns mapped from `_tournament_summaries`.
+- `20261119133556_get_major_data_group_by`: `get_major_data` grouped by `t.id` only, which relied on the table's primary key. It now lists the selected columns explicitly.
+
+**Verification:** `dev-after-functions.txt` (md5 `46f88e2d…`) against `dev-before.txt`. **All 85 NLPI calls are identical.** Each of the 75 changed calls has an identified cause:
+1. **Approved data fixes:** `get_major_data` changes for exactly the 9 fixed tournaments. `get_career_data` changes for exactly the 8 members in fixed rows. Career stats (tournament and cumulative) change for 2022, 2023, 2025 and career. POY records career net and gross profit match the fixes to the dollar. For example, `12d9a4dd`'s gross profit rises $18 because Winter 2022 2nd ($140 − $120 − 2) is now a winning session.
+2. **No filler rows before a member joined (accepted 2026-11-19):** v1 had 29 backfilled filler rows for members who joined after the tournament. `get_poy_info` `majors_played`, `sessions_played` and averages drop for 5 late joiners in seasons before they joined. No rank or total-points changes.
+3. **Float noise:** cumulative 2024 and 2026 differ only around 1e-5, because `real` sums run in a different row order.
+4. **Tie order:** POY records `tournament_wins` (career and season) use `ORDER BY value DESC` (with `LIMIT 5` for season), which breaks ties arbitrarily. Members tied on 1 win can appear in a different order or selection.
+
+**Follow-ups (out of scope, existing behavior):** `get_poy_records` `career_gross` subtracts `rebuys` (a count) as dollars on top of `buy_in`, which already includes rebuys. The tied record lists need a deterministic tiebreaker. Long term, rewrite the functions to read v2 directly and drop the `_legacy_*` views.
 
 **Files:**
 - Create: `supabase/migrations/<ts>_tournament_functions_v2.sql`
