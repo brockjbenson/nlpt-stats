@@ -62,13 +62,25 @@ export function leagueQuery<A extends unknown[], T>(
     } catch (e) {
       // Next's own signals (redirects, deferring to request time) pass through.
       unstable_rethrow(e);
-      // While a page is being prebuilt, this leaves its failed part to be
-      // rendered when someone visits, so the error isn't saved into the page.
-      // On a visit it returns at once.
-      await connection();
+      await deferToRequest(e);
       return { data: null, error: queryError(e) };
     }
   };
+}
+
+// While a page is being prebuilt, connection() leaves its failed part to be
+// rendered when someone visits, so the error isn't saved into the page (it
+// throws Next's signal for that, which must pass through). On a visit it
+// returns at once. Outside any request or prerender, e.g. listing pages to
+// prebuild in generateStaticParams, connection() throws an error of its own
+// that would hide the real one, so the query's error is thrown instead.
+async function deferToRequest(queryErr: unknown) {
+  try {
+    await connection();
+  } catch (connectionErr) {
+    unstable_rethrow(connectionErr);
+    throw queryErr;
+  }
 }
 
 function queryError(e: unknown) {

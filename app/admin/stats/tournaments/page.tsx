@@ -1,5 +1,6 @@
 import PageHeader from "@/components/page-header/page-header";
 import { createClient } from "@/utils/supabase/server";
+import { selectTournamentsWithSessions } from "@/utils/tournament/queries";
 import ErrorHandler from "@/components/error-handler";
 
 import {
@@ -53,10 +54,8 @@ async function Page({
   const activeSeason =
     seasons.find((season) => season.year === yearNumber) || seasons[0];
 
-  const { data: tournamentsData, error: tournamentsDataError } = await db
-    .from("tournaments")
-    .select("*, tournament_sessions(*)")
-    .eq("season_id", activeSeason.id);
+  const { data: tournamentsData, error: tournamentsDataError } =
+    await selectTournamentsWithSessions(db, activeSeason.id);
 
   if (tournamentsDataError) {
     return (
@@ -82,7 +81,8 @@ async function Page({
                 <DropdownMenuItem asChild key={season.id}>
                   <Link
                     href={`/admin/stats/tournaments?year=${season.year}`}
-                    className="w-full">
+                    className="w-full"
+                  >
                     {season.year}
                   </Link>
                 </DropdownMenuItem>

@@ -12,12 +12,10 @@ interface Props {
 }
 
 function TournamentCard({ data, isAdmin, members }: Props) {
-  const winner = data.tournament_sessions.find(
-    (session) => session.place === 1
-  );
+  const winner = data.sessions.find((session) => session.place === 1);
 
   const winningMember = members?.find(
-    (member) => member.id === winner?.member_id
+    (member) => member.id === winner?.member_id,
   );
 
   return (
@@ -29,8 +27,9 @@ function TournamentCard({ data, isAdmin, members }: Props) {
             href={
               isAdmin
                 ? `/admin/tournaments/${data.id}`
-                : `/tournaments/${data.season.year}/${data.id}`
-            }>
+                : `/tournaments/${data.season_year}/${data.id}`
+            }
+          >
             {data.name}
           </Link>
         </h2>
@@ -43,7 +42,8 @@ function TournamentCard({ data, isAdmin, members }: Props) {
         {winner ? (
           <Link
             href={`/members/${winner.member_id}`}
-            className="grid grid-cols-[50px_1fr] gap-2 items-center">
+            className="grid grid-cols-[50px_1fr] gap-2 items-center"
+          >
             <MemberImage
               src={winningMember?.portrait_url || ""}
               className="w-12 h-12 rounded-full"
@@ -61,13 +61,13 @@ function TournamentCard({ data, isAdmin, members }: Props) {
         <div className="flex flex-col items-start">
           <p className="text-xs text-muted">Prize Pool</p>
           <p className="text-base font-semibold">
-            {formatMoney(data.money_in_play)}
+            {formatMoney(data.prize_pool)}
           </p>
         </div>
         <div className="flex flex-col items-center">
           <p className="text-xs text-muted">Total Buy-Ins</p>
           <p className="text-base font-semibold">
-            {data.buy_ins + data.rebuys}
+            {data.player_count + data.total_rebuys}
           </p>
         </div>
         <div className="flex flex-col items-end">

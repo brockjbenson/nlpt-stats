@@ -1,6 +1,6 @@
 "use client";
 
-import { Member, Season } from "@/utils/types";
+import { Season, Week } from "@/utils/types";
 import { refreshLeagueData } from "@/lib/data/actions";
 import {
   Select,
@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/utils/supabase/client";
+import { formatMoney } from "@/utils/utils";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -36,59 +37,112 @@ import {
 } from "@radix-ui/react-alert-dialog";
 import Link from "next/link";
 
+const DEFAULT_BUY_IN = 40;
+
 interface Props {
   seasons: Season[];
-  members: Member[];
+  // Newest week first.
+  weeks: Week[];
 }
 
-function NewTournamentForm({ seasons }: Props) {
+type FormData = {
+  name: string;
+  season_id: string;
+  week_id: string;
+  buy_in_amount: number;
+  rebuy_amount: number;
+  player_count: number;
+  total_rebuys: number;
+  places_paid: number;
+};
+
+type NumberField = Exclude<keyof FormData, "name" | "season_id" | "week_id">;
+
+const emptyForm: FormData = {
+  name: "",
+  season_id: "",
+  week_id: "",
+  buy_in_amount: DEFAULT_BUY_IN,
+  rebuy_amount: DEFAULT_BUY_IN,
+  player_count: 0,
+  total_rebuys: 0,
+  places_paid: 3,
+};
+
+// Players and rebuys include guests, so the prize pool matches what was
+// actually in play even though guests don't get sessions.
+function NewTournamentForm({ seasons, weeks }: Props) {
   const db = createClient();
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [formData, setFormData] = useState<FormData>(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [newTournamentId, setNewTournamentId] = useState<string | null>(null);
   const [addSessionsDialogOpen, setAddSessionsDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    season_id: "",
-    money_in_play: 0,
-    buy_ins: 0,
-    rebuys: 0,
-    player_count: 0,
-    places_payed: 0,
-  });
+
+  const seasonWeeks = weeks.filter(
+    (week) => week.season_id === formData.season_id,
+  );
+  const prizePool =
+    formData.player_count * formData.buy_in_amount +
+    formData.total_rebuys * formData.rebuy_amount;
+  const canSave =
+    !saving &&
+    formData.name.trim() !== "" &&
+    formData.week_id !== "" &&
+    date !== undefined &&
+    formData.places_paid >= 1;
+
+  const setNumber = (field: NumberField, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: Number(value) }));
+  };
+
+  // Picking a season defaults to its latest week, the usual case when
+  // entering a tournament that just happened.
+  const selectSeason = (seasonId: string) => {
+    const latestWeek = weeks.find((week) => week.season_id === seasonId);
+    setFormData((prev) => ({
+      ...prev,
+      season_id: seasonId,
+      week_id: latestWeek?.id ?? "",
+    }));
+  };
 
   const addTournament = async () => {
-    const { data, error } = await db
-      .from("tournaments")
-      .upsert({
-        name: formData.name,
-        date: date,
-        season_id: formData.season_id,
-        money_in_play: formData.money_in_play,
-        buy_ins: formData.buy_ins,
-        rebuys: formData.rebuys,
-        player_count: formData.player_count,
-        places_payed: formData.places_payed,
-      })
-      .select("id");
+    if (!canSave || !date) return;
+    setSaving(true);
+    setSaveError(null);
 
+    const { data, error } = await db
+      .from("_tournaments")
+      .insert({
+        name: formData.name.trim(),
+        // A plain calendar date: a Date object would be sent in UTC and can
+        // land on the next day for an evening entry.
+        date: format(date, "yyyy-MM-dd"),
+        week_id: formData.week_id,
+        buy_in_amount: formData.buy_in_amount,
+        rebuy_amount: formData.rebuy_amount,
+        player_count: formData.player_count,
+        total_rebuys: formData.total_rebuys,
+        places_paid: formData.places_paid,
+      })
+      .select("id")
+      .single();
+
+    setSaving(false);
     if (error) {
-      console.error("Error adding tournament:", error);
-    } else {
-      await refreshLeagueData();
-      setNewTournamentId(data[0].id);
-      setAddSessionsDialogOpen(true);
+      setSaveError(error.message);
+      return;
     }
+
+    await refreshLeagueData();
+    setNewTournamentId(data.id);
+    setAddSessionsDialogOpen(true);
     setDate(new Date());
-    setFormData({
-      name: "",
-      season_id: "",
-      money_in_play: 0,
-      buy_ins: 0,
-      rebuys: 0,
-      player_count: 0,
-      places_payed: 0,
-    });
+    setFormData(emptyForm);
   };
+
   return (
     <>
       <div className="grid grid-cols-2 px-2 gap-4 mt-4 mb-8">
@@ -96,20 +150,13 @@ function NewTournamentForm({ seasons }: Props) {
           <Label className="text-xs md:text-base" htmlFor="season">
             Season
           </Label>
-          <Select
-            value={formData.season_id || ""}
-            onValueChange={(value: string) => {
-              setFormData((prev) => ({
-                ...prev,
-                season_id: value,
-              }));
-            }}>
+          <Select value={formData.season_id} onValueChange={selectSeason}>
             <SelectTrigger id="season">
               <SelectValue placeholder="Select a season" />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                {seasons?.map((season) => (
+                {seasons.map((season) => (
                   <SelectItem key={season.id} value={season.id}>
                     {season.year}
                   </SelectItem>
@@ -119,17 +166,62 @@ function NewTournamentForm({ seasons }: Props) {
           </Select>
         </fieldset>
         <fieldset className="flex flex-col gap-2 grow">
+          <Label className="text-xs md:text-base" htmlFor="week">
+            Week
+          </Label>
+          <Select
+            value={formData.week_id}
+            disabled={seasonWeeks.length === 0}
+            onValueChange={(value: string) =>
+              setFormData((prev) => ({ ...prev, week_id: value }))
+            }
+          >
+            <SelectTrigger id="week">
+              <SelectValue
+                placeholder={
+                  formData.season_id ? "No weeks yet" : "Select a season first"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {seasonWeeks.map((week) => (
+                  <SelectItem key={week.id} value={week.id}>
+                    Week {week.week_number}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </fieldset>
+        <fieldset className="flex flex-col gap-2 grow">
+          <Label className="text-xs md:text-base" htmlFor="name">
+            Name
+          </Label>
+          <Input
+            id="name"
+            className="w-full h-12 px-3"
+            placeholder="Tournament Name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, name: e.target.value }))
+            }
+          />
+        </fieldset>
+        <fieldset className="flex flex-col gap-2 grow">
           <Label className="text-xs md:text-base" htmlFor="date">
             Date
           </Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
+                id="date"
                 variant={"outline"}
                 className={cn(
                   "w-full border border-neutral-500 py-2 h-12 px-3 justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}>
+                  !date && "text-muted-foreground",
+                )}
+              >
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {date ? format(date, "PPP") : <span>Pick a date</span>}
               </Button>
@@ -144,117 +236,59 @@ function NewTournamentForm({ seasons }: Props) {
             </PopoverContent>
           </Popover>
         </fieldset>
-        <fieldset className="flex flex-col col-span-2 gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="name">
-            Name
-          </Label>
-          <Input
-            id="name"
-            className="w-full h-12 px-3"
-            placeholder="Tournament Name"
-            value={formData.name}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                name: e.target.value,
-              }));
-            }}
-          />
-        </fieldset>
-        <fieldset className="flex flex-col gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="buyIns">
-            Buy Ins
-          </Label>
-          <Input
-            id="buyIns"
-            className="w-full h-12 px-3"
-            type="number"
-            value={formData.buy_ins}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                buy_ins: Number(e.target.value),
-              }));
-            }}
-          />
-        </fieldset>
-        <fieldset className="flex flex-col gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="rebuys">
-            Rebuys
-          </Label>
-          <Input
-            id="rebuys"
-            className="w-full h-12 px-3"
-            type="number"
-            value={formData.rebuys}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                rebuys: Number(e.target.value),
-              }));
-            }}
-          />
-        </fieldset>
-        <fieldset className="flex flex-col gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="players">
-            Players
-          </Label>
-          <Input
-            id="players"
-            className="w-full h-12 px-3"
-            type="number"
-            value={formData.player_count}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                player_count: Number(e.target.value),
-              }));
-            }}
-          />
-        </fieldset>
-        <fieldset className="flex flex-col gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="players">
-            Prize Pool
-          </Label>
-          <Input
-            id="players"
-            className="w-full h-12 px-3"
-            type="number"
-            value={formData.money_in_play}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                money_in_play: Number(e.target.value),
-              }));
-            }}
-          />
-        </fieldset>
-        <fieldset className="flex flex-col gap-2 grow">
-          <Label className="text-xs md:text-base" htmlFor="players">
-            Places Paid
-          </Label>
-          <Input
-            id="players"
-            className="w-full h-12 px-3"
-            type="number"
-            value={formData.places_payed}
-            onChange={(e) => {
-              setFormData((prev) => ({
-                ...prev,
-                places_payed: Number(e.target.value),
-              }));
-            }}
-          />
-        </fieldset>
+        <NumberInput
+          id="buyInAmount"
+          label="Buy-In ($)"
+          value={formData.buy_in_amount}
+          onChange={(value) => setNumber("buy_in_amount", value)}
+        />
+        <NumberInput
+          id="rebuyAmount"
+          label="Rebuy ($)"
+          value={formData.rebuy_amount}
+          onChange={(value) => setNumber("rebuy_amount", value)}
+        />
+        <NumberInput
+          id="players"
+          label="Players (incl. guests)"
+          value={formData.player_count}
+          onChange={(value) => setNumber("player_count", value)}
+        />
+        <NumberInput
+          id="rebuys"
+          label="Rebuys (incl. guests)"
+          value={formData.total_rebuys}
+          onChange={(value) => setNumber("total_rebuys", value)}
+        />
+        <NumberInput
+          id="placesPaid"
+          label="Places Paid"
+          value={formData.places_paid}
+          onChange={(value) => setNumber("places_paid", value)}
+        />
+        <div className="flex flex-col gap-2 grow">
+          <p className="text-xs md:text-base">Prize Pool</p>
+          <p className="h-12 flex items-center text-lg font-semibold">
+            ${formatMoney(prizePool)}
+          </p>
+        </div>
+        {saveError && (
+          <p className="col-span-2 text-sm text-red-500">
+            Couldn&apos;t add the tournament: {saveError}
+          </p>
+        )}
         <button
           onClick={addTournament}
-          className="w-full mt-auto border-primary bg-primary text-white h-12 rounded">
-          Add
+          disabled={!canSave}
+          className="col-span-2 w-full mt-auto border-primary bg-primary text-white h-12 rounded disabled:opacity-50"
+        >
+          {saving ? "Adding…" : "Add"}
         </button>
       </div>
       <AlertDialog
         open={addSessionsDialogOpen}
-        onOpenChange={() => setAddSessionsDialogOpen(!addSessionsDialogOpen)}>
+        onOpenChange={() => setAddSessionsDialogOpen(!addSessionsDialogOpen)}
+      >
         <AlertDialogContent className="max-w-[calc(100vw-32px)]">
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>
@@ -264,14 +298,16 @@ function NewTournamentForm({ seasons }: Props) {
             <AlertDialogCancel asChild>
               <Link
                 className="bg-neutral-600 whitespace-nowrap w-full rounded flex items-center justify-center h-12 px-12 mx-auto text-white"
-                href={"/admin/stats/tournaments"}>
+                href={"/admin/stats/tournaments"}
+              >
                 Not Now
               </Link>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
               <Link
                 className="bg-primary w-full rounded flex items-center h-12 justify-center px-12 mx-auto text-white"
-                href={`/admin/stats/tournaments/${newTournamentId}/sessions/add`}>
+                href={`/admin/stats/tournaments/${newTournamentId}/sessions/add`}
+              >
                 Yes
               </Link>
             </AlertDialogAction>
@@ -279,6 +315,34 @@ function NewTournamentForm({ seasons }: Props) {
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+function NumberInput({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2 grow">
+      <Label className="text-xs md:text-base" htmlFor={id}>
+        {label}
+      </Label>
+      <Input
+        id={id}
+        className="w-full h-12 px-3"
+        type="number"
+        min={0}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </fieldset>
   );
 }
 

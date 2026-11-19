@@ -7,28 +7,48 @@ export type Member = {
   visible?: boolean;
 };
 
+// A row of the _tournament_summaries view. player_count and total_rebuys
+// include guests, who have no sessions; prize_pool is calculated from them.
 export type Tournament = {
   id: string;
-  date: Date;
   name: string;
-  money_in_play: number;
-  buy_ins: number;
-  rebuys: number;
-  player_count: number;
+  date: string;
+  week_id: string;
   season_id: string;
-  places_payed: number;
+  season_year: number;
+  places_paid: number;
+  buy_in_amount: number;
+  rebuy_amount: number;
+  player_count: number;
+  total_rebuys: number;
+  prize_pool: number;
 };
 
+// A row of the _tournament_session_points view: one member's result. Only
+// rebuys, cash_out and place are stored; buy_in and net_profit come from the
+// tournament's prices, and the points from the place.
 export type TournamentSession = {
   id: string;
+  member_id: string;
+  tournament_id: string;
   buy_in: number;
   cash_out: number;
   net_profit: number;
   rebuys: number;
+  place: number;
+  week_id: string;
+  date: string;
+  tournament_name: string;
+  poy_points: number | null;
+  nlpi_points: number | null;
+};
+
+// What an admin enters for one member's result (a _tournament_sessions row).
+export type TournamentSessionInput = {
   tournament_id: string;
   member_id: string;
-  nlpi_points: number;
-  poy_points: number;
+  rebuys: number;
+  cash_out: number;
   place: number;
 };
 
@@ -234,28 +254,9 @@ export type MajorData = {
   }[];
 };
 
-export type MajorsData = {
-  buy_ins: number;
-  date: string;
-  id: string;
-  name: string;
-  place: number;
-  money_in_play: number;
-  player_count: number;
-  rebuys: number;
-  tournament_sessions: {
-    member_id: string;
-    buy_in: number;
-    cash_out: number;
-    net_profit: number;
-    rebuys: number;
-    nlpi_points: number;
-    poy_points: number;
-    place: number;
-  }[];
-  season: {
-    year: number;
-  };
+// A tournament with its members' results, for the tournament lists.
+export type MajorsData = Tournament & {
+  sessions: TournamentSession[];
 };
 
 export type CareerData = {

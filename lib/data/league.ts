@@ -1,5 +1,6 @@
 import type { CashSession, Member, Season, Week } from "@/utils/types";
 import { createPublicClient } from "@/utils/supabase/public";
+import { selectTournamentsWithSessions } from "@/utils/tournament/queries";
 import { leagueCache, leagueQuery, must, type DbResponse } from "./cache";
 
 // Cached reads of public league data, one per query the pages run. Each one
@@ -201,17 +202,12 @@ export const getWeeks = leagueQuery(async (seasonId: string | null) => {
 
 // --- Tournaments ---
 
-// A season's tournaments with their sessions and season year, or every
-// season's when seasonId is null.
+// A season's tournaments with their members' results, or every season's when
+// seasonId is null.
 export const getTournaments = leagueQuery(async (seasonId: string | null) => {
   "use cache";
   leagueCache();
-  return must((db) => {
-    const query = db
-      .from("tournaments")
-      .select("*, tournament_sessions(*), season(year)");
-    return seasonId ? query.eq("season_id", seasonId) : query;
-  });
+  return must((db) => selectTournamentsWithSessions(db, seasonId));
 });
 
 export const getMajorData = leagueQuery(

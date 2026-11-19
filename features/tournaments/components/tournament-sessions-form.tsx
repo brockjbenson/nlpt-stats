@@ -1,6 +1,6 @@
 "use client";
 
-import { Member, Tournament } from "@/utils/types";
+import { Member, Tournament, TournamentSessionInput } from "@/utils/types";
 import React, { useRef } from "react";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,7 +11,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { assignTournamentSessionPoints } from "@/utils/tournament/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,13 +20,7 @@ import {
   AlertDialogFooter,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  AlertCircleIcon,
-  Loader2,
-  PlusCircle,
-  X,
-  XCircle,
-} from "lucide-react";
+import { AlertCircleIcon, Loader2, PlusCircle, X, XCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { cn } from "@/lib/utils";
@@ -40,67 +33,51 @@ interface Props {
   members: Member[];
 }
 
-interface SessionNoId {
-  buy_in: number;
-  cash_out: number;
-  net_profit: number;
-  rebuys: number;
-  tournament_id: string;
-  member_id: string;
-  place: number;
-  nlpi_points: number;
-  poy_points: number;
-}
-
+// Only members who played get a session. Buy-in, net profit and points are
+// calculated by the database from the tournament's prices and the place;
+// members who skipped count as 0 automatically.
 function TournamentSessionsForm({ tournament, members }: Props) {
   const [isHydrated, setIsHydrated] = React.useState(false);
   const cashOutInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const buyInInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const placeInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
-  const [sessionsToAdd, setSessionsToAdd] = useLocalStorageState<SessionNoId[]>(
-    "tournamentSessionsToAdd",
-    []
-  );
+  const [sessionsToAdd, setSessionsToAdd] = useLocalStorageState<
+    TournamentSessionInput[]
+  >(`tournamentSessionsToAdd:${tournament.id}`, []);
   const [cashOutInputs, setCashOutInputs] = React.useState<
     Record<string, string>
   >({});
-  const [buyInInputs, setBuyInInputs] = React.useState<Record<string, string>>(
-    {}
-  );
   const [placeInputs, setPlaceInputs] = React.useState<Record<string, string>>(
-    {}
+    {},
   );
 
   const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | undefined>(undefined);
   const [confirmAdd, setConfirmAdd] = React.useState<boolean>(false);
 
+  const buyInFor = (rebuys: number) =>
+    tournament.buy_in_amount + rebuys * tournament.rebuy_amount;
+
   const handleAddAllSessions = async () => {
-    const sessionsWithPOints = assignTournamentSessionPoints(sessionsToAdd);
+    const missingPlace = sessionsToAdd.some((session) => session.place < 1);
+    if (missingPlace) {
+      setError("Every player needs a place of 1 or higher.");
+      return;
+    }
 
-    const membersWithMissingSessions = members.filter((member) => {
-      return !sessionsWithPOints.some(
-        (session) => session.member_id === member.id
-      );
-    });
-
-    const emptySessions = membersWithMissingSessions.map((member) => ({
-      buy_in: 0,
-      cash_out: 0,
-      net_profit: 0,
-      rebuys: 0,
-      tournament_id: tournament.id,
-      member_id: member.id,
-      place: 0,
-      nlpi_points: 0,
-      poy_points: 0,
-    }));
-
-    const allSessions = [...sessionsWithPOints, ...emptySessions];
+    // Send only the stored columns, even if an older draft has extra fields.
+    const sessions: TournamentSessionInput[] = sessionsToAdd.map(
+      ({ tournament_id, member_id, rebuys, cash_out, place }) => ({
+        tournament_id,
+        member_id,
+        rebuys,
+        cash_out,
+        place,
+      }),
+    );
 
     try {
       setLoading(true);
-      const result = await addTournamentSessionAction(allSessions);
+      const result = await addTournamentSessionAction(sessions);
 
       if (!result.success) {
         setError(result.message);
@@ -121,25 +98,20 @@ function TournamentSessionsForm({ tournament, members }: Props) {
     setSessionsToAdd((prev) => [
       ...prev,
       {
-        buy_in: 40,
-        cash_out: 0,
-        net_profit: 0,
-        rebuys: 0,
         tournament_id: tournament.id,
         member_id: member.id,
+        rebuys: 0,
+        cash_out: 0,
         place: 0,
-        nlpi_points: 0,
-        poy_points: 0,
       },
     ]);
   };
 
   const removeSession = (memberId: string) => {
     setSessionsToAdd((prev) =>
-      prev.filter((session) => session.member_id !== memberId)
+      prev.filter((session) => session.member_id !== memberId),
     );
     setCashOutInputs({});
-    setBuyInInputs({});
     setPlaceInputs({});
   };
 
@@ -157,39 +129,43 @@ function TournamentSessionsForm({ tournament, members }: Props) {
             className="flex items-center justify-center border-t-muted backdrop-blur-md fixed bottom-0 w-full"
             style={{
               paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 70px)",
-            }}>
+            }}
+          >
             <button
               onClick={() => setConfirmAdd(true)}
-              className="flex w-full text-sm md:text-base items-center justify-center px-3 h-12 text-white bg-primary hover:bg-primary-hover font-medium">
+              className="flex w-full text-sm md:text-base items-center justify-center px-3 h-12 text-white bg-primary hover:bg-primary-hover font-medium"
+            >
               Add Sessions
             </button>
           </div>,
-          document.body
+          document.body,
         )}
       <ul className="flex flex-col mb-8">
         {members.map((member) => {
           const correspondingSession = sessionsToAdd.find(
-            (session) => session.member_id === member.id
+            (session) => session.member_id === member.id,
           );
           const rawCashOut =
             cashOutInputs[member.id] ??
             correspondingSession?.cash_out.toFixed(2).toString();
 
-          const rawBuyIn =
-            buyInInputs[member.id] ??
-            correspondingSession?.buy_in.toFixed(2).toString();
+          // Buy-in follows the rebuys; it isn't entered.
+          const buyIn = buyInFor(correspondingSession?.rebuys ?? 0);
+          const netProfit = (correspondingSession?.cash_out ?? 0) - buyIn;
           const rawPlace =
             placeInputs[member.id] ?? correspondingSession?.place.toString();
           return (
             <li
               className="grid py-4 border-b border-neutral-600 first:border-t grid-cols-[min-content_1fr] gap-6"
-              key={member.id}>
+              key={member.id}
+            >
               {correspondingSession ? (
                 <>
                   <div className="col-span-2 relative flex flex-col items-center gap-2">
                     <button
                       onClick={() => removeSession(member.id)}
-                      className="h-4 w-4 absolute top-0 right-3">
+                      className="h-4 w-4 absolute top-0 right-3"
+                    >
                       <X />
                     </button>
                     <h2 className="mb-2">
@@ -197,90 +173,21 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                     </h2>
                     <div className="grid grid-cols-5 w-full gap-2">
                       <span className="flex flex-col gap-1 justify-center w-full items-center">
-                        <fieldset className="flex flex-col gap-2 w-full">
-                          <Label
-                            className="text-sm text-center text-neutral-400"
-                            htmlFor={`buyIn-${member.id}`}>
+                        <div className="flex flex-col gap-2 w-full">
+                          <p className="text-sm text-center text-neutral-400">
                             Buy In
-                          </Label>
-                          <input
-                            id={`buyIn-${member.id}`}
-                            value={`$${rawBuyIn}`}
-                            ref={(el) => {
-                              buyInInputRefs.current[member.id] = el;
-                            }}
-                            type="text"
-                            inputMode="decimal"
-                            onFocus={() => {
-                              if (rawBuyIn === "0" || rawBuyIn === "0.00") {
-                                setBuyInInputs((prev) => ({
-                                  ...prev,
-                                  [member.id]: "",
-                                }));
-                              }
-                              requestAnimationFrame(() => {
-                                const input = buyInInputRefs.current[member.id];
-                                if (input) {
-                                  const valueLength = input.value.length;
-                                  input.setSelectionRange(
-                                    valueLength,
-                                    valueLength
-                                  );
-                                }
-                              });
-                            }}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/^\$/, ""); // remove leading $
-                              setBuyInInputs((prev) => ({
-                                ...prev,
-                                [member.id]: raw,
-                              }));
-
-                              if (/^\d*\.?\d*$/.test(raw)) {
-                                const parsedBuyIn = parseFloat(raw);
-                                if (!isNaN(parsedBuyIn)) {
-                                  const parsedCashOut = parseFloat(
-                                    cashOutInputs[member.id] ??
-                                      correspondingSession?.cash_out
-                                        .toFixed(2)
-                                        .toString()
-                                  );
-
-                                  const newNetProfit =
-                                    !isNaN(parsedCashOut) && !isNaN(parsedBuyIn)
-                                      ? parsedCashOut - parsedBuyIn
-                                      : 0;
-
-                                  setSessionsToAdd((prevSessions) =>
-                                    prevSessions.map((session) =>
-                                      session.member_id === member.id
-                                        ? {
-                                            ...session,
-                                            buy_in: parsedBuyIn,
-                                            net_profit: newNetProfit,
-                                          }
-                                        : session
-                                    )
-                                  );
-                                }
-                              }
-                            }}
-                            onBlur={() => {
-                              setBuyInInputs((prev) => ({
-                                ...prev,
-                                [member.id]:
-                                  correspondingSession.buy_in.toFixed(2),
-                              }));
-                            }}
-                            className="h-fit p-0 text-center w-full outline-hidden ring-none bg-transparent border-b rounded-none text-base border-transparent focus:border-primary font-semibold text-white"
-                          />
-                        </fieldset>
+                          </p>
+                          <p className="text-center text-base font-semibold text-white">
+                            ${formatMoney(buyIn)}
+                          </p>
+                        </div>
                       </span>
                       <span className="flex flex-col gap-1 items-center">
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`cashOut-${member.id}`}>
+                            htmlFor={`cashOut-${member.id}`}
+                          >
                             Cash Out
                           </Label>
                           <input
@@ -305,7 +212,7 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                                   const valueLength = input.value.length;
                                   input.setSelectionRange(
                                     valueLength,
-                                    valueLength
+                                    valueLength,
                                   );
                                 }
                               });
@@ -320,28 +227,15 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                               if (/^\d*\.?\d*$/.test(raw)) {
                                 const parsedCashOut = parseFloat(raw);
                                 if (!isNaN(parsedCashOut)) {
-                                  const parsedBuyIn = parseFloat(
-                                    buyInInputs[member.id] ??
-                                      correspondingSession?.buy_in
-                                        .toFixed(2)
-                                        .toString()
-                                  );
-
-                                  const newNetProfit =
-                                    !isNaN(parsedCashOut) && !isNaN(parsedBuyIn)
-                                      ? parsedCashOut - parsedBuyIn
-                                      : 0;
-
                                   setSessionsToAdd((prevSessions) =>
                                     prevSessions.map((session) =>
                                       session.member_id === member.id
                                         ? {
                                             ...session,
                                             cash_out: parsedCashOut,
-                                            net_profit: newNetProfit,
                                           }
-                                        : session
-                                    )
+                                        : session,
+                                    ),
                                   );
                                 }
                               }
@@ -361,7 +255,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`rebuys-${member.id}`}>
+                            htmlFor={`rebuys-${member.id}`}
+                          >
                             Rebuys
                           </Label>
                           <Select
@@ -371,13 +266,15 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                                 prevSessions.map((session) =>
                                   session.member_id === member.id
                                     ? { ...session, rebuys: parseFloat(value) }
-                                    : session
-                                )
+                                    : session,
+                                ),
                               );
-                            }}>
+                            }}
+                          >
                             <SelectTrigger
                               id={`rebuys-${member.id}`}
-                              className="text-base gap-1 relative -top-0.5 text-white font-semibold py-0 h-fit border-none flex items-center justify-center">
+                              className="text-base gap-1 relative -top-0.5 text-white font-semibold py-0 h-fit border-none flex items-center justify-center"
+                            >
                               <SelectValue className="text-base font-semibold text-white" />
                             </SelectTrigger>
                             <SelectContent>
@@ -396,7 +293,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                         <fieldset className="flex flex-col gap-2 w-full">
                           <Label
                             className="text-sm text-center text-neutral-400"
-                            htmlFor={`place-${member.id}`}>
+                            htmlFor={`place-${member.id}`}
+                          >
                             Place
                           </Label>
                           <input
@@ -424,7 +322,7 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                                   const valueLength = input.value.length;
                                   input.setSelectionRange(
                                     valueLength,
-                                    valueLength
+                                    valueLength,
                                   );
                                 }
                               });
@@ -444,8 +342,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                                   prevSessions.map((session) =>
                                     session.member_id === member.id
                                       ? { ...session, place: intValue }
-                                      : session
-                                  )
+                                      : session,
+                                  ),
                                 );
                               }
                             }}
@@ -471,11 +369,10 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                           <p
                             className={cn(
                               "text-base font-semibold",
-                              getProfitTextColor(
-                                correspondingSession.net_profit
-                              )
-                            )}>
-                            ${formatMoney(correspondingSession.net_profit)}
+                              getProfitTextColor(netProfit),
+                            )}
+                          >
+                            ${formatMoney(netProfit)}
                           </p>
                         </div>
                       </span>
@@ -489,7 +386,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
                       e.preventDefault();
                       addNewSession(member);
                     }}
-                    className="w-full h-10 col-span-2 aspect-square flex items-center justify-between">
+                    className="w-full h-10 col-span-2 aspect-square flex items-center justify-between"
+                  >
                     <h2 className="text-sm md:text-base whitespace-nowrap">
                       {member.first_name} {member.last_name.slice(0, 1)}.
                     </h2>
@@ -504,7 +402,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
       </ul>
       <AlertDialog
         open={confirmAdd}
-        onOpenChange={() => setConfirmAdd(!confirmAdd)}>
+        onOpenChange={() => setConfirmAdd(!confirmAdd)}
+      >
         <AlertDialogContent>
           <AlertCircleIcon className="w-16 h-16  mx-auto text-primary" />
           <AlertDialogTitle>Have you added every session?</AlertDialogTitle>
@@ -518,7 +417,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
               onClick={() => {
                 setConfirmAdd(false);
                 handleAddAllSessions();
-              }}>
+              }}
+            >
               Yes
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -532,7 +432,8 @@ function TournamentSessionsForm({ tournament, members }: Props) {
           <AlertDialogFooter>
             <AlertDialogAction
               className="bg-muted px-12 mx-auto text-white"
-              onClick={() => setError(undefined)}>
+              onClick={() => setError(undefined)}
+            >
               Okay
             </AlertDialogAction>
           </AlertDialogFooter>
