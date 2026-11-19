@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Decisions final; screens, sync details, and phases are a proposal pending review.
+- **Status:** Approved. Phase 1 (schema) is built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-1-schema.md`.
 
 ## Goal
 
@@ -19,9 +19,12 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Extras (v1) | Players left (named), avg stack, sounds, prize pool & payouts, full-screen TV mode |
 | Entrants | Members + guests |
 | Money/chips | Set per clock, defaulted from the template |
-| Payouts | Last paid place gets the clock's buy-in back (whatever it is set to, not a fixed $40); remainder split by % across places above it; no rounding |
+| Payouts | A straight % of the pool for every paid place; no money-back rule; no rounding |
 | Places paid | Default on the template, editable per clock; **minimum 3** |
-| Starter default | 3 paid, 65/35 split for 1st/2nd |
+| Starter default | "NLPT Standard" from the league's sheet: $40 buy-in and rebuy, 20,000 chips each, 4 paid at 45/30/15/10 |
+| Rebuys | At most `max_rebuys` per player (default 2), and none once players left ≤ places paid |
+| Finding the clock | A "Tournament live" banner appears while a clock is running (phase 8) |
+| Results | The finish step writes `_tournaments` / `_tournament_sessions` |
 | Player phone view | None in v1; the shared display is enough |
 | Tests | Add Vitest for the pure logic |
 | Guests in results | Counted in the pool and live placing; excluded from saved sessions; members re-ranked |
@@ -34,32 +37,38 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 
 ## Data model
 
-### `blind_structures` (templates)
+Tables use the v2 `_` prefix. Migrations: `supabase/migrations/20261119163253_tournament_clock_schema.sql` and the three after it.
+
+### `_blind_structures` (templates)
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid pk | |
-| `name` | text | e.g. "Standard 20-min" |
-| `default_buy_in` | numeric | e.g. 40; copied to the clock, where it can be changed |
-| `default_rebuy` | numeric | |
+| `name` | text, unique | e.g. "NLPT Standard" |
+| `default_buy_in` | numeric | default 40; copied to the clock, where it can be changed |
+| `default_rebuy` | numeric | default 40 |
 | `default_starting_chips` | int | |
 | `default_rebuy_chips` | int | |
-| `default_places_paid` | int | `>= 3`; starter template uses 3 |
-| `default_payout_pcts` | numeric[] | split for places 1..N-1; starter template uses `{65,35}`; must sum to 100 |
+| `default_places_paid` | int | `>= 3`; default 4 |
+| `default_payout_pcts` | numeric[] | one % per paid place, each > 0, summing to 100; default `{45,30,15,10}` |
+| `default_max_rebuys` | int | per player; default 2 |
 | `created_at` | timestamptz | |
 
-### `blind_levels` (template levels)
+The payout check is `private.payout_pcts_valid(pcts, places_paid)`, shared by templates and clocks. It lives in the `private` schema so it isn't exposed through the API.
+
+### `_blind_levels` (template levels)
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid pk | |
-| `structure_id` | uuid fk → `blind_structures` | cascade delete |
-| `position` | int | order within structure |
+| `structure_id` | uuid fk → `_blind_structures` | cascade delete |
+| `position` | int | order within structure; unique per structure, deferred so a reorder can swap positions in one transaction |
 | `kind` | text | `level` \| `break` |
-| `small_blind`, `big_blind`, `ante` | int | null for breaks |
+| `small_blind`, `big_blind` | int | null for breaks; for levels `small_blind > 0` and `big_blind >= small_blind` |
+| `ante` | int | default 0 |
 | `duration_seconds` | int | |
 
-### `tournament_clocks`
+### `_tournament_clocks`
 
 | Column | Type | Notes |
 |---|---|---|
@@ -75,22 +84,25 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | `buy_in`, `rebuy` | numeric | copied from template defaults |
 | `starting_chips`, `rebuy_chips` | int | copied from template defaults |
 | `places_paid` | int | copied, editable until finish; `check (places_paid >= 3)` |
-| `payout_pcts` | numeric[] | copied, editable until finish |
-| `updated_at` | timestamptz | |
+| `payout_pcts` | numeric[] | copied, editable until finish; same check as the template |
+| `max_rebuys` | int | copied from the template |
+| `created_at` | timestamptz | |
 
-### `clock_entrants`
+A check keeps status and timestamps consistent: `setup` has neither `level_started_at` nor `paused_remaining_ms`; `running` has `level_started_at` and no `paused_remaining_ms`; `paused` has `paused_remaining_ms`.
+
+### `_clock_entrants`
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid pk | |
-| `clock_id` | uuid fk → `tournament_clocks` | cascade delete |
+| `clock_id` | uuid fk → `_tournament_clocks` | cascade delete |
 | `member_id` | uuid fk → `members`, nullable | null = guest |
 | `guest_name` | text, nullable | required when `member_id` is null |
 | `rebuys` | int | default 0 |
 | `busted_at` | timestamptz, nullable | null = still in |
 | `finish_place` | int, nullable | assigned at bust (players remaining at time of bust) |
 
-Constraint: exactly one of `member_id` / `guest_name` is set; a member appears at most once per clock.
+Constraints: exactly one of `member_id` / `guest_name` is set (a guest name can't be blank); a member appears at most once per clock; `busted_at` and `finish_place` are set together; no two entrants in a clock share a `finish_place`.
 
 ### Derived values (computed, not stored)
 
@@ -100,30 +112,34 @@ Constraint: exactly one of `member_id` / `guest_name` is set; a member appears a
 
 ### Payout rule
 
-Given pool `P`, the clock's `buy_in` `B`, places paid `N` (≥ 3), and `payout_pcts` (length N-1, sums to 100):
+Given pool `P`, places paid `N` (≥ 3), and `payout_pcts` (one per paid place, each > 0, summing to 100):
 
-1. Place N receives exactly `B`: the clock's configured buy-in, never a hardcoded amount. A $50 buy-in clock pays $50 back. It is the buy-in only, regardless of that player's rebuys.
-2. Places 1..N-1 split `P − B` by `payout_pcts`.
-3. No rounding.
-4. If entrants < N, `N` is reduced to the number of entrants for the calculation. This is the only case below 3 paid.
+1. Place `i` receives `P × payout_pcts[i] / 100`.
+2. No rounding.
+3. If entrants < N, only places 1..entrants are paid and their percentages are scaled up to sum to 100. This is the only case below 3 paid.
 
-Example: 12 entrants, $40 buy-in, 4 rebuys at $40 → pool $640. 3 paid, split 65/35 → 3rd $40, 1st $390, 2nd $210.
+Example: 12 entrants, $40 buy-in, 4 rebuys at $40 → pool $640. 4 paid at 45/30/15/10 → $288, $192, $96, $64.
 
 Common splits for reference:
 
-| Places paid | Split for places above money-back |
+| Places paid | Split |
 |---|---|
-| 3 | 65/35 (default), 60/40, 70/30 |
-| 4 | 50/30/20, 55/30/15 |
-| 5 | 45/28/17/10 |
+| 3 | 50/30/20 |
+| 4 | 45/30/15/10 (default) |
+| 5 | 40/25/17/11/7 |
 
-Validation: warn on the clock setup screen if any computed payout above the money-back spot is ≤ `B` (e.g. a 5-way split that leaves 4th tied with the money-back spot).
+### Rebuy rules
+
+- At most `max_rebuys` per player (default 2).
+- No rebuys once players left ≤ places paid (everyone left is in the money).
+
+Both are enforced by the rebuy action in phase 5. The cutoff changes as players bust, so it can't be a table check.
 
 ### Permissions (RLS)
 
 - `select` open to `anon` and `authenticated` on all four tables (TV and player phones need no login).
-- `insert`/`update`/`delete` only when `auth.jwt() -> 'user_metadata' ->> 'role' = 'admin'`, matching the existing `/admin` gate in `utils/supabase/middleware.ts`.
-- Realtime publication enabled for `tournament_clocks` and `clock_entrants`.
+- `insert`/`update`/`delete` only when `is_league_admin()` (checks `profiles.role`), the same five policies as `_tournaments`. Server actions also check the app's admin gate.
+- Realtime publication enabled for `_tournament_clocks` and `_clock_entrants`. `_clock_entrants` has `replica identity full`, so a delete event carries the old row's `clock_id`. Realtime filters don't apply to deletes, so the client checks `clock_id` itself.
 
 ## Clock timing
 
@@ -136,10 +152,10 @@ All state transitions are writes of timestamps; nothing ticks in the database.
 - **Next/prev level:** `level_index ± 1`, `level_started_at=now()`.
 - **Adjust time (+/− 1 min):** shift `level_started_at`.
 - **Auto-advance:** every client walks forward through `levels` from `level_started_at` to find the effective level, so displays are correct even if nobody writes. The admin control screen, when open, persists the advance with a conditional update (`where level_index = <old>`), so duplicate writes from multiple admin tabs are no-ops.
-- **Clock skew:** on load (and on Realtime reconnect) the client fetches server time via a lightweight RPC (`select now()`), measures round trip, and stores `offset = serverTime + rtt/2 − Date.now()`. All countdowns use `Date.now() + offset`.
+- **Clock skew:** on load (and on Realtime reconnect) the client fetches server time via the `server_now()` RPC (`clock_timestamp()`, not `now()`, which is the transaction start; callable by anon), measures round trip, and stores `offset = serverTime + rtt/2 − Date.now()`. All countdowns use `Date.now() + offset`.
 - Use server time (`now()` in SQL / RPC) for every timestamp written, never the admin device's clock.
 
-## Screens & routes (proposal)
+## Screens & routes
 
 | Route | Who | Purpose |
 |---|---|---|
@@ -185,14 +201,15 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Concurrent admins:** level advances use conditional updates; bust/rebuy are per-row updates, so last-write-wins is acceptable.
 - **Template edits mid-tournament:** no effect on running clocks (levels are snapshotted).
 - **Clock past final level:** stays on the last level with the countdown at 0:00 (no wrap).
-- **Validation:** `payout_pcts` length = `places_paid − 1` and sums to 100; guest name required when no member.
+- **Validation:** `payout_pcts` has one value per paid place, each > 0, summing to 100; guest name required when no member. Both are also database checks.
 
 ## Testing
 
 The repo has no test runner today. Add **Vitest** (dev dependency only) for the pure functions in `features/clock/lib/`, which carry all the tricky logic:
 
 - Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab.
-- Pool, avg stack, and payout rule (incl. money-back tracks a non-$40 buy-in, entrants < places paid, payouts at or below money-back warning).
+- Pool, avg stack, and payout rule (incl. a non-$40 buy-in and entrants < places paid).
+- Rebuy rules: the per-player limit and the in-the-money cutoff.
 - Finish results: guest re-ranking, true-position cash-outs, net profit.
 
 Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs.
@@ -242,17 +259,17 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 4. Apply the same migration to **prod** and re-run the verification.
 5. Rename old tables to `legacy_tournaments` / `legacy_tournament_sessions` (read-only); drop after a few weeks.
 
-## Implementation phases (proposal)
+## Implementation phases
 
-0. **Tournament v2 cutover** (see Phase 0; own PR, dev first).
-1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC; regenerate/extend types.
+0. **Tournament v2 cutover** (see Phase 0; own PR, dev first). Done (#24).
+1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC, types, the NLPT Standard template. Done on dev; goes to prod with phase 4.
 2. **Pure logic + tests:** `features/clock/lib` with Vitest.
 3. **Templates:** `/admin/clock/structures` CRUD.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only).
 5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
 6. **TV mode & sounds.**
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.
-8. **Nav:** admin nav link; link from tournament page when a clock is attached.
+8. **Nav:** admin nav link; "Tournament live" banner while a clock is running; link from tournament page when a clock is attached.
 
 ## Out of scope for v1
 
