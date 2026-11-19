@@ -187,7 +187,7 @@ Values from the user's sheet (`2026 Thanksgiving Showdown.pdf`, received 2026-11
 - Make it idempotent: `on conflict (name) do nothing` for the template, and levels inserted only when the template was created in this run.
 - Break notes ("Remove 25's") and the starting chip breakdown on the sheet are **out of scope for now**.
 
-**Verify:** 19 rows (16 levels, 3 breaks) in order; total length 6h 50m (16×20 min + 3×10 min); every row passes the Task 1 checks.
+**Verify:** 19 rows (16 levels, 3 breaks) in order; total scheduled length 5h 50m (16×20 min + 3×10 min; the sheet estimates a game ends after about 4.5 hours); every row passes the Task 1 checks.
 
 **Commit:** `feat: seed starter blind structure`
 
