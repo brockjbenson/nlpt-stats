@@ -8,6 +8,7 @@ import { formatDuration } from "@/features/clock/lib/format";
 import { levelNumber } from "@/features/clock/lib/levels";
 import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
 import {
+  levelStartTimes,
   type StructureDraft,
   type StructureError,
   summarizeLevels,
@@ -22,12 +23,13 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Coffee, Plus } from "lucide-react";
 import type React from "react";
+import { useState } from "react";
 
 type Props = {
   draft: StructureDraft;
@@ -46,6 +48,9 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
   const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
   const levelErrors = errors.filter(({ field }) => field === "levels");
   const keys = levels.map(({ key }) => key);
+  const startTimes = levelStartTimes(levels);
+  // The one stop whose fields are open, if any.
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const sensors = useSensors(
     // A small move starts a drag, so tapping the handle doesn't.
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -63,6 +68,13 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
     });
   };
 
+  // New rows open so their numbers can be set straight away.
+  const add = (type: "addLevel" | "addBreak"): void => {
+    const key = nextKey();
+    dispatch({ type, key });
+    setExpandedKey(key);
+  };
+
   return (
     <Card className="gap-2">
       <CardHeader className="flex flex-row items-baseline justify-between gap-2 space-y-0">
@@ -73,16 +85,14 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {/* Two columns on desktop, filled down the left first so levels
-            read in order. */}
         <DndContext
           id="structure-levels"
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={reorder}
         >
-          <SortableContext items={keys} strategy={rectSortingStrategy}>
-            <ol className="md:columns-2 md:gap-3">
+          <SortableContext items={keys} strategy={verticalListSortingStrategy}>
+            <ol className="max-w-3xl">
               {levels.map((level, index) => (
                 <LevelRow
                   key={level.key}
@@ -92,6 +102,15 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
                     level.kind === "break"
                       ? "Break"
                       : `Level ${levelNumber(levels, index)}`
+                  }
+                  startMs={startTimes[index]}
+                  isFirst={index === 0}
+                  isLast={index === levels.length - 1}
+                  isExpanded={expandedKey === level.key}
+                  onToggle={() =>
+                    setExpandedKey((current) =>
+                      current === level.key ? null : level.key,
+                    )
                   }
                   canRemove={levels.length > 1}
                   errors={levelErrors.filter(
@@ -108,19 +127,11 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
             ({ levelIndex }) => levelIndex === undefined,
           )}
         />
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatch({ type: "addLevel", key: nextKey() })}
-          >
+        <div className="flex gap-2 pl-[4.5rem]">
+          <Button variant="outline" size="sm" onClick={() => add("addLevel")}>
             <Plus size={16} /> Add Level
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => dispatch({ type: "addBreak", key: nextKey() })}
-          >
+          <Button variant="outline" size="sm" onClick={() => add("addBreak")}>
             <Coffee size={16} /> Add Break
           </Button>
         </div>

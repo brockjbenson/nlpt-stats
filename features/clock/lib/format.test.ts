@@ -5,6 +5,7 @@ import {
   formatClockTime,
   formatDollars,
   formatDuration,
+  formatElapsed,
   ordinal,
 } from "@/features/clock/lib/format";
 import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
@@ -90,5 +91,17 @@ describe("ordinal", () => {
     [103, "103rd"],
   ])("%i is %s", (place, expected) => {
     expect(ordinal(place)).toBe(expected);
+  });
+});
+
+describe("formatElapsed", () => {
+  it.each([
+    [0, "0:00"],
+    [20 * 60_000, "0:20"],
+    [80 * 60_000, "1:20"],
+    [330 * 60_000, "5:30"],
+    [90_000, "0:01"],
+  ])("%i ms reads %s", (ms, expected) => {
+    expect(formatElapsed(ms)).toBe(expected);
   });
 });

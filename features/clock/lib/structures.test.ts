@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   copyName,
   draftToSaveInput,
+  levelStartTimes,
   NAME_MAX_LENGTH,
   newStructureDraft,
   type StructureDraft,
@@ -233,5 +234,18 @@ describe("copyName", () => {
     const name = copyName(long, [long]);
     expect(name.length).toBe(NAME_MAX_LENGTH);
     expect(name.startsWith("Copy of x")).toBe(true);
+  });
+});
+
+describe("levelStartTimes", () => {
+  it("gives each row the time it starts", () => {
+    const starts = levelStartTimes(NLPT_STANDARD_LEVELS);
+    const minutes = starts.map((ms) => ms / 60_000);
+    expect(minutes.slice(0, 7)).toEqual([0, 20, 40, 60, 80, 90, 110]);
+    expect(minutes[18]).toBe(330);
+  });
+
+  it("is empty with no rows", () => {
+    expect(levelStartTimes([])).toEqual([]);
   });
 });

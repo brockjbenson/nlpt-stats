@@ -245,3 +245,13 @@ export function copyName(name: string, takenNames: string[]): string {
     if (!taken.has(candidate)) return candidate;
   }
 }
+
+// When each row starts, in ms from the start of the tournament.
+export function levelStartTimes(levels: BlindLevel[]): number[] {
+  let elapsedMs = 0;
+  return levels.map((level) => {
+    const startMs = elapsedMs;
+    elapsedMs += levelDurationMs(level);
+    return startMs;
+  });
+}

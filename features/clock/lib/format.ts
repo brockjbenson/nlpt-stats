@@ -56,6 +56,13 @@ export function formatClockTime(ms: number): string {
   return `${minutes}:${twoDigits(seconds)}`;
 }
 
+// Time into the tournament: "0:20", "1:20", "5:30" (hours:minutes).
+export function formatElapsed(ms: number): string {
+  const totalMinutes = Math.floor(Math.max(0, ms) / MS_PER_MINUTE);
+  const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+  return `${hours}:${twoDigits(totalMinutes % MINUTES_PER_HOUR)}`;
+}
+
 // "1,000 / 2,000", with " (ante 200)" when there's an ante, or "Break".
 export function formatBlinds(level: BlindLevel): string {
   if (level.kind === "break") return "Break";
