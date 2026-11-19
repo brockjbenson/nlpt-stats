@@ -1,72 +1,56 @@
-import AdminCashCarousel from "@/components/admin/stats/cash/cash-nav";
 import ErrorHandler from "@/components/error-handler";
+import { ADMIN_ACTION_CLASS } from "@/components/admin-nav/admin-action";
+import DesktopPageHeader from "@/components/page-header/desktop-page-header";
+import PageHeader from "@/components/page-header/page-header";
+import { Card } from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
+import { Season } from "@/utils/types";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-interface Props {
-  searchParams: Promise<{ year: string } | null>;
-}
-
-async function CashGames({ searchParams }: Props) {
-  const params = await searchParams;
+// Admin cash sessions: pick a season to see its weeks and edit them.
+async function CashGames() {
   const db = await createClient();
-  const currentYear = new Date().getFullYear();
-  const [
-    // { data: members, error: membersError },
-    { data: season, error: seasonError },
-  ] = await Promise.all([
-    // db.from("members").select("*").order("first_name", { ascending: true }),
-    db.from("season").select("*").order("year", { ascending: false }),
-  ]);
+  const { data: seasons, error } = await db
+    .from("season")
+    .select("*")
+    .order("year", { ascending: false });
 
-  if (seasonError) {
+  if (error) {
     return (
       <ErrorHandler
-        title="Error fetching season stats"
-        errorMessage={seasonError?.message || "Unknown error"}
-        pageTitle="Cash Stats"
+        title="Error fetching seasons"
+        errorMessage={error.message}
+        pageTitle="Cash Sessions"
       />
     );
   }
 
-  // if (membersError) {
-  //   return (
-  //     <ErrorHandler
-  //       title="Error fetching season stats"
-  //       errorMessage={membersError?.message || "Unknown error"}
-  //       pageTitle="Cash Stats"
-  //     />
-  //   );
-  // }
-
-  const year =
-    params && params.year
-      ? season.find((s) => s.year === parseInt(params.year))
-      : season.find((s) => s.year === currentYear);
-
-  // const activeSeason = season.find((s) => s.year === year?.year) || season[0];
-
   return (
     <>
-      <AdminCashCarousel
-        seasons={season}
-        year={year.year.toString()}
-        isAdmin={true}
-      />
-      <div className="flex items-center px-2 md:mt-8 mb-4 justify-between">
-        <h2>Cash Games</h2>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-4">
-            <Link
-              className="bg-primary text-background border border-primary font-semibold text-sm flex items-center justify-center hover:bg-primary-hover px-4 py-2 rounded"
-              href="/admin/stats/cash/new">
-              Add Sessions
-            </Link>
-          </div>
-        </div>
+      <PageHeader title="Cash Sessions" />
+      <DesktopPageHeader title="Cash Sessions" />
+      <div className="flex justify-end px-2 mb-4">
+        <Link className={ADMIN_ACTION_CLASS} href="/admin/stats/cash/new">
+          Add Sessions
+        </Link>
       </div>
+      <ul className="flex flex-col gap-3 px-2 pb-8">
+        {(seasons as Season[]).map((season) => (
+          <li key={season.id}>
+            <Link href={`/admin/stats/cash/${season.id}/sessions`}>
+              <Card className="flex-row items-center justify-between px-4 py-4 hover:border-primary transition-colors">
+                <span className="text-lg font-semibold">{season.year}</span>
+                <span className="flex items-center gap-1 text-sm text-muted">
+                  Weeks
+                  <ChevronRight className="size-4" />
+                </span>
+              </Card>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }

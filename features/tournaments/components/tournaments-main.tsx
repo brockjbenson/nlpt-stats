@@ -14,9 +14,11 @@ import {
 interface Props {
   tournamentsData: MajorsData[];
   members?: Member[];
+  // Link each card to its admin page instead of the public one.
+  isAdmin?: boolean;
 }
 
-function TournamentsMain({ tournamentsData, members }: Props) {
+function TournamentsMain({ tournamentsData, members, isAdmin }: Props) {
   const year = tournamentsData[0]?.season_year.toString();
   return (
     <>
@@ -24,6 +26,7 @@ function TournamentsMain({ tournamentsData, members }: Props) {
         {tournamentsData.length > 0 ? (
           tournamentsData.map((tournament: MajorsData) => (
             <TournamentCard
+              isAdmin={isAdmin}
               members={members}
               data={tournament}
               key={tournament.id}
