@@ -23,14 +23,16 @@ const SECONDS_PER_MINUTE = 60;
 const BREAK_CARD_CLASS =
   "border-primary/50 bg-[color-mix(in_oklch,var(--primary)_12%,var(--card))]";
 
-function chips(value: number | null): string {
+function chipsOrDash(value: number | null): string {
   return value !== null && Number.isFinite(value) ? formatChips(value) : "—";
 }
 
 // "1,000 / 2,000", plus " · ante 200" when there is one.
 function blindsText(level: BlindLevel): string {
-  const blinds = `${chips(level.small_blind)} / ${chips(level.big_blind)}`;
-  return level.ante > 0 ? `${blinds} · ante ${chips(level.ante)}` : blinds;
+  const blinds = `${chipsOrDash(level.small_blind)} / ${chipsOrDash(level.big_blind)}`;
+  return level.ante > 0
+    ? `${blinds} · ante ${chipsOrDash(level.ante)}`
+    : blinds;
 }
 
 function minutesText(level: BlindLevel): string {
