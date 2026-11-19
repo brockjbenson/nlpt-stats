@@ -1,19 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import CompactField from "@/features/clock/components/structures/compact-field";
 import ErrorText from "@/features/clock/components/structures/error-text";
-import NumberInput from "@/features/clock/components/structures/number-input";
+import LevelEditFields from "@/features/clock/components/structures/level-edit-fields";
+import TimelineMarker from "@/features/clock/components/structures/timeline-marker";
 import { formatChips, formatElapsed } from "@/features/clock/lib/format";
-import { NOTE_MAX_LENGTH } from "@/features/clock/lib/levels";
 import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
 import type {
   DraftLevel,
@@ -32,14 +23,6 @@ const SECONDS_PER_MINUTE = 60;
 const BREAK_CARD_CLASS =
   "border-primary/50 bg-[color-mix(in_oklch,var(--primary)_12%,var(--card))]";
 
-type BlindField = "small_blind" | "big_blind" | "ante";
-
-const BLIND_FIELDS: { field: BlindField; label: string }[] = [
-  { field: "small_blind", label: "SB" },
-  { field: "big_blind", label: "BB" },
-  { field: "ante", label: "Ante" },
-];
-
 function chips(value: number | null): string {
   return value !== null && Number.isFinite(value) ? formatChips(value) : "—";
 }
@@ -53,38 +36,6 @@ function blindsText(level: BlindLevel): string {
 function minutesText(level: BlindLevel): string {
   const minutes = level.duration_seconds / SECONDS_PER_MINUTE;
   return Number.isFinite(minutes) ? `${minutes}m` : "—";
-}
-
-// The dot and line on the left of a stop. The line runs from the previous
-// stop to the next, so it starts at the first dot and ends at the last.
-function TimelineMarker({
-  isBreak,
-  isFirst,
-  isLast,
-}: {
-  isBreak: boolean;
-  isFirst: boolean;
-  isLast: boolean;
-}) {
-  return (
-    <div className="relative w-4 shrink-0" aria-hidden>
-      <span
-        className={cn(
-          "absolute left-1/2 w-px -translate-x-1/2 bg-neutral-700",
-          isFirst ? "top-4" : "top-0",
-          isLast ? "h-4" : "bottom-0",
-        )}
-      />
-      <span
-        className={cn(
-          "absolute left-1/2 top-[11px] -translate-x-1/2",
-          isBreak
-            ? "size-3 rotate-45 bg-primary"
-            : "size-2.5 rounded-full border-2 border-primary bg-background",
-        )}
-      />
-    </div>
-  );
 }
 
 type Props = {
@@ -215,74 +166,7 @@ function LevelRow({
             </Button>
           </div>
           {isExpanded && (
-            <div
-              id={id("fields")}
-              className="grid grid-cols-2 gap-2 px-1 pb-1 pt-2 sm:grid-cols-5"
-            >
-              <CompactField htmlFor={id("kind")} label="Type">
-                <Select
-                  value={level.kind}
-                  onValueChange={(kind) =>
-                    update({ kind: kind as BlindLevel["kind"] })
-                  }
-                >
-                  <SelectTrigger
-                    id={id("kind")}
-                    variant="outline"
-                    className="h-9 px-2"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="level">Level</SelectItem>
-                    <SelectItem value="break">Break</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CompactField>
-              {!isBreak &&
-                BLIND_FIELDS.map(({ field, label: fieldLabel }) => (
-                  <CompactField
-                    key={field}
-                    htmlFor={id(field)}
-                    label={fieldLabel}
-                  >
-                    <NumberInput
-                      id={id(field)}
-                      min={0}
-                      step={25}
-                      value={level[field]}
-                      onValueChange={(value) => update({ [field]: value })}
-                    />
-                  </CompactField>
-                ))}
-              <CompactField htmlFor={id("minutes")} label="Min">
-                <NumberInput
-                  id={id("minutes")}
-                  min={1}
-                  step={1}
-                  value={level.duration_seconds / SECONDS_PER_MINUTE}
-                  onValueChange={(minutes) =>
-                    update({ duration_seconds: minutes * SECONDS_PER_MINUTE })
-                  }
-                />
-              </CompactField>
-              {isBreak && (
-                <CompactField
-                  htmlFor={id("note")}
-                  label="Note (optional)"
-                  className="col-span-2 sm:col-span-3"
-                >
-                  <Input
-                    id={id("note")}
-                    className="h-9 px-2 text-sm"
-                    maxLength={NOTE_MAX_LENGTH}
-                    placeholder="Color up the 25s"
-                    value={level.note ?? ""}
-                    onChange={(event) => update({ note: event.target.value })}
-                  />
-                </CompactField>
-              )}
-            </div>
+            <LevelEditFields level={level} id={id} update={update} />
           )}
           <div className="px-1">
             <ErrorText errors={errors} />
