@@ -1,5 +1,5 @@
 import { MajorsData } from "@/utils/types";
-import TournamentCard from "./tournament-card";
+import TournamentCard from "@/features/tournaments/components/tournament-card";
 import { AlertCircle } from "lucide-react";
 import {
   Empty,

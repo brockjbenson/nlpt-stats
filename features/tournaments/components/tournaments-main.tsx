@@ -17,7 +17,7 @@ interface Props {
 }
 
 function TournamentsMain({ tournamentsData, members }: Props) {
-  const year = tournamentsData[0]?.season.year.toString();
+  const year = tournamentsData[0]?.season_year.toString();
   return (
     <>
       <div className="grid grid-cols-1 px-2 pb-4 md:grid-cols-2 gap-4 md:gap-8">

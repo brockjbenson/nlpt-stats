@@ -29,10 +29,8 @@ export async function tournamentParams() {
   if (error) {
     throw new Error(`Listing tournaments to prebuild: ${error.message}`);
   }
-  return (tournaments as { id: string; season: { year: number } }[]).map(
-    (tournament) => ({
-      year: String(tournament.season.year),
-      id: tournament.id,
-    }),
-  );
+  return tournaments.map((tournament) => ({
+    year: String(tournament.season_year),
+    id: tournament.id,
+  }));
 }
