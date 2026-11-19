@@ -190,9 +190,26 @@ function isPositiveWholeNumber(value: number): boolean {
   return Number.isInteger(value) && value > 0;
 }
 
-function nameError(name: string): string | null {
+// What a set of settings belongs to, for messages ("Give the clock a name.").
+export type SettingsOwner = "template" | "clock";
+
+// The money, chips, payouts and rebuy limit shared by templates and clocks,
+// with the short field names the editors use.
+export type SettingsFields = Pick<
+  StructureDraft,
+  | "name"
+  | "buy_in"
+  | "rebuy"
+  | "starting_chips"
+  | "rebuy_chips"
+  | "places_paid"
+  | "payout_pcts"
+  | "max_rebuys"
+>;
+
+function nameError(name: string, owner: SettingsOwner): string | null {
   const trimmed = name.trim();
-  if (trimmed === "") return "Give the template a name.";
+  if (trimmed === "") return `Give the ${owner} a name.`;
   if (trimmed.length > NAME_MAX_LENGTH) {
     return `Keep the name to ${NAME_MAX_LENGTH} characters or fewer.`;
   }
@@ -211,8 +228,10 @@ export function isCompleteSplit(pcts: number[]): boolean {
 
 // Same rule as private.payout_pcts_valid: one share for each place above
 // the last paid place, each above zero, adding up to 100.
-function payoutError(draft: StructureDraft): string | null {
-  const { payout_pcts: pcts, places_paid: places } = draft;
+function payoutError({
+  payout_pcts: pcts,
+  places_paid: places,
+}: SettingsFields): string | null {
   if (pcts.length !== places - 1)
     return `Enter a percentage for each of the ${places - 1} places above the last paid place.`;
   if (pcts.some((pct) => !(pct > 0)))
@@ -235,47 +254,57 @@ function levelErrors(levels: DraftLevel[]): StructureError[] {
   return [];
 }
 
-// Everything wrong with a draft, in form order. Empty means it can be saved.
-// The rules match the database checks, so a valid draft won't be rejected.
-export function validateStructureDraft(
-  draft: StructureDraft,
+// Everything wrong with a template's or clock's settings, in form order.
+// The rules match the database checks.
+export function validateSettings(
+  settings: SettingsFields,
+  owner: SettingsOwner,
 ): StructureError[] {
   const errors: StructureError[] = [];
   const add = (field: StructureField, message: string | null): void => {
     if (message) errors.push({ field, message });
   };
 
-  add("name", nameError(draft.name));
+  add("name", nameError(settings.name, owner));
   add(
     "money",
-    isMoney(draft.buy_in) && isMoney(draft.rebuy)
+    isMoney(settings.buy_in) && isMoney(settings.rebuy)
       ? null
       : "Buy-in and rebuy must be $0 or more.",
   );
   add(
     "chips",
-    isPositiveWholeNumber(draft.starting_chips) &&
-      isPositiveWholeNumber(draft.rebuy_chips)
+    isPositiveWholeNumber(settings.starting_chips) &&
+      isPositiveWholeNumber(settings.rebuy_chips)
       ? null
       : "Chip counts must be whole numbers above 0.",
   );
   add(
     "places_paid",
-    Number.isInteger(draft.places_paid) && draft.places_paid >= MIN_PLACES_PAID
+    Number.isInteger(settings.places_paid) &&
+      settings.places_paid >= MIN_PLACES_PAID
       ? null
       : `Pay at least ${MIN_PLACES_PAID} places.`,
   );
   // Payout percentages only make sense once places paid is valid.
   if (!errors.some(({ field }) => field === "places_paid")) {
-    add("payout_pcts", payoutError(draft));
+    add("payout_pcts", payoutError(settings));
   }
   add(
     "max_rebuys",
-    Number.isInteger(draft.max_rebuys) && draft.max_rebuys >= 0
+    Number.isInteger(settings.max_rebuys) && settings.max_rebuys >= 0
       ? null
       : "Max rebuys must be a whole number, 0 or more.",
   );
-  return [...errors, ...levelErrors(draft.levels)];
+  return errors;
+}
+
+// Everything wrong with a draft, in form order. Empty means it can be saved.
+// The rules match the database checks, so a valid draft won't be rejected.
+export function validateStructureDraft(
+  draft: StructureDraft,
+): StructureError[] {
+  return [...validateSettings(draft, "template"), ...levelErrors(draft.levels)];
 }
 
 export type LevelSummary = {
