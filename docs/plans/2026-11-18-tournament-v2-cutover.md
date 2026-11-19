@@ -165,7 +165,9 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 
 **Commit:** `chore: drop unused tournament SQL functions`
 
-### Task 6: App reads → v2
+### Task 6: App reads → v2 ✅ 2026-11-19 (`6a41939`)
+
+**Result:** `utils/tournament/queries.ts` `selectTournamentsWithSessions(db, seasonId)` runs two queries (summaries, then session points) and groups them in code. It's used by `getTournaments` (public cache) and both admin list pages. The `Tournament`, `TournamentSession` and `MajorsData` types (`sessions`, `season_year`, `prize_pool`, `total_rebuys`) now describe the v2 views. Removed the duplicate public tournament card. The tournament detail pages read through `get_major_data`, whose output names didn't change, so they weren't touched. `/admin/tournaments` is orphaned (nothing links to it) and its query was already broken; it now uses the helper. Remove the page or keep it as a follow-up.
 
 **Files (modify):**
 - `utils/types.ts`: `Tournament` becomes the `_tournament_summaries` shape (`week_id`, `season_id`, `season_year`, `places_paid`, `buy_in_amount`, `rebuy_amount`, `player_count`, `total_rebuys`, `prize_pool`). `TournamentSession` becomes the `_tournament_session_points` shape (adds `week_id`, `date`, `tournament_name`; `buy_in` / `net_profit` stay present but are derived).
@@ -182,7 +184,11 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 
 **Commit:** `feat: read tournaments from v2 tables in app`
 
-### Task 7: Admin writes → v2
+### Task 7: Admin writes → v2 ✅ 2026-11-19 (`c0dc3ab`)
+
+**Result:** The new tournament form has a week select (defaults to the season's latest week) plus buy-in and rebuy prices (default $40), guest-inclusive player and rebuy totals, places paid, and a calculated prize pool. It sends the date as `yyyy-MM-dd` and shows errors on the page. The session form drops the buy-in input (buy-in and net profit are calculated for display), saves only members who played, requires place ≥ 1, and keeps drafts in the browser per tournament (`tournamentSessionsToAdd:<id>`). `addTournamentSessionAction` checks for an admin, inserts into `_tournament_sessions`, maps `23505` to a clear message, and recalculates NLPI rankings for the tournament's week. That recalculation never actually ran before, because v1 tournaments had no `week_id`. `utils/tournament/utils.ts` (in-code points tables and filler helpers) is deleted. `features/tournaments/components/tournament-sessions-list.tsx` is unused, already dead code.
+
+**Verified:** `npx tsc --noEmit` clean (the only errors are stale `.next/types`). ESLint clean apart from one warning that was already there. Prettier applied. `npm run build` passes against **dev** (shell env from the scratchpad, `.env.local` untouched), with all tournament pages pre-rendered from v2. The local build needs `SUPABASE_SERVICE_ROLE_KEY` for `/admin/tournaments` (`createStaticClient`); that was true before this change, and a placeholder was used for the check.
 
 **Files (modify):**
 - `app/admin/stats/tournaments/new/_components/newTournamentForm.tsx`: insert into `_tournaments`: `name`, `date`, `week_id` (replaces the season picker; add a week select filtered by season, sourced from v1 `week`, whose ids match `_weeks`), `places_paid`, `buy_in_amount` (default 40), `rebuy_amount` (default 40), `player_count`, `total_rebuys`. Drop the `money_in_play` input; show the calculated prize pool read-only.
@@ -200,7 +206,9 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 
 **Commit:** `feat: write tournaments and sessions to v2 tables`
 
-### Task 8: Local click-through on dev (user checkpoint)
+### Task 8: Local click-through on dev (user checkpoint) ⏳ set up 2026-11-19
+
+`.env.development.local` (gitignored) points `npm run dev` at dev. Delete it to go back to prod. **Dev admin access:** the app checks `user_metadata.role = 'admin'`, but on dev the admin role is only in `profiles` (dev's `member_admin_and_accounts` migration), so `/admin` is locked on dev until a dev user gets that metadata.
 
 **Files:**
 - Create (gitignored, **do not commit**): `.env.development.local` with the dev URL and the publishable/anon key from `mcp__supabase-dev__get_publishable_keys`. Confirm `.gitignore` covers `.env*.local` first.
