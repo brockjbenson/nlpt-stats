@@ -6,8 +6,10 @@ import {
 import type { BlindLevel } from "@/features/clock/types";
 
 const BREAK_SECONDS = 10 * 60;
-// A suggested level raises the big blind by half, never doubling it.
-const BLIND_STEP = 1.5;
+// Round big blinds within each power of ten: 100, 150, 200, 300, 400, 500,
+// 600, 800, 1,000, 1,500 … A suggested level moves to the next one up, a
+// 25-50% raise that never doubles.
+const BIG_BLIND_STEPS = [1, 1.5, 2, 3, 4, 5, 6, 8];
 const FIRST_LEVEL: BlindLevel = {
   kind: "level",
   small_blind: 100,
@@ -39,26 +41,28 @@ export type StructureEditorAction =
   | { type: "reorderLevel"; from: number; to: number }
   | { type: "removeLevel"; index: number };
 
-// The chip a small blind of this size is rounded to.
-function chipUnit(smallBlind: number): number {
-  if (smallBlind < 1000) return 25;
-  if (smallBlind < 10000) return 100;
-  return 500;
+// The next round big blind above bigBlind (30,000 → 40,000, 350 → 400).
+export function nextBigBlind(bigBlind: number): number {
+  const power = Math.floor(Math.log10(bigBlind));
+  const candidates = [power, power + 1].flatMap((exponent) =>
+    BIG_BLIND_STEPS.map((step) => Math.round(step * 10 ** exponent)),
+  );
+  // 10^(power + 1) is always above bigBlind, so there's always a next step.
+  return (
+    candidates.find((candidate) => candidate > bigBlind) ?? 10 ** (power + 1)
+  );
 }
 
 // The level to offer after the playing levels in `levels`: same length and
-// ante, big blind raised 1.5x, with the small blind (half of it) rounded to
-// a usable chip and the big blind twice the small.
+// ante, the next round big blind, and a small blind of half that.
 function suggestLevel(levels: BlindLevel[]): BlindLevel {
   const last = levels.findLast(({ kind }) => kind === "level");
   if (!last?.big_blind) return FIRST_LEVEL;
-  const rawSmallBlind = (last.big_blind * BLIND_STEP) / 2;
-  const unit = chipUnit(rawSmallBlind);
-  const smallBlind = Math.round(rawSmallBlind / unit) * unit;
+  const bigBlind = nextBigBlind(last.big_blind);
   return {
     kind: "level",
-    small_blind: smallBlind,
-    big_blind: smallBlind * 2,
+    small_blind: bigBlind / 2,
+    big_blind: bigBlind,
     ante: last.ante,
     duration_seconds: last.duration_seconds,
   };

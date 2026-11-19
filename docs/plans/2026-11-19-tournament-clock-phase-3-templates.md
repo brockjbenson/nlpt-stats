@@ -22,7 +22,7 @@
 2. **Save the whole template at once** (settings and levels together) with a Save button, not field-by-field autosave. Leaving with unsaved changes asks for confirmation.
 3. **Durations are entered in minutes** (whole minutes); stored as seconds.
 4. **Changing places paid fills in a suggested split** for 3, 4 or 5 places (50/30/20, 45/30/15/10, 40/25/17/11/7, from the design doc). For other counts the list is resized and the admin types the split.
-5. **"Add level" copies the last playing level's length and raises its big blind 1.5x** (never doubling), with the small blind half of that rounded to a usable chip (after 300/600 it suggests 450/900). The admin edits as needed.
+5. **"Add level" copies the last playing level's length and moves to the next round big blind**: 1, 1.5, 2, 3, 4, 5, 6, 8 × each power of ten (…, 600, 800, 1,000, 1,500, 2,000, 3,000, 4,000, 5,000, …), a 25-50% raise that never doubles; the small blind is half (after 300/600 it suggests 400/800; after 30,000 → 40,000). The admin edits as needed.
 6. **Duplicate** makes "Copy of <name>"; delete asks for confirmation. Clocks already made from a template keep their own copy of the levels, so editing or deleting a template never changes a clock.
 7. Admin nav gets a **Clock** group with **Blind Structures**. Public navigation and the live banner stay in phase 8.
 
@@ -159,7 +159,7 @@ New rows get a fresh `key` from a counter passed in the action (keeps the reduce
 **Behavior:**
 - **Settings card:** name; buy-in and rebuy ($); starting and rebuy chips; max rebuys per player.
 - **Payouts card:** places paid; one % input per place; a running total that turns red unless it's 100%.
-- **Levels card:** numbered rows ("Level 5", "Break") with kind select, small blind, big blind, ante, minutes, and up/down/remove icon buttons (with `aria-label`s). Breaks show only minutes. "Add level" and "Add break" buttons below.
+- **Levels card:** numbered rows ("Level 5", "Break") with a drag handle (reorder by dragging, with mouse, touch or keyboard), kind select, small blind, big blind, ante, minutes, and a remove button (with `aria-label`s). Breaks show only minutes. "Add level" and "Add break" buttons below.
 - **Summary bar** (sticky at the bottom on mobile): levels, breaks, total length, and Save. Save is disabled while saving or while `validateStructureDraft` reports errors; errors show next to their fields (and the row for level errors).
 - Saving a new template redirects to its edit page; saving an existing one shows a toast and stays. Server errors show in a toast.
 - Leaving with unsaved changes (Back link or closing the tab) asks for confirmation (`beforeunload` plus a confirm on the Back link).
