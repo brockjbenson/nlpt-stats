@@ -86,7 +86,7 @@ function LevelRow({ level, index, label, canRemove, errors, dispatch }: Props) {
         </button>
         <p
           className={cn(
-            "w-14 shrink-0 text-sm font-semibold",
+            "w-16 shrink-0 whitespace-nowrap text-sm font-semibold",
             isBreak && "text-primary",
           )}
         >
