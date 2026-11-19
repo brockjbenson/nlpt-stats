@@ -236,6 +236,23 @@ describe("updateLevel", () => {
     expect(draft.levels[1]).toEqual(breakRow("b"));
   });
 
+  it("sets a break's note", () => {
+    const draft = run(draftWith([level("a", 100, 200), breakRow("b")]), {
+      type: "updateLevel",
+      index: 1,
+      change: { note: "Color up the 25s" },
+    });
+    expect(draft.levels[1].note).toBe("Color up the 25s");
+  });
+
+  it("drops the note when a break becomes a level", () => {
+    const draft = run(
+      draftWith([level("a", 300, 600), { ...breakRow("b"), note: "Dinner" }]),
+      { type: "updateLevel", index: 1, change: { kind: "level" } },
+    );
+    expect(draft.levels[1].note).toBeUndefined();
+  });
+
   it("suggests blinds when a break becomes a level", () => {
     const draft = run(
       {

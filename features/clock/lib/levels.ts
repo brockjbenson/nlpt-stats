@@ -1,6 +1,7 @@
 import type { BlindLevel } from "@/features/clock/types";
 
 export const MS_PER_SECOND = 1000;
+export const NOTE_MAX_LENGTH = 100;
 
 type LevelRow = Record<string, unknown>;
 
@@ -12,9 +13,32 @@ function isNonNegativeInteger(value: unknown): value is number {
   return Number.isInteger(value) && (value as number) >= 0;
 }
 
+// A note with the spaces trimmed off, or null when there's no text.
+export function cleanNote(note: unknown): string | null {
+  if (typeof note !== "string") return null;
+  const trimmed = note.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+// Why a row's note breaks the rules (breaks only, up to 100 characters),
+// or null when it's fine.
+function noteProblem(row: LevelRow): string | null {
+  if (row.note == null) return null;
+  if (typeof row.note !== "string") return "note must be text";
+  const note = cleanNote(row.note);
+  if (note !== null && row.kind !== "break")
+    return "only a break can have a note";
+  if (note !== null && note.length > NOTE_MAX_LENGTH) {
+    return `Keep break notes to ${NOTE_MAX_LENGTH} characters or fewer`;
+  }
+  return null;
+}
+
 // Why a row breaks the _blind_levels rules, or null when it's valid.
 export function levelProblem(row: LevelRow): string | null {
   if (row.kind !== "level" && row.kind !== "break") return "unknown kind";
+  const notesIssue = noteProblem(row);
+  if (notesIssue) return notesIssue;
   if (!isPositiveInteger(row.duration_seconds)) {
     return "duration_seconds must be a positive whole number";
   }
@@ -55,6 +79,9 @@ export function parseLevels(value: unknown): BlindLevel[] {
       big_blind: level.big_blind ?? null,
       ante: level.ante,
       duration_seconds: level.duration_seconds,
+      // Only rows that have a note field get one, so older snapshots
+      // without notes read back unchanged.
+      ...("note" in level && { note: cleanNote(level.note) }),
     };
   });
 }

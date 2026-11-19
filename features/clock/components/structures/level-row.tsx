@@ -8,10 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import CompactField from "@/features/clock/components/structures/compact-field";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import NumberInput from "@/features/clock/components/structures/number-input";
 import { formatChips, formatElapsed } from "@/features/clock/lib/format";
+import { NOTE_MAX_LENGTH } from "@/features/clock/lib/levels";
 import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
 import type {
   DraftLevel,
@@ -182,8 +184,13 @@ function LevelRow({
                   label
                 )}
               </span>
-              <span className="min-w-0 flex-1 truncate tabular-nums">
-                {isBreak ? "" : blindsText(level)}
+              <span
+                className={cn(
+                  "min-w-0 flex-1 truncate",
+                  isBreak ? "italic text-muted" : "tabular-nums",
+                )}
+              >
+                {isBreak ? (level.note ?? "") : blindsText(level)}
               </span>
               <span className="shrink-0 text-xs tabular-nums text-muted">
                 {minutesText(level)}
@@ -259,6 +266,22 @@ function LevelRow({
                   }
                 />
               </CompactField>
+              {isBreak && (
+                <CompactField
+                  htmlFor={id("note")}
+                  label="Note (optional)"
+                  className="col-span-2 sm:col-span-3"
+                >
+                  <Input
+                    id={id("note")}
+                    className="h-9 px-2 text-sm"
+                    maxLength={NOTE_MAX_LENGTH}
+                    placeholder="Color up the 25s"
+                    value={level.note ?? ""}
+                    onChange={(event) => update({ note: event.target.value })}
+                  />
+                </CompactField>
+              )}
             </div>
           )}
           <div className="px-1">

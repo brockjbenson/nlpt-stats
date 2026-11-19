@@ -50,6 +50,29 @@ describe("parseLevels", () => {
   });
 });
 
+describe("parseLevels notes", () => {
+  it("keeps a break's note", () => {
+    const [, , , , breakRow] = parseLevels(
+      withLevel(4, { note: "Color up the 25s" }),
+    );
+    expect(breakRow.note).toBe("Color up the 25s");
+  });
+
+  it.each([
+    ["a note on a level", 2, { note: "hi" }],
+    ["a note that isn't text", 4, { note: 5 }],
+    ["a note over 100 characters", 4, { note: "x".repeat(101) }],
+  ])("rejects %s", (_name, index, change) => {
+    expect(() => parseLevels(withLevel(index, change))).toThrow(
+      new RegExp(`index ${index}`),
+    );
+  });
+
+  it("treats a blank note as none", () => {
+    expect(parseLevels(withLevel(4, { note: "  " }))[4].note).toBeNull();
+  });
+});
+
 describe("levelDurationMs", () => {
   it("converts seconds to milliseconds", () => {
     expect(levelDurationMs(NLPT_STANDARD_LEVELS[0])).toBe(1_200_000);

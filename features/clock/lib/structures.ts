@@ -1,4 +1,8 @@
-import { levelDurationMs, levelProblem } from "@/features/clock/lib/levels";
+import {
+  cleanNote,
+  levelDurationMs,
+  levelProblem,
+} from "@/features/clock/lib/levels";
 import type {
   BlindLevel,
   BlindStructure,
@@ -127,6 +131,7 @@ export function structureToDraft(
         big_blind: level.big_blind,
         ante: level.ante,
         duration_seconds: level.duration_seconds,
+        ...(level.note && { note: level.note }),
       })),
   };
 }
@@ -143,13 +148,18 @@ export function draftToSaveInput(draft: StructureDraft): StructureSaveInput {
       default_payout_pcts: [...draft.payout_pcts],
       default_max_rebuys: draft.max_rebuys,
     },
-    levels: draft.levels.map((level) => ({
-      kind: level.kind,
-      small_blind: level.small_blind,
-      big_blind: level.big_blind,
-      ante: level.ante,
-      duration_seconds: level.duration_seconds,
-    })),
+    levels: draft.levels.map((level) => {
+      // Notes are for breaks; a blank one isn't sent.
+      const note = level.kind === "break" ? cleanNote(level.note) : null;
+      return {
+        kind: level.kind,
+        small_blind: level.small_blind,
+        big_blind: level.big_blind,
+        ante: level.ante,
+        duration_seconds: level.duration_seconds,
+        ...(note && { note }),
+      };
+    }),
   };
 }
 

@@ -180,6 +180,32 @@ describe("structureToDraft and draftToSaveInput", () => {
   });
 });
 
+describe("break notes", () => {
+  it("round-trips a trimmed break note", () => {
+    const withNote = withLevel(4, { note: "  Color up the 25s " });
+    expect(draftToSaveInput(withNote).levels[4].note).toBe("Color up the 25s");
+  });
+
+  it("saves a blank note as none", () => {
+    expect(
+      draftToSaveInput(withLevel(4, { note: "   " })).levels[4].note,
+    ).toBeUndefined();
+  });
+
+  it("loads a stored note", () => {
+    const rows = NLPT_ROWS.map((row) =>
+      row.position === 5 ? { ...row, note: "Dinner" } : row,
+    );
+    expect(structureToDraft(NLPT_STANDARD, rows).levels[4].note).toBe("Dinner");
+  });
+
+  it("rejects a note over 100 characters", () => {
+    expect(
+      validateStructureDraft(withLevel(4, { note: "x".repeat(101) })),
+    ).toEqual([expect.objectContaining({ field: "levels", levelIndex: 4 })]);
+  });
+});
+
 describe("validateStructureDraft", () => {
   it("accepts NLPT Standard", () => {
     expect(validateStructureDraft(draft())).toEqual([]);

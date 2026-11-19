@@ -6,6 +6,8 @@ export type BlindLevel = {
   big_blind: number | null;
   ante: number;
   duration_seconds: number;
+  // Breaks only: what happens on the break ("Color up the 25s"). Optional.
+  note?: string | null;
 };
 
 // A _blind_levels row: one level of a template, in position order.

@@ -67,6 +67,7 @@ The payout check is `private.payout_pcts_valid(pcts, places_paid)`, shared by te
 | `small_blind`, `big_blind` | int | null for breaks; for levels `small_blind > 0` and `big_blind >= small_blind` |
 | `ante` | int | default 0 |
 | `duration_seconds` | int | |
+| `note` | text, nullable | breaks only, 1–100 characters (e.g. "Color up the 25s"); copied into a clock's `levels` snapshot and shown on the display during the break |
 
 ### `_tournament_clocks`
 
