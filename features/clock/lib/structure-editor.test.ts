@@ -1,0 +1,232 @@
+import { describe, expect, it } from "vitest";
+import {
+  structureEditorReducer,
+  type StructureEditorAction,
+} from "@/features/clock/lib/structure-editor";
+import {
+  type DraftLevel,
+  newStructureDraft,
+  type StructureDraft,
+} from "@/features/clock/lib/structures";
+
+function level(
+  key: string,
+  smallBlind: number,
+  bigBlind: number,
+  minutes = 20,
+): DraftLevel {
+  return {
+    key,
+    kind: "level",
+    small_blind: smallBlind,
+    big_blind: bigBlind,
+    ante: 0,
+    duration_seconds: minutes * 60,
+  };
+}
+
+function breakRow(key: string, minutes = 10): DraftLevel {
+  return {
+    key,
+    kind: "break",
+    small_blind: null,
+    big_blind: null,
+    ante: 0,
+    duration_seconds: minutes * 60,
+  };
+}
+
+function draftWith(levels: DraftLevel[]): StructureDraft {
+  return { ...newStructureDraft(), name: "Test", levels };
+}
+
+function run(
+  draft: StructureDraft,
+  ...actions: StructureEditorAction[]
+): StructureDraft {
+  return actions.reduce(structureEditorReducer, draft);
+}
+
+function keys(draft: StructureDraft): string[] {
+  return draft.levels.map(({ key }) => key);
+}
+
+describe("setField", () => {
+  it("changes the name", () => {
+    const draft = run(newStructureDraft(), {
+      type: "setField",
+      field: "name",
+      value: "Turbo",
+    });
+    expect(draft.name).toBe("Turbo");
+  });
+
+  it("changes a number field without touching the rest", () => {
+    const before = newStructureDraft();
+    const after = run(before, {
+      type: "setField",
+      field: "starting_chips",
+      value: 15000,
+    });
+    expect(after).toEqual({ ...before, starting_chips: 15000 });
+    expect(before.starting_chips).toBe(20000);
+  });
+});
+
+describe("setPlacesPaid", () => {
+  it("fills in the suggested split", () => {
+    const draft = run(newStructureDraft(), { type: "setPlacesPaid", value: 3 });
+    expect(draft).toMatchObject({ places_paid: 3, payout_pcts: [50, 30, 20] });
+  });
+
+  it("pads with zeros when there's no suggestion", () => {
+    const draft = run(
+      newStructureDraft(),
+      { type: "setPlacesPaid", value: 3 },
+      { type: "setPlacesPaid", value: 6 },
+    );
+    expect(draft.payout_pcts).toEqual([50, 30, 20, 0, 0, 0]);
+  });
+
+  it("trims when there's no suggestion", () => {
+    const six = run(newStructureDraft(), { type: "setPlacesPaid", value: 6 });
+    const seven = run(
+      six,
+      { type: "setPayoutPct", index: 5, value: 5 },
+      {
+        type: "setPlacesPaid",
+        value: 7,
+      },
+    );
+    expect(seven.payout_pcts).toEqual([45, 30, 15, 10, 0, 5, 0]);
+  });
+
+  it("keeps the percentages for a number it can't use", () => {
+    const draft = run(newStructureDraft(), {
+      type: "setPlacesPaid",
+      value: Number.NaN,
+    });
+    expect(draft.payout_pcts).toEqual([45, 30, 15, 10]);
+    expect(draft.places_paid).toBeNaN();
+  });
+});
+
+describe("setPayoutPct", () => {
+  it("changes one place's share", () => {
+    const draft = run(newStructureDraft(), {
+      type: "setPayoutPct",
+      index: 1,
+      value: 25,
+    });
+    expect(draft.payout_pcts).toEqual([45, 25, 15, 10]);
+  });
+});
+
+describe("addLevel", () => {
+  it("suggests the next blinds from the last level", () => {
+    const draft = run(draftWith([level("a", 300, 600, 15)]), {
+      type: "addLevel",
+      key: "b",
+    });
+    expect(draft.levels[1]).toEqual(level("b", 600, 1200, 15));
+  });
+
+  it("skips a break when suggesting", () => {
+    const draft = run(draftWith([level("a", 300, 600), breakRow("b")]), {
+      type: "addLevel",
+      key: "c",
+    });
+    expect(draft.levels[2]).toEqual(level("c", 600, 1200));
+  });
+
+  it("starts at 100/200 with no levels to follow", () => {
+    const draft = run(draftWith([breakRow("a")]), {
+      type: "addLevel",
+      key: "b",
+    });
+    expect(draft.levels[1]).toEqual(level("b", 100, 200));
+  });
+});
+
+describe("addBreak", () => {
+  it("adds a 10-minute break at the end", () => {
+    const draft = run(draftWith([level("a", 100, 200)]), {
+      type: "addBreak",
+      key: "b",
+    });
+    expect(draft.levels[1]).toEqual(breakRow("b"));
+  });
+});
+
+describe("updateLevel", () => {
+  it("changes one row", () => {
+    const draft = run(draftWith([level("a", 100, 200), level("b", 200, 400)]), {
+      type: "updateLevel",
+      index: 1,
+      change: { big_blind: 500, ante: 50 },
+    });
+    expect(draft.levels[1]).toMatchObject({ big_blind: 500, ante: 50 });
+    expect(draft.levels[0]).toEqual(level("a", 100, 200));
+  });
+
+  it("clears blinds when a level becomes a break", () => {
+    const draft = run(draftWith([level("a", 100, 200), level("b", 200, 400)]), {
+      type: "updateLevel",
+      index: 1,
+      change: { kind: "break" },
+    });
+    expect(draft.levels[1]).toEqual(breakRow("b"));
+  });
+
+  it("suggests blinds when a break becomes a level", () => {
+    const draft = run(
+      draftWith([level("a", 300, 600), breakRow("b"), level("c", 1000, 2000)]),
+      { type: "updateLevel", index: 1, change: { kind: "level" } },
+    );
+    expect(draft.levels[1]).toEqual(level("b", 600, 1200));
+  });
+});
+
+describe("moveLevel", () => {
+  const start = draftWith([
+    level("a", 100, 200),
+    breakRow("b"),
+    level("c", 200, 400),
+  ]);
+
+  it("moves a row up", () => {
+    expect(
+      keys(run(start, { type: "moveLevel", index: 1, direction: "up" })),
+    ).toEqual(["b", "a", "c"]);
+  });
+
+  it("moves a row down", () => {
+    expect(
+      keys(run(start, { type: "moveLevel", index: 1, direction: "down" })),
+    ).toEqual(["a", "c", "b"]);
+  });
+
+  it("does nothing past either end", () => {
+    expect(run(start, { type: "moveLevel", index: 0, direction: "up" })).toBe(
+      start,
+    );
+    expect(run(start, { type: "moveLevel", index: 2, direction: "down" })).toBe(
+      start,
+    );
+  });
+});
+
+describe("removeLevel", () => {
+  it("removes a row", () => {
+    const draft = run(draftWith([level("a", 100, 200), breakRow("b")]), {
+      type: "removeLevel",
+      index: 1,
+    });
+    expect(keys(draft)).toEqual(["a"]);
+  });
+
+  it("keeps the last row", () => {
+    const start = draftWith([level("a", 100, 200)]);
+    expect(run(start, { type: "removeLevel", index: 0 })).toBe(start);
+  });
+});
