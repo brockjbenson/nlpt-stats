@@ -12,6 +12,20 @@ import {
   type StructureError,
   summarizeLevels,
 } from "@/features/clock/lib/structures";
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { Coffee, Plus } from "lucide-react";
 import type React from "react";
 
@@ -31,6 +45,23 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
   const { levels } = draft;
   const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
   const levelErrors = errors.filter(({ field }) => field === "levels");
+  const keys = levels.map(({ key }) => key);
+  const sensors = useSensors(
+    // A small move starts a drag, so tapping the handle doesn't.
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const reorder = ({ active, over }: DragEndEvent): void => {
+    if (!over) return;
+    dispatch({
+      type: "reorderLevel",
+      from: keys.indexOf(String(active.id)),
+      to: keys.indexOf(String(over.id)),
+    });
+  };
 
   return (
     <Card className="gap-2">
@@ -44,27 +75,36 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
       <CardContent className="flex flex-col gap-2">
         {/* Two columns on desktop, filled down the left first so levels
             read in order. */}
-        <ol className="md:columns-2 md:gap-3">
-          {levels.map((level, index) => (
-            <LevelRow
-              key={level.key}
-              level={level}
-              index={index}
-              label={
-                level.kind === "break"
-                  ? "Break"
-                  : `Level ${levelNumber(levels, index)}`
-              }
-              isFirst={index === 0}
-              isLast={index === levels.length - 1}
-              canRemove={levels.length > 1}
-              errors={levelErrors.filter(
-                ({ levelIndex }) => levelIndex === index,
-              )}
-              dispatch={dispatch}
-            />
-          ))}
-        </ol>
+        <DndContext
+          id="structure-levels"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={reorder}
+        >
+          <SortableContext items={keys} strategy={rectSortingStrategy}>
+            <ol className="md:columns-2 md:gap-3">
+              {levels.map((level, index) => (
+                <LevelRow
+                  key={level.key}
+                  level={level}
+                  index={index}
+                  label={
+                    level.kind === "break"
+                      ? "Break"
+                      : `Level ${levelNumber(levels, index)}`
+                  }
+                  isFirst={index === 0}
+                  isLast={index === levels.length - 1}
+                  canRemove={levels.length > 1}
+                  errors={levelErrors.filter(
+                    ({ levelIndex }) => levelIndex === index,
+                  )}
+                  dispatch={dispatch}
+                />
+              ))}
+            </ol>
+          </SortableContext>
+        </DndContext>
         <ErrorText
           errors={levelErrors.filter(
             ({ levelIndex }) => levelIndex === undefined,

@@ -18,11 +18,17 @@ import type {
 } from "@/features/clock/lib/structures";
 import type { BlindLevel } from "@/features/clock/types";
 import { cn } from "@/lib/utils";
-import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import type React from "react";
 
 const SECONDS_PER_MINUTE = 60;
 const ICON_BUTTON_CLASS = "size-8";
+// Break rows: a solid primary tint over the card, so a dragged break still
+// covers the rows it passes over.
+const BREAK_ROW_CLASS =
+  "border-primary/50 bg-[color-mix(in_oklch,var(--primary)_12%,var(--card))]";
 
 type BlindField = "small_blind" | "big_blind" | "ante";
 
@@ -58,18 +64,40 @@ function LevelRow({
     dispatch({ type: "updateLevel", index, change });
   const id = (field: string): string => `level-${level.key}-${field}`;
   const isBreak = level.kind === "break";
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    setActivatorNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: level.key });
 
   return (
     <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
         "mb-2 flex break-inside-avoid flex-col gap-2 rounded-lg border p-2",
-        isBreak ? "border-primary/50 bg-primary/10" : "border-neutral-800",
+        isBreak ? BREAK_ROW_CLASS : "border-neutral-800 bg-card",
+        isDragging && "relative z-10 shadow-lg ring-2 ring-primary",
       )}
     >
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          ref={setActivatorNodeRef}
+          className="-ml-1 flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted hover:text-white active:cursor-grabbing"
+          aria-label={`Drag ${label} to reorder`}
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical size={16} />
+        </button>
         <p
           className={cn(
-            "w-16 shrink-0 text-sm font-semibold",
+            "w-14 shrink-0 text-sm font-semibold",
             isBreak && "text-primary",
           )}
         >

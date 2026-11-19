@@ -217,6 +217,39 @@ describe("moveLevel", () => {
   });
 });
 
+describe("reorderLevel", () => {
+  const start = draftWith([
+    level("a", 100, 200),
+    breakRow("b"),
+    level("c", 200, 400),
+    level("d", 300, 600),
+  ]);
+
+  it("moves a row down to a later position", () => {
+    expect(keys(run(start, { type: "reorderLevel", from: 0, to: 2 }))).toEqual([
+      "b",
+      "c",
+      "a",
+      "d",
+    ]);
+  });
+
+  it("moves a row up to an earlier position", () => {
+    expect(keys(run(start, { type: "reorderLevel", from: 3, to: 1 }))).toEqual([
+      "a",
+      "d",
+      "b",
+      "c",
+    ]);
+  });
+
+  it("does nothing for the same position or one out of range", () => {
+    expect(run(start, { type: "reorderLevel", from: 1, to: 1 })).toBe(start);
+    expect(run(start, { type: "reorderLevel", from: 1, to: 9 })).toBe(start);
+    expect(run(start, { type: "reorderLevel", from: -1, to: 2 })).toBe(start);
+  });
+});
+
 describe("removeLevel", () => {
   it("removes a row", () => {
     const draft = run(draftWith([level("a", 100, 200), breakRow("b")]), {

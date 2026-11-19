@@ -35,6 +35,8 @@ export type StructureEditorAction =
   | { type: "addBreak"; key: string }
   | { type: "updateLevel"; index: number; change: Partial<BlindLevel> }
   | { type: "moveLevel"; index: number; direction: "up" | "down" }
+  // A drag and drop: the row at `from` ends up at `to`.
+  | { type: "reorderLevel"; from: number; to: number }
   | { type: "removeLevel"; index: number };
 
 // The level to offer after the playing levels in `levels`: same length and
@@ -96,6 +98,18 @@ function swap<T>(items: T[], a: number, b: number): T[] {
   return swapped;
 }
 
+// The row at `from` moved to `to`, everything else keeping its order.
+function moveTo<T>(items: T[], from: number, to: number): T[] {
+  const moved = [...items];
+  const [item] = moved.splice(from, 1);
+  moved.splice(to, 0, item);
+  return moved;
+}
+
+function isRowIndex(levels: DraftLevel[], index: number): boolean {
+  return Number.isInteger(index) && index >= 0 && index < levels.length;
+}
+
 function setLevels(
   draft: StructureDraft,
   levels: DraftLevel[],
@@ -152,6 +166,16 @@ export function structureEditorReducer(
       const target = action.index + (action.direction === "up" ? -1 : 1);
       if (target < 0 || target >= draft.levels.length) return draft;
       return setLevels(draft, swap(draft.levels, action.index, target));
+    }
+
+    case "reorderLevel": {
+      const { from, to } = action;
+      const valid =
+        from !== to &&
+        isRowIndex(draft.levels, from) &&
+        isRowIndex(draft.levels, to);
+      if (!valid) return draft;
+      return setLevels(draft, moveTo(draft.levels, from, to));
     }
 
     case "removeLevel":
