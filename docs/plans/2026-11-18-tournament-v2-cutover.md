@@ -73,7 +73,29 @@
 
 **Output:** A short table of row → old value → new value, approved by the user. Task 3 encodes exactly this.
 
-### Task 3: Migration — v2 schema, data, points, access
+**✅ Decisions (approved 2026-11-19).** All of these are confirmed by payouts equalling the pool. Places and points are unchanged everywhere.
+
+| Tournament | Row | Old | New | Encoded in |
+|---|---|---|---|---|
+| 2025 Kindred Open | 6th (`c2484c8c`) | buy-in $40, 1 rebuy | buy-in $80 (calculated from the rebuy) | view, no stored change |
+| Thanksgiving Showdown 2025 | 9th (`a148d2c3`) | 0 rebuys ($120 in) | 2 rebuys | `…_tournament_v2_schema.sql` |
+| Lake Lizzie Luau 2023 | 1st (`9b0501ce`) | cash-out $240 (payouts $460 > $440 pool) | $220 | `…_tournament_v2_schema.sql` |
+| Lake Lizzie Luau 2023 | 2nd (`db4e53cc`) | net profit $143 (typo) | $114 (calculated) | view, no stored change |
+| Lake Lizzie Luau 2022 | tournament | 3 rebuys, $400 | 4 rebuys, $440 | `…_tournament_v2_schema.sql` |
+| Lake Lizzie Luau 2024 | tournament | 1 rebuy | 4 rebuys | `…_tournament_v2_schema.sql` |
+| The Horace Hoedown | tournament | 7 rebuys ($720 implied) | 5 rebuys ($640 = payouts) | `…_tournament_v2_fix_guest_rebuys.sql` |
+| Thanksgiving Showdown (2024) | tournament | 4 rebuys (guest's rebuy missing) | 5 rebuys ($560; payouts 45/30/15/10%) | `…_tournament_v2_fix_guest_rebuys.sql` |
+| Northern Lights Open 2022 / Winter Invitational 2022 | 1st–4th | per-place payouts entered into each other (paid $520 / $440 against pools of $440 / $520) | swapped by place: NLO 208/112/80/40, WI 270/140/90/20 | `…_tournament_v2_swap_2022_payouts.sql` |
+
+### Task 3: Migration — v2 schema, data, points, access ✅ applied to dev 2026-11-19
+
+**Result:** Three migration files, applied to dev in order: `20261119132635_tournament_v2_schema`, `20261119133035_tournament_v2_fix_guest_rebuys` and `20261119133150_tournament_v2_swap_2022_payouts`. Differences from the contract below:
+- The view casts the calculated `buy_in` / `net_profit` to `numeric(10,2)`, because the view's existing column types require it.
+- `net_profit` was a generated column in the v2 table, so it is dropped before `buy_in`.
+- Anon read was added only on `_tournaments`, `_tournament_sessions` and `_tournament_place_points`. `_tournament_summaries` joins v1 `week` / `season`, which are already public, so `_weeks` / `_seasons` don't need it.
+- `unique(member_id, tournament_id)`, `place >= 1` and `tournament_id not null` already existed.
+
+Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out and points match v1 except the approved rows. Every tournament's prize pool equals its payouts, except Thanksgiving Showdown 2024, where a guest took the remaining $56. Signed out (anon), reads return 13 summaries and 108 sessions, all with points.
 
 **Files:**
 - Create: `supabase/migrations/<ts>_tournament_v2_schema.sql`
