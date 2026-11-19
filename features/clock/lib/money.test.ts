@@ -3,11 +3,13 @@ import {
   computeChips,
   computePayouts,
   computePool,
+  lastPlacePct,
 } from "@/features/clock/lib/money";
 import { makeClock, makeEntrant } from "@/features/clock/lib/test-fixtures";
 import type { ClockEntrant } from "@/features/clock/types";
 
-const NLPT_PCTS = [45, 30, 15, 10];
+// 4 paid: 1st-3rd split the rest of the pool 55 / 30 / 15.
+const NLPT_PCTS = [55, 30, 15];
 
 // count entrants, with the given rebuys spread over the first players and
 // the last `busted` players out.
@@ -48,21 +50,57 @@ describe("computePool", () => {
   });
 });
 
+describe("lastPlacePct", () => {
+  it.each([
+    [10, 10],
+    [11, 10],
+    [8, 13],
+    [7, 15],
+    [3, 34],
+    [2, 50],
+    [20, 5],
+  ])("%i players gives %i%%", (players, pct) => {
+    expect(lastPlacePct(players)).toBe(pct);
+  });
+});
+
 describe("computePayouts", () => {
-  it("pays each place its share of the pool", () => {
-    const payouts = computePayouts(640, NLPT_PCTS, 12);
-    expect(payouts).toHaveLength(4);
-    [288, 192, 96, 64].forEach((expected, place) =>
-      expect(payouts[place]).toBeCloseTo(expected, 6),
+  function expectPayouts(actual: number[], expected: number[]): void {
+    expect(actual).toHaveLength(expected.length);
+    expected.forEach((amount, place) =>
+      expect(actual[place]).toBeCloseTo(amount, 2),
     );
+  }
+
+  it("rounds the last place's share up to a whole percent", () => {
+    // 11 players at $40: 1/11 is 9.09%, rounded up to 10% ($44 of $440).
+    // 1st-3rd split the other 90% as 55 / 30 / 15.
+    expectPayouts(computePayouts(440, NLPT_PCTS, 11), [217.8, 118.8, 59.4, 44]);
   });
 
-  it("scales the paid places' shares when fewer play than are paid", () => {
-    const payouts = computePayouts(120, NLPT_PCTS, 3);
-    expect(payouts).toHaveLength(3);
-    expect(payouts[0]).toBeCloseTo(60, 6);
-    expect(payouts[1]).toBeCloseTo(40, 6);
-    expect(payouts[2]).toBeCloseTo(20, 6);
+  it("keeps the last place's share as rebuys grow the pool", () => {
+    // Same 11 players, $600 after rebuys: 4th still gets 10%.
+    expectPayouts(computePayouts(600, NLPT_PCTS, 11), [297, 162, 81, 60]);
+  });
+
+  it("leaves a whole-percent share as it is", () => {
+    // 10 players: exactly 10%, the $40 buy-in back.
+    expect(computePayouts(400, NLPT_PCTS, 10)[3]).toBeCloseTo(40, 6);
+  });
+
+  it("always gives the last place at least the buy-in back", () => {
+    // 8 players at $50: 12.5% rounds up to 13%, $52 of $400.
+    expect(computePayouts(400, NLPT_PCTS, 8)[3]).toBeCloseTo(52, 6);
+  });
+
+  it("pays fewer places when fewer play than are paid", () => {
+    // 3 players: 33.3% rounds up to 34% for 3rd; 1st and 2nd split the
+    // other 66% 55:30.
+    expectPayouts(computePayouts(120, NLPT_PCTS, 3), [51.25, 27.95, 40.8]);
+  });
+
+  it("gives everything to a lone player", () => {
+    expect(computePayouts(40, NLPT_PCTS, 1)).toEqual([40]);
   });
 
   it("pays nothing with no entrants", () => {

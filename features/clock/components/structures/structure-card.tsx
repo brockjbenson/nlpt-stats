@@ -7,6 +7,7 @@ import {
   formatChips,
   formatDollars,
   formatDuration,
+  ordinal,
 } from "@/features/clock/lib/format";
 import { summarizeLevels } from "@/features/clock/lib/structures";
 import { Pencil } from "lucide-react";
@@ -52,7 +53,8 @@ function StructureCard({ structure }: { structure: StructureWithLevels }) {
         </p>
         <p>
           {structure.default_places_paid} paid:{" "}
-          {structure.default_payout_pcts.join(" / ")} · max{" "}
+          {structure.default_payout_pcts.join(" / ")} +{" "}
+          {ordinal(structure.default_places_paid)} buy-in back · max{" "}
           {plural(structure.default_max_rebuys, "rebuy")}
         </p>
       </CardContent>

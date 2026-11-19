@@ -76,7 +76,7 @@ describe("setField", () => {
 describe("setPlacesPaid", () => {
   it("fills in the suggested split", () => {
     const draft = run(newStructureDraft(), { type: "setPlacesPaid", value: 3 });
-    expect(draft).toMatchObject({ places_paid: 3, payout_pcts: [50, 30, 20] });
+    expect(draft).toMatchObject({ places_paid: 3, payout_pcts: [65, 35] });
   });
 
   it("pads with zeros when there's no suggestion", () => {
@@ -85,20 +85,21 @@ describe("setPlacesPaid", () => {
       { type: "setPlacesPaid", value: 3 },
       { type: "setPlacesPaid", value: 6 },
     );
-    expect(draft.payout_pcts).toEqual([50, 30, 20, 0, 0, 0]);
+    expect(draft.payout_pcts).toEqual([65, 35, 0, 0, 0]);
   });
 
-  it("trims when there's no suggestion", () => {
-    const six = run(newStructureDraft(), { type: "setPlacesPaid", value: 6 });
-    const seven = run(
-      six,
-      { type: "setPayoutPct", index: 5, value: 5 },
-      {
-        type: "setPlacesPaid",
-        value: 7,
-      },
+  it("keeps typed values when growing or shrinking", () => {
+    // 6 paid: five shares above the last place.
+    const six = run(
+      newStructureDraft(),
+      { type: "setPlacesPaid", value: 6 },
+      { type: "setPayoutPct", index: 4, value: 5 },
     );
-    expect(seven.payout_pcts).toEqual([45, 30, 15, 10, 0, 5, 0]);
+    expect(six.payout_pcts).toEqual([55, 30, 15, 0, 5]);
+    const seven = run(six, { type: "setPlacesPaid", value: 7 });
+    expect(seven.payout_pcts).toEqual([55, 30, 15, 0, 5, 0]);
+    const backToSix = run(seven, { type: "setPlacesPaid", value: 6 });
+    expect(backToSix.payout_pcts).toEqual([55, 30, 15, 0, 5]);
   });
 
   it("keeps the percentages for a number it can't use", () => {
@@ -106,7 +107,7 @@ describe("setPlacesPaid", () => {
       type: "setPlacesPaid",
       value: Number.NaN,
     });
-    expect(draft.payout_pcts).toEqual([45, 30, 15, 10]);
+    expect(draft.payout_pcts).toEqual([55, 30, 15]);
     expect(draft.places_paid).toBeNaN();
   });
 });
@@ -118,7 +119,7 @@ describe("setPayoutPct", () => {
       index: 1,
       value: 25,
     });
-    expect(draft.payout_pcts).toEqual([45, 25, 15, 10]);
+    expect(draft.payout_pcts).toEqual([55, 25, 15]);
   });
 });
 

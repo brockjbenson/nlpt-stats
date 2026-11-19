@@ -61,15 +61,16 @@ function breakLevel(): BlindLevel {
   };
 }
 
-// The payout list for a new places-paid count: a suggested split when there
-// is one, otherwise the current values trimmed or padded with zeros.
+// The payout list for a new places-paid count (one share per place above
+// the last): a suggested split when there is one, otherwise the current
+// values trimmed or padded with zeros.
 function resizePayouts(current: number[], places: number): number[] {
   const suggested = SUGGESTED_SPLITS[places];
   if (suggested) return [...suggested];
-  if (!Number.isInteger(places) || places < 1 || places > MAX_RESIZED_PLACES) {
+  if (!Number.isInteger(places) || places < 2 || places > MAX_RESIZED_PLACES) {
     return current;
   }
-  return Array.from({ length: places }, (_, index) => current[index] ?? 0);
+  return Array.from({ length: places - 1 }, (_, index) => current[index] ?? 0);
 }
 
 // Switching a row's kind resets it: a break loses its blinds, a new level

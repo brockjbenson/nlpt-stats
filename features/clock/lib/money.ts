@@ -35,16 +35,36 @@ export function computeChips(
   };
 }
 
-// Each paid place's share of the pool, 1st place first. With fewer players
-// than paid places, only that many places are paid and their shares are
-// scaled up to add to 100. Not rounded: round where it's shown or saved.
+const PERCENT = 100;
+// Keeps float noise (an exact 10% computed as 10.0000000001) from rounding up.
+const ROUNDING_TOLERANCE = 1e-9;
+
+// The last paid place's share of the pool, in percent: 1 / players (the
+// buy-in back before rebuys), rounded up to a whole percent.
+export function lastPlacePct(entrantCount: number): number {
+  return Math.ceil(PERCENT / entrantCount - ROUNDING_TOLERANCE);
+}
+
+// Each paid place's payout, 1st place first. Not rounded: round where it's
+// shown or saved.
+//
+// The last paid place gets lastPlacePct of the pool: at least the buy-in
+// back, and more as rebuys grow the pool. The places above split the rest
+// by payoutPcts (one per place above the last, adding to 100). With fewer
+// players than paid places, only that many are paid and the shares of the
+// places above are scaled to add to 100.
 export function computePayouts(
   pool: number,
   payoutPcts: number[],
   entrantCount: number,
 ): number[] {
-  const paidPcts = payoutPcts.slice(0, Math.max(0, entrantCount));
-  const pctTotal = paidPcts.reduce((total, pct) => total + pct, 0);
-  if (pctTotal === 0) return [];
-  return paidPcts.map((pct) => (pool * pct) / pctTotal);
+  if (entrantCount < 1) return [];
+  const placesPaid = Math.min(payoutPcts.length + 1, entrantCount);
+  if (placesPaid === 1) return [pool];
+
+  const lastPlace = (pool * lastPlacePct(entrantCount)) / PERCENT;
+  const abovePcts = payoutPcts.slice(0, placesPaid - 1);
+  const pctTotal = abovePcts.reduce((total, pct) => total + pct, 0);
+  const above = abovePcts.map((pct) => ((pool - lastPlace) * pct) / pctTotal);
+  return [...above, lastPlace];
 }

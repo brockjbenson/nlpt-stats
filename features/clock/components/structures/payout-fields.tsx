@@ -75,6 +75,13 @@ function PayoutFields({ draft, errors, dispatch }: Props) {
         >
           Total: {Number(total.toFixed(6))}%
         </p>
+        {Number.isInteger(draft.places_paid) && draft.places_paid >= 2 && (
+          <p className="text-sm text-muted">
+            {ordinal(draft.places_paid)} gets 1 ÷ players of the pool, rounded
+            up to a whole percent (11 players → 10%), so at least the buy-in
+            back. The places above split the rest by these percentages.
+          </p>
+        )}
         <ErrorText
           errors={errors.filter(
             ({ field }) => field === "places_paid" || field === "payout_pcts",

@@ -25,7 +25,8 @@ function guest(place: number, rebuys = 0): ClockEntrant {
   });
 }
 
-// 6 players, 2 guests, 3 rebuys: pool $360, paying 162 / 108 / 54 / 36.
+// 6 players, 2 guests, 3 rebuys: pool $360. 4th gets 1/6 rounded up to
+// 17% ($61.20); 1st-3rd split the other $298.80 as 164.34 / 89.64 / 44.82.
 const field = [
   guest(1, 1),
   member("ana", 2),
@@ -50,8 +51,8 @@ describe("buildFinishResults", () => {
       ["cal", 3],
       ["dee", 4],
     ]);
-    expect(sessions[0].cash_out).toBeCloseTo(108, 6);
-    expect(sessions[1].cash_out).toBeCloseTo(54, 6);
+    expect(sessions[0].cash_out).toBeCloseTo(89.64, 6);
+    expect(sessions[1].cash_out).toBeCloseTo(44.82, 6);
   });
 
   it("pays nothing out of the money", () => {
@@ -77,7 +78,7 @@ describe("buildFinishResults", () => {
 
   it("pays out the whole pool between members and guests", () => {
     const { sessions } = build(field);
-    const guestPayouts = 162 + 36;
+    const guestPayouts = 164.34 + 61.2;
     const memberPayouts = sessions.reduce((total, s) => total + s.cash_out, 0);
     expect(memberPayouts + guestPayouts).toBeCloseTo(
       computePool(clock, field),

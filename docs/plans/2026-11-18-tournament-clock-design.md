@@ -19,9 +19,9 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Extras (v1) | Players left (named), avg stack, sounds, prize pool & payouts, full-screen TV mode |
 | Entrants | Members + guests |
 | Money/chips | Set per clock, defaulted from the template |
-| Payouts | A straight % of the pool for every paid place; no money-back rule; no rounding |
+| Payouts | The last paid place gets 1 ÷ players of the pool, rounded up to a whole percent (at least the buy-in back; more after rebuys); the places above split the rest by %; no rounding of amounts |
 | Places paid | Default on the template, editable per clock; **minimum 3** |
-| Starter default | "NLPT Standard" from the league's sheet: $40 buy-in and rebuy, 20,000 chips each, 4 paid at 45/30/15/10 |
+| Starter default | "NLPT Standard" from the league's sheet: $40 buy-in and rebuy, 20,000 chips each, 4 paid: 1st–3rd split 55/30/15, 4th gets the last-place share |
 | Rebuys | At most `max_rebuys` per player (default 2), and none once players left ≤ places paid |
 | Finding the clock | A "Tournament live" banner appears while a clock is running (phase 8) |
 | Results | The finish step writes `_tournaments` / `_tournament_sessions` |
@@ -50,7 +50,7 @@ Tables use the v2 `_` prefix. Migrations: `supabase/migrations/20261119163253_to
 | `default_starting_chips` | int | |
 | `default_rebuy_chips` | int | |
 | `default_places_paid` | int | `>= 3`; default 4 |
-| `default_payout_pcts` | numeric[] | one % per paid place, each > 0, summing to 100; default `{45,30,15,10}` |
+| `default_payout_pcts` | numeric[] | one % per place **above** the last paid place (places_paid − 1 values), each > 0, summing to 100; default `{55,30,15}` |
 | `default_max_rebuys` | int | per player; default 2 |
 | `created_at` | timestamptz | |
 
@@ -112,21 +112,25 @@ Constraints: exactly one of `member_id` / `guest_name` is set (a guest name can'
 
 ### Payout rule
 
-Given pool `P`, places paid `N` (≥ 3), and `payout_pcts` (one per paid place, each > 0, summing to 100):
+Given pool `P` (buy-ins plus rebuys), `E` players (entrants, not counting rebuys), places paid `N` (≥ 3), and `payout_pcts` (one per place above the last, each > 0, summing to 100):
 
-1. Place `i` receives `P × payout_pcts[i] / 100`.
-2. No rounding.
-3. If entrants < N, only places 1..entrants are paid and their percentages are scaled up to sum to 100. This is the only case below 3 paid.
+1. **Last paid place** gets `ceil(100 ÷ E)` percent of `P`. Before rebuys, `P = E × buy-in`, so `100 ÷ E` percent is exactly the buy-in back; rounding up to a whole percent means it's at least the buy-in. The percentage is fixed by the player count, so rebuys raise the last place's payout too.
+2. **Places 1..N−1** split what's left, `P − last place`, by `payout_pcts`.
+3. No rounding of amounts (round where shown or saved).
+4. If entrants < N, only places 1..entrants are paid: the last of them gets the last-place share and the shares above are scaled to sum to 100. A lone player gets the whole pool.
+5. With very few players the last place can out-earn the place above it (5 players, 4 paid: 4th 20%, 3rd 12%). Decided: pay by the rule, no warning.
 
-Example: 12 entrants, $40 buy-in, 4 rebuys at $40 → pool $640. 4 paid at 45/30/15/10 → $288, $192, $96, $64.
+Example: 11 players at $40. Last place: 100 ÷ 11 = 9.09% → **10%**.
+- No rebuys, pool $440 → 4th $44; 1st–3rd split $396 as 55/30/15 → $217.80, $118.80, $59.40.
+- With rebuys, pool $600 → 4th $60; 1st–3rd split $540 → $297, $162, $81.
 
-Common splits for reference:
+Suggested splits for the places above the last (the editor fills these in):
 
-| Places paid | Split |
+| Places paid | Split above the last place |
 |---|---|
-| 3 | 50/30/20 |
-| 4 | 45/30/15/10 (default) |
-| 5 | 40/25/17/11/7 |
+| 3 | 65/35 |
+| 4 | 55/30/15 (default) |
+| 5 | 45/28/17/10 |
 
 ### Rebuy rules
 
@@ -176,7 +180,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
   - `levels.ts`: `parseLevels` (checks a clock's `levels` with the `_blind_levels` rules), level lengths, `levelNumber`.
   - `timing.ts`: `getClockPosition`, the clock controls, `catchUpUpdate`, `nextPlayingLevel`, `timeToNextBreakMs`, `serverOffsetMs`.
   - `format.ts`: `formatClockTime` (`15:00`, `1:01:01`; rounds up to the second), `formatBlinds` (`1,000 / 2,000`).
-  - `money.ts`: `computePool`, `computePayouts`, `computeChips`.
+  - `money.ts`: `computePool`, `lastPlacePct`, `computePayouts`, `computeChips`.
   - `entrants.ts`: `planBust`, `planUndoBust`, `planRebuy`, `planFinish`.
   - `results.ts`: `buildFinishResults`.
   - `result.ts`: the `{ ok, value } | { ok, reason }` type the rules return when they can refuse.
@@ -214,14 +218,14 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Concurrent admins:** level advances use conditional updates; bust/rebuy are per-row updates, so last-write-wins is acceptable.
 - **Template edits mid-tournament:** no effect on running clocks (levels are snapshotted).
 - **Clock past final level:** stays on the last level with the countdown at 0:00 (no wrap).
-- **Validation:** `payout_pcts` has one value per paid place, each > 0, summing to 100; guest name required when no member. Both are also database checks.
+- **Validation:** `payout_pcts` has one value per place above the last paid place, each > 0, summing to 100; guest name required when no member. Both are also database checks.
 
 ## Testing
 
 **Vitest** (dev dependency, `vitest.config.mts`) tests the pure functions in `features/clock/lib/`, which carry all the tricky logic. Run `npm test` (or `npm run test:watch`). Tests sit next to the code as `*.test.ts`, with shared builders and the NLPT Standard levels in `test-fixtures.ts`. They cover:
 
 - Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab; every control's result checked against the database's status rule.
-- Pool, avg stack, and payout rule (incl. a non-$40 buy-in, entrants < places paid, and the whole pool always paid out).
+- Pool, avg stack, and payout rule (last-place share rounded up from 1 ÷ players and kept through rebuys, entrants < places paid, and the whole pool always paid out).
 - Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
 - Finish results: guest re-ranking, true-position cash-outs, places actually paid.
 

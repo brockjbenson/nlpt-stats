@@ -74,7 +74,7 @@ export function makeClock(
     starting_chips: 20000,
     rebuy_chips: 20000,
     places_paid: 4,
-    payout_pcts: [45, 30, 15, 10],
+    payout_pcts: [55, 30, 15],
     max_rebuys: 2,
     created_at: "2026-11-27T00:00:00.000Z",
     ...overrides,

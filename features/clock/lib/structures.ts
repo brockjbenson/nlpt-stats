@@ -11,12 +11,13 @@ const PERCENT_TOTAL = 100;
 // Percentages are typed by hand and can carry float error (33.3 + 33.3 + 33.4).
 const PERCENT_TOLERANCE = 0.000001;
 
-// Common splits from the design doc. Changing places paid in the editor
-// fills these in.
+// Common splits for the places above the last paid place, by places paid.
+// (The last paid place's share is set by the player count; see
+// computePayouts.) Changing places paid in the editor fills these in.
 export const SUGGESTED_SPLITS: Record<number, number[]> = {
-  3: [50, 30, 20],
-  4: [45, 30, 15, 10],
-  5: [40, 25, 17, 11, 7],
+  3: [65, 35],
+  4: [55, 30, 15],
+  5: [45, 28, 17, 10],
 };
 
 // A level being edited. `key` is a stable React key and is never saved.
@@ -147,12 +148,12 @@ function nameError(name: string): string | null {
   return null;
 }
 
-// Same rule as private.payout_pcts_valid: one share per paid place, each
-// above zero, adding up to 100.
+// Same rule as private.payout_pcts_valid: one share for each place above
+// the last paid place, each above zero, adding up to 100.
 function payoutError(draft: StructureDraft): string | null {
   const { payout_pcts: pcts, places_paid: places } = draft;
-  if (pcts.length !== places)
-    return `Enter a percentage for each of the ${places} paid places.`;
+  if (pcts.length !== places - 1)
+    return `Enter a percentage for each of the ${places - 1} places above the last paid place.`;
   if (pcts.some((pct) => !(pct > 0)))
     return "Every paid place needs more than 0%.";
   const total = pcts.reduce((sum, pct) => sum + pct, 0);

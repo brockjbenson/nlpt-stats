@@ -25,7 +25,7 @@ const NLPT_STANDARD: BlindStructure = {
   default_starting_chips: 20000,
   default_rebuy_chips: 20000,
   default_places_paid: 4,
-  default_payout_pcts: [45, 30, 15, 10],
+  default_payout_pcts: [55, 30, 15],
   default_max_rebuys: 2,
   created_at: "2026-11-19T00:00:00.000Z",
 };
@@ -68,7 +68,7 @@ describe("newStructureDraft", () => {
       starting_chips: 20000,
       rebuy_chips: 20000,
       places_paid: 4,
-      payout_pcts: [45, 30, 15, 10],
+      payout_pcts: [55, 30, 15],
       max_rebuys: 2,
     });
     expect(fresh.levels).toHaveLength(1);
@@ -104,7 +104,7 @@ describe("structureToDraft and draftToSaveInput", () => {
         default_starting_chips: 20000,
         default_rebuy_chips: 20000,
         default_places_paid: 4,
-        default_payout_pcts: [45, 30, 15, 10],
+        default_payout_pcts: [55, 30, 15],
         default_max_rebuys: 2,
       },
       levels: NLPT_STANDARD_LEVELS,
@@ -120,7 +120,7 @@ describe("structureToDraft and draftToSaveInput", () => {
   it("doesn't share arrays with the stored template", () => {
     const value = draft();
     value.payout_pcts[0] = 99;
-    expect(NLPT_STANDARD.default_payout_pcts[0]).toBe(45);
+    expect(NLPT_STANDARD.default_payout_pcts[0]).toBe(55);
   });
 });
 
@@ -144,16 +144,17 @@ describe("validateStructureDraft", () => {
   });
 
   it.each([
-    ["too few percentages", [45, 30, 25]],
-    ["percentages adding to 95", [45, 30, 15, 5]],
-    ["a zero percentage", [50, 35, 15, 0]],
+    ["too few percentages", [55, 45]],
+    ["one for the last place too", [45, 30, 15, 10]],
+    ["percentages adding to 95", [55, 30, 10]],
+    ["a zero percentage", [55, 45, 0]],
   ])("rejects %s", (_name, payout_pcts) => {
     expect(fields(draft({ payout_pcts }))).toEqual(["payout_pcts"]);
   });
 
   it("accepts percentages that add to 100 with decimals", () => {
     expect(
-      fields(draft({ places_paid: 3, payout_pcts: [33.3, 33.3, 33.4] })),
+      fields(draft({ places_paid: 4, payout_pcts: [33.3, 33.3, 33.4] })),
     ).toEqual([]);
   });
 
@@ -192,9 +193,9 @@ describe("validateStructureDraft", () => {
 
 describe("SUGGESTED_SPLITS", () => {
   it.each(Object.entries(SUGGESTED_SPLITS))(
-    "the %s-place split has one share per place adding to 100",
+    "the %s-place split has a share for each place above the last, adding to 100",
     (places, split) => {
-      expect(split).toHaveLength(Number(places));
+      expect(split).toHaveLength(Number(places) - 1);
       expect(split.reduce((total, pct) => total + pct, 0)).toBe(100);
     },
   );
