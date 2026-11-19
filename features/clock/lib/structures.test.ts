@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  copyName,
   draftToSaveInput,
+  NAME_MAX_LENGTH,
   newStructureDraft,
   type StructureDraft,
   type StructureField,
@@ -205,5 +207,30 @@ describe("summarizeLevels", () => {
       breakCount: 3,
       lengthMs: (5 * 60 + 50) * 60 * 1000,
     });
+  });
+});
+
+describe("copyName", () => {
+  it("prefixes the name", () => {
+    expect(copyName("NLPT Standard", ["NLPT Standard"])).toBe(
+      "Copy of NLPT Standard",
+    );
+  });
+
+  it("numbers further copies", () => {
+    expect(
+      copyName("NLPT Standard", [
+        "NLPT Standard",
+        "Copy of NLPT Standard",
+        "Copy 2 of NLPT Standard",
+      ]),
+    ).toBe("Copy 3 of NLPT Standard");
+  });
+
+  it("stays within the name length limit", () => {
+    const long = "x".repeat(NAME_MAX_LENGTH);
+    const name = copyName(long, [long]);
+    expect(name.length).toBe(NAME_MAX_LENGTH);
+    expect(name.startsWith("Copy of x")).toBe(true);
   });
 });

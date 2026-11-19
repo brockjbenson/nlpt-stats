@@ -233,3 +233,14 @@ export function summarizeLevels(levels: BlindLevel[]): LevelSummary {
     ),
   };
 }
+
+// The first free "Copy of <name>", "Copy 2 of <name>", … among takenNames,
+// cut to the name length limit.
+export function copyName(name: string, takenNames: string[]): string {
+  const taken = new Set(takenNames);
+  for (let copy = 1; ; copy += 1) {
+    const prefix = copy === 1 ? "Copy of " : `Copy ${copy} of `;
+    const candidate = (prefix + name).slice(0, NAME_MAX_LENGTH);
+    if (!taken.has(candidate)) return candidate;
+  }
+}
