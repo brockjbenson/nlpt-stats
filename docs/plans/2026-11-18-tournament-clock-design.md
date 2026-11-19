@@ -188,6 +188,17 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - `features/clock/hooks/useClock(id)` — initial fetch + Realtime subscription + server-time offset; returns derived state and a `requestAnimationFrame`/interval-driven remaining time.
 - `features/clock/actions/` — server actions for every admin mutation; each re-checks admin via `getCurrentUser()` in addition to RLS.
 
+### Template editor (phase 3)
+
+`/admin/clock/structures` lists templates (levels, breaks, length, money, payouts) with edit, duplicate ("Copy of …") and delete. `/new` and `/[id]` share one editor; the whole template saves at once through `save_blind_structure(p_id, p_structure, p_levels)`, which writes the template and replaces its levels in one transaction (`security invoker`, so RLS still decides who can write).
+
+- **Settings:** name, buy-in, rebuy, starting/rebuy chips, max rebuys, and two editor-only lengths (**New level length**, **New break length**) that start at the template's most common lengths and aren't saved.
+- **Payouts:** places paid fills in a suggested split (65/35, 55/30/15, 45/28/17/10); one box per place above the last; a running total.
+- **Levels as a timeline:** each stop shows its start time, blinds (and ante) or the break's note, and length; tap a stop to edit it (one open at a time). Breaks are highlighted. Reorder by dragging the handle (dnd-kit: mouse, touch, keyboard).
+- **Add level** suggests the next round big blind (1, 1.5, 2, 3, 4, 5, 6, 8 × each power of ten; never doubles), small blind half of it, ante from the level above, the new level length.
+- **Break notes:** optional, breaks only, up to 100 characters.
+- **Saving:** validation matches the database checks and blocks Save with messages by the field or row; "No Changes" compares what would be saved, so undone edits don't count; leaving with unsaved changes asks first.
+
 ### Entrant actions
 
 - **Bust:** sets `busted_at=now` and `finish_place = players left before the bust`. Refused for the last player left.
@@ -282,7 +293,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 0. **Tournament v2 cutover** (see Phase 0; own PR, dev first). Done (#24).
 1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC, types, the NLPT Standard template. Done on dev; goes to prod with phase 4.
 2. **Pure logic + tests:** `features/clock/lib` with Vitest. Done; see `docs/plans/2026-11-19-tournament-clock-phase-2-logic.md`.
-3. **Templates:** `/admin/clock/structures` CRUD.
+3. **Templates:** `/admin/clock/structures` CRUD. Done on dev; see `docs/plans/2026-11-19-tournament-clock-phase-3-templates.md`.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only).
 5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
 6. **TV mode & sounds.**
