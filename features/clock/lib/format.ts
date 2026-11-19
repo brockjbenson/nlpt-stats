@@ -64,3 +64,18 @@ export function formatBlinds(level: BlindLevel): string {
     ? `${blinds} (ante ${formatChips(level.ante)})`
     : blinds;
 }
+
+const ordinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
+const ORDINAL_SUFFIXES: Record<Intl.LDMLPluralRule, string> = {
+  zero: "th",
+  one: "st",
+  two: "nd",
+  few: "rd",
+  many: "th",
+  other: "th",
+};
+
+// A finishing place: "1st", "2nd", "3rd", "11th", "22nd".
+export function ordinal(place: number): string {
+  return `${place}${ORDINAL_SUFFIXES[ordinalRules.select(place)]}`;
+}

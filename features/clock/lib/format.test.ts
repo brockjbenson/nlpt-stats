@@ -5,6 +5,7 @@ import {
   formatClockTime,
   formatDollars,
   formatDuration,
+  ordinal,
 } from "@/features/clock/lib/format";
 import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
 
@@ -72,5 +73,22 @@ describe("formatDollars", () => {
 describe("formatChips", () => {
   it("separates thousands", () => {
     expect(formatChips(20000)).toBe("20,000");
+  });
+});
+
+describe("ordinal", () => {
+  it.each([
+    [1, "1st"],
+    [2, "2nd"],
+    [3, "3rd"],
+    [4, "4th"],
+    [11, "11th"],
+    [12, "12th"],
+    [13, "13th"],
+    [21, "21st"],
+    [22, "22nd"],
+    [103, "103rd"],
+  ])("%i is %s", (place, expected) => {
+    expect(ordinal(place)).toBe(expected);
   });
 });
