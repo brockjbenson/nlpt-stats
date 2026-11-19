@@ -259,3 +259,48 @@ export function finishClock(
     paused_remaining_ms: position.remainingMs,
   });
 }
+
+// What's coming up, for the display.
+
+// The next playing level after index, skipping breaks.
+export function nextPlayingLevel(
+  levels: BlindLevel[],
+  index: number,
+): BlindLevel | null {
+  return (
+    levels.slice(index + 1).find((level) => level.kind === "level") ?? null
+  );
+}
+
+// Time until the next break starts: what's left of the current level plus
+// the full levels in between. Null during a break or with no break ahead.
+export function timeToNextBreakMs(
+  levels: BlindLevel[],
+  position: ClockPosition,
+): number | null {
+  if (levels[position.levelIndex]?.kind === "break") return null;
+  const breakIndex = levels.findIndex(
+    (level, index) => index > position.levelIndex && level.kind === "break",
+  );
+  if (breakIndex === -1) return null;
+
+  const inBetweenMs = levels
+    .slice(position.levelIndex + 1, breakIndex)
+    .reduce((total, level) => total + levelDurationMs(level), 0);
+  return position.remainingMs + inBetweenMs;
+}
+
+// How far this device's clock is behind the server's, from one server_now()
+// call. Assumes the server answered halfway through the round trip.
+// Screens use Date.now() + offset as the current time.
+export function serverOffsetMs({
+  sentAtMs,
+  receivedAtMs,
+  serverTimeMs,
+}: {
+  sentAtMs: number;
+  receivedAtMs: number;
+  serverTimeMs: number;
+}): number {
+  return serverTimeMs + (receivedAtMs - sentAtMs) / 2 - receivedAtMs;
+}

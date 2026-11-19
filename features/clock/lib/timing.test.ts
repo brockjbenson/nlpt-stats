@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { Result } from "@/features/clock/lib/result";
-import { makeClock } from "@/features/clock/lib/test-fixtures";
+import {
+  makeClock,
+  NLPT_STANDARD_LEVELS,
+} from "@/features/clock/lib/test-fixtures";
 import {
   adjustTime,
   catchUpUpdate,
@@ -9,9 +12,12 @@ import {
   finishClock,
   getClockPosition,
   goToLevel,
+  nextPlayingLevel,
   pauseClock,
   resumeClock,
+  serverOffsetMs,
   startClock,
+  timeToNextBreakMs,
 } from "@/features/clock/lib/timing";
 import type { TournamentClock } from "@/features/clock/types";
 
@@ -390,5 +396,73 @@ describe("finishClock", () => {
       ok: false,
       reason: "wrong_status",
     });
+  });
+});
+
+describe("nextPlayingLevel", () => {
+  it("returns the next level", () => {
+    expect(nextPlayingLevel(NLPT_STANDARD_LEVELS, 0)).toMatchObject({
+      small_blind: 150,
+      big_blind: 300,
+    });
+  });
+
+  it("skips a break", () => {
+    expect(nextPlayingLevel(NLPT_STANDARD_LEVELS, 3)).toMatchObject({
+      small_blind: 400,
+      big_blind: 800,
+    });
+  });
+
+  it("is null on the last level", () => {
+    expect(nextPlayingLevel(NLPT_STANDARD_LEVELS, 18)).toBeNull();
+  });
+});
+
+describe("timeToNextBreakMs", () => {
+  it("adds the time left to the levels before the break", () => {
+    const { clock, nowMs } = runningClock(10);
+    const position = getClockPosition(clock, nowMs);
+    expect(timeToNextBreakMs(NLPT_STANDARD_LEVELS, position)).toBe(70 * MINUTE);
+  });
+
+  it("counts from just after a break to the next one", () => {
+    const paused = pausedClock(5, 20 * MINUTE);
+    const position = getClockPosition(paused, START_MS);
+    expect(timeToNextBreakMs(NLPT_STANDARD_LEVELS, position)).toBe(80 * MINUTE);
+  });
+
+  it("is null during a break", () => {
+    const { clock, nowMs } = runningClock(85);
+    const position = getClockPosition(clock, nowMs);
+    expect(timeToNextBreakMs(NLPT_STANDARD_LEVELS, position)).toBeNull();
+  });
+
+  it("is null with no break ahead", () => {
+    const paused = pausedClock(15, 20 * MINUTE);
+    const position = getClockPosition(paused, START_MS);
+    expect(timeToNextBreakMs(NLPT_STANDARD_LEVELS, position)).toBeNull();
+  });
+});
+
+describe("serverOffsetMs", () => {
+  it("assumes the server answered halfway through the round trip", () => {
+    expect(
+      serverOffsetMs({
+        sentAtMs: 1000,
+        receivedAtMs: 1200,
+        serverTimeMs: 5000,
+      }),
+    ).toBe(3900);
+  });
+
+  it("is zero when the clocks agree", () => {
+    expect(
+      serverOffsetMs({
+        sentAtMs: 1000,
+        receivedAtMs: 1200,
+        serverTimeMs: 1100,
+      }),
+    ).toBe(0);
   });
 });
