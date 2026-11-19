@@ -93,8 +93,6 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
                       ? "Break"
                       : `Level ${levelNumber(levels, index)}`
                   }
-                  isFirst={index === 0}
-                  isLast={index === levels.length - 1}
                   canRemove={levels.length > 1}
                   errors={levelErrors.filter(
                     ({ levelIndex }) => levelIndex === index,

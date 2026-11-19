@@ -20,7 +20,7 @@ import type { BlindLevel } from "@/features/clock/types";
 import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
+import { GripVertical, Trash2 } from "lucide-react";
 import type React from "react";
 
 const SECONDS_PER_MINUTE = 60;
@@ -43,23 +43,12 @@ type Props = {
   index: number;
   // "Level 5" or "Break".
   label: string;
-  isFirst: boolean;
-  isLast: boolean;
   canRemove: boolean;
   errors: StructureError[];
   dispatch: React.Dispatch<StructureEditorAction>;
 };
 
-function LevelRow({
-  level,
-  index,
-  label,
-  isFirst,
-  isLast,
-  canRemove,
-  errors,
-  dispatch,
-}: Props) {
+function LevelRow({ level, index, label, canRemove, errors, dispatch }: Props) {
   const update = (change: Partial<BlindLevel>): void =>
     dispatch({ type: "updateLevel", index, change });
   const id = (field: string): string => `level-${level.key}-${field}`;
@@ -120,30 +109,6 @@ function LevelRow({
           </SelectContent>
         </Select>
         <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            className={ICON_BUTTON_CLASS}
-            disabled={isFirst}
-            aria-label={`Move ${label} up`}
-            onClick={() =>
-              dispatch({ type: "moveLevel", index, direction: "up" })
-            }
-          >
-            <ArrowUp size={14} />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className={ICON_BUTTON_CLASS}
-            disabled={isLast}
-            aria-label={`Move ${label} down`}
-            onClick={() =>
-              dispatch({ type: "moveLevel", index, direction: "down" })
-            }
-          >
-            <ArrowDown size={14} />
-          </Button>
           <Button
             variant="outline"
             size="icon"

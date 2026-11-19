@@ -188,35 +188,6 @@ describe("updateLevel", () => {
   });
 });
 
-describe("moveLevel", () => {
-  const start = draftWith([
-    level("a", 100, 200),
-    breakRow("b"),
-    level("c", 200, 400),
-  ]);
-
-  it("moves a row up", () => {
-    expect(
-      keys(run(start, { type: "moveLevel", index: 1, direction: "up" })),
-    ).toEqual(["b", "a", "c"]);
-  });
-
-  it("moves a row down", () => {
-    expect(
-      keys(run(start, { type: "moveLevel", index: 1, direction: "down" })),
-    ).toEqual(["a", "c", "b"]);
-  });
-
-  it("does nothing past either end", () => {
-    expect(run(start, { type: "moveLevel", index: 0, direction: "up" })).toBe(
-      start,
-    );
-    expect(run(start, { type: "moveLevel", index: 2, direction: "down" })).toBe(
-      start,
-    );
-  });
-});
-
 describe("reorderLevel", () => {
   const start = draftWith([
     level("a", 100, 200),

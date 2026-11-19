@@ -34,7 +34,6 @@ export type StructureEditorAction =
   | { type: "addLevel"; key: string }
   | { type: "addBreak"; key: string }
   | { type: "updateLevel"; index: number; change: Partial<BlindLevel> }
-  | { type: "moveLevel"; index: number; direction: "up" | "down" }
   // A drag and drop: the row at `from` ends up at `to`.
   | { type: "reorderLevel"; from: number; to: number }
   | { type: "removeLevel"; index: number };
@@ -90,12 +89,6 @@ function changeLevel(
     return { ...suggestLevel(levels.slice(0, index)), key: row.key };
   }
   return { ...row, ...change };
-}
-
-function swap<T>(items: T[], a: number, b: number): T[] {
-  const swapped = [...items];
-  [swapped[a], swapped[b]] = [swapped[b], swapped[a]];
-  return swapped;
 }
 
 // The row at `from` moved to `to`, everything else keeping its order.
@@ -161,12 +154,6 @@ export function structureEditorReducer(
             : row,
         ),
       );
-
-    case "moveLevel": {
-      const target = action.index + (action.direction === "up" ? -1 : 1);
-      if (target < 0 || target >= draft.levels.length) return draft;
-      return setLevels(draft, swap(draft.levels, action.index, target));
-    }
 
     case "reorderLevel": {
       const { from, to } = action;
