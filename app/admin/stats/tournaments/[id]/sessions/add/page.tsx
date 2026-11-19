@@ -14,7 +14,7 @@ async function Page({ params }: Props) {
     { data: tournament, error: tournamentError },
   ] = await Promise.all([
     db.from("members").select("*").order("first_name", { ascending: true }),
-    db.from("tournaments").select("*").eq("id", id).single(),
+    db.from("_tournament_summaries").select("*").eq("id", id).single(),
   ]);
 
   if (tournamentError)

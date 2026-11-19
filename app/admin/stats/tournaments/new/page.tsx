@@ -5,24 +5,24 @@ import NewTournamentForm from "./_components/newTournamentForm";
 async function Page() {
   const db = await createClient();
   const [
-    { data: members, error: memberError },
     { data: seasons, error: seasonError },
+    { data: weeks, error: weekError },
   ] = await Promise.all([
-    db.from("members").select("*"),
-    db.from("season").select("*"),
+    db.from("season").select("*").order("year", { ascending: false }),
+    db.from("week").select("*").order("week_number", { ascending: false }),
   ]);
-
-  if (memberError) {
-    return <p>Error fetching Member data: {memberError.message}</p>;
-  }
 
   if (seasonError) {
     return <p>Error fetching Season data: {seasonError.message}</p>;
   }
+
+  if (weekError) {
+    return <p>Error fetching Week data: {weekError.message}</p>;
+  }
   return (
     <>
       <h2 className="text-center w-full mb-6">Add New Tournament</h2>
-      <NewTournamentForm seasons={seasons} members={members} />
+      <NewTournamentForm seasons={seasons} weeks={weeks} />
     </>
   );
 }
