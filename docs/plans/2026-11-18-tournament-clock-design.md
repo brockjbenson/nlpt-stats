@@ -21,7 +21,7 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Money/chips | Set per clock, defaulted from the template |
 | Payouts | The last paid place gets 1 ÷ players of the pool, rounded up to a whole percent (at least the buy-in back; more after rebuys); the places above split the rest by %; no rounding of amounts |
 | Places paid | Default on the template, editable per clock; **minimum 3** |
-| Starter default | "NLPT Standard" from the league's sheet: $40 buy-in and rebuy, 20,000 chips each, 4 paid: 1st–3rd split 55/30/15, 4th gets the last-place share |
+| Starter default | "NLPT Standard": $40 buy-in and rebuy, 20,000 chips each, 4 paid: 1st–3rd split 55/30/15, 4th gets the last-place share. 16 levels of 20 min on the round big blind ladder (100/200 … 7,500/15,000), 10-min breaks after levels 4, 8 and 12; 5h 50m |
 | Rebuys | At most `max_rebuys` per player (default 2), and none once players left ≤ places paid |
 | Finding the clock | A "Tournament live" banner appears while a clock is running (phase 8) |
 | Results | The finish step writes `_tournaments` / `_tournament_sessions` |

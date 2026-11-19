@@ -29,7 +29,7 @@ describe("formatClockTime", () => {
 
 describe("formatBlinds", () => {
   it("separates thousands", () => {
-    expect(formatBlinds(NLPT_STANDARD_LEVELS[8])).toBe("1,000 / 2,000");
+    expect(formatBlinds(NLPT_STANDARD_LEVELS[10])).toBe("1,000 / 2,000");
   });
 
   it("shows small blinds as they are", () => {
@@ -37,7 +37,7 @@ describe("formatBlinds", () => {
   });
 
   it("adds the ante only when there is one", () => {
-    expect(formatBlinds({ ...NLPT_STANDARD_LEVELS[8], ante: 200 })).toBe(
+    expect(formatBlinds({ ...NLPT_STANDARD_LEVELS[10], ante: 200 })).toBe(
       "1,000 / 2,000 (ante 200)",
     );
   });

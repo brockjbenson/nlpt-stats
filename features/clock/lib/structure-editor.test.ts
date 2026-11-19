@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  nextBigBlind,
   structureEditorReducer,
   type StructureEditorAction,
 } from "@/features/clock/lib/structure-editor";
+import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
 import {
   type DraftLevel,
   newStructureDraft,
@@ -171,6 +173,17 @@ describe("addLevel", () => {
       key: "b",
     });
     expect(draft.levels[1]).toEqual(level("b", 100, 200));
+  });
+});
+
+describe("nextBigBlind", () => {
+  it("builds NLPT Standard one step at a time", () => {
+    const bigBlinds = NLPT_STANDARD_LEVELS.flatMap(({ big_blind }) =>
+      big_blind === null ? [] : [big_blind],
+    );
+    bigBlinds.slice(1).forEach((bigBlind, index) => {
+      expect(nextBigBlind(bigBlinds[index])).toBe(bigBlind);
+    });
   });
 });
 

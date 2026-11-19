@@ -409,8 +409,8 @@ describe("nextPlayingLevel", () => {
 
   it("skips a break", () => {
     expect(nextPlayingLevel(NLPT_STANDARD_LEVELS, 3)).toMatchObject({
-      small_blind: 400,
-      big_blind: 800,
+      small_blind: 300,
+      big_blind: 600,
     });
   });
 

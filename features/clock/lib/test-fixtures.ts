@@ -25,28 +25,29 @@ const BREAK: BlindLevel = {
   duration_seconds: TEN_MINUTES,
 };
 
-// The seeded "NLPT Standard" structure: 16 levels of 20 minutes with
-// 10-minute breaks after levels 4, 8 and 12 (19 rows, 5h 50m).
+// The "NLPT Standard" structure: 16 levels of 20 minutes on the round big
+// blind ladder, with 10-minute breaks after levels 4, 8 and 12 (19 rows,
+// 5h 50m).
 export const NLPT_STANDARD_LEVELS: BlindLevel[] = [
   level(100, 200),
   level(150, 300),
   level(200, 400),
-  level(300, 600),
+  level(250, 500),
   BREAK,
+  level(300, 600),
   level(400, 800),
   level(500, 1000),
-  level(600, 1200),
-  level(1000, 2000),
+  level(750, 1500),
   BREAK,
+  level(1000, 2000),
   level(1500, 3000),
   level(2000, 4000),
+  level(2500, 5000),
+  BREAK,
   level(3000, 6000),
   level(4000, 8000),
-  BREAK,
   level(5000, 10000),
-  level(6000, 12000),
-  level(8000, 16000),
-  level(10000, 20000),
+  level(7500, 15000),
 ];
 
 let nextId = 0;
