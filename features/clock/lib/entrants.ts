@@ -7,24 +7,17 @@ export function playersLeft(entrants: ClockEntrant[]): ClockEntrant[] {
 }
 
 // The latest bust has the lowest finishing place so far.
-function mostRecentBust(entrants: ClockEntrant[]): ClockEntrant | null {
-  return entrants.reduce<ClockEntrant | null>((latest, entrant) => {
-    if (entrant.finish_place === null) return latest;
-    if (
-      latest?.finish_place != null &&
-      latest.finish_place < entrant.finish_place
-    ) {
-      return latest;
-    }
-    return entrant;
-  }, null);
-}
-
 function isMostRecentBust(
   entrants: ClockEntrant[],
   entrant: ClockEntrant,
 ): boolean {
-  return mostRecentBust(entrants)?.id === entrant.id;
+  const places = entrants
+    .map(({ finish_place }) => finish_place)
+    .filter((place): place is number => place !== null);
+  return (
+    entrant.finish_place !== null &&
+    entrant.finish_place === Math.min(...places)
+  );
 }
 
 type ClearedBust = { busted_at: null; finish_place: null };
