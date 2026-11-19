@@ -13,7 +13,7 @@ function isNonNegativeInteger(value: unknown): value is number {
 }
 
 // Why a row breaks the _blind_levels rules, or null when it's valid.
-function levelProblem(row: LevelRow): string | null {
+export function levelProblem(row: LevelRow): string | null {
   if (row.kind !== "level" && row.kind !== "break") return "unknown kind";
   if (!isPositiveInteger(row.duration_seconds)) {
     return "duration_seconds must be a positive whole number";
