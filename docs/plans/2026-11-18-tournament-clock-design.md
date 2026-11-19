@@ -26,7 +26,7 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Finding the clock | A "Tournament live" banner appears while a clock is running (phase 8) |
 | Results | The finish step writes `_tournaments` / `_tournament_sessions` |
 | Player phone view | None in v1; the shared display is enough |
-| Tests | Add Vitest for the pure logic |
+| Tests | Vitest for the pure logic (`npm test`) |
 | Guests in results | Counted in the pool and live placing; excluded from saved sessions; members re-ranked |
 
 ### Sync approach (chosen: A)
@@ -131,9 +131,11 @@ Common splits for reference:
 ### Rebuy rules
 
 - At most `max_rebuys` per player (default 2).
-- No rebuys once players left ≤ places paid (everyone left is in the money).
+- No rebuys once players left ≤ places paid (everyone left is in the money). The bubble player can't rebuy back in once the money is reached.
+- Only while the clock is running or paused.
+- A busted player can rebuy (re-enter) only as the **most recent bust**, the same rule as undo. Otherwise the next bust would get a place someone already has.
 
-Both are enforced by the rebuy action in phase 5. The cutoff changes as players bust, so it can't be a table check.
+`planRebuy` in `features/clock/lib/entrants.ts` applies all four; the rebuy action uses it in phase 5. The in-the-money cutoff changes as players bust, so it can't be a table check.
 
 ### Permissions (RLS)
 
@@ -145,15 +147,18 @@ Both are enforced by the rebuy action in phase 5. The cutoff changes as players 
 
 All state transitions are writes of timestamps; nothing ticks in the database.
 
-- **Remaining in current level** = `levels[level_index].duration_ms − (serverNow − level_started_at)`.
-- **Start:** `status=running`, `level_index=0`, `level_started_at=now()`.
-- **Pause:** `status=paused`, `paused_remaining_ms=<computed remaining>`.
-- **Resume:** `status=running`, `level_started_at = now() − (duration − paused_remaining_ms)`, `paused_remaining_ms=null`.
-- **Next/prev level:** `level_index ± 1`, `level_started_at=now()`.
-- **Adjust time (+/− 1 min):** shift `level_started_at`.
-- **Auto-advance:** every client walks forward through `levels` from `level_started_at` to find the effective level, so displays are correct even if nobody writes. The admin control screen, when open, persists the advance with a conditional update (`where level_index = <old>`), so duplicate writes from multiple admin tabs are no-ops.
-- **Clock skew:** on load (and on Realtime reconnect) the client fetches server time via the `server_now()` RPC (`clock_timestamp()`, not `now()`, which is the transaction start; callable by anon), measures round trip, and stores `offset = serverTime + rtt/2 − Date.now()`. All countdowns use `Date.now() + offset`.
-- Use server time (`now()` in SQL / RPC) for every timestamp written, never the admin device's clock.
+The calculations are in `features/clock/lib/timing.ts`. Each control returns the columns to save (or refuses with a reason), and every result satisfies the database's status rule.
+
+- **Remaining in current level** = `levels[level_index].duration_ms − (serverNow − level_started_at)`, never below 0 (`getClockPosition`).
+- **Start:** `status=running` at the saved level (0 for a new clock), `level_started_at=now`.
+- **Pause:** `status=paused`, saving the caught-up `level_index` and its `paused_remaining_ms`; `level_started_at=null`.
+- **Resume:** `status=running`, `level_started_at = now − (duration − paused_remaining_ms)`, `paused_remaining_ms=null`.
+- **Next/prev level:** the chosen level starts with its full time: `level_started_at=now` while running, `paused_remaining_ms=<full duration>` while paused.
+- **Adjust time (+/− 1 min):** sets the time left to `max(0, left + change)`. Removing more than is left ends the level now; adding to a last level that has run out gives exactly the added time.
+- **Finish:** `status=finished`, saving the caught-up level and the time left.
+- **Auto-advance:** every client walks forward through `levels` from `level_started_at` to find the effective level, so displays are correct even if nobody writes. The admin control screen, when open, persists the advance with a conditional update (`where level_index = <old>`), so duplicate writes from multiple admin tabs are no-ops (`catchUpUpdate`).
+- **Clock skew:** on load (and on Realtime reconnect) the client fetches server time via the `server_now()` RPC (`clock_timestamp()`, not `now()`, which is the transaction start; callable by anon), measures round trip, and stores `offset = serverTime + rtt/2 − Date.now()` (`serverOffsetMs`). All countdowns use `Date.now() + offset`.
+- Every timestamp written uses server time (the server action's clock or `server_now()`), never the admin device's clock. The lib functions take the time as `nowMs`, so they never read a clock themselves.
 
 ## Screens & routes
 
@@ -167,16 +172,23 @@ All state transitions are writes of timestamps; nothing ticks in the database.
 
 Code layout follows the repo's convention: `features/clock/{components,hooks,lib,actions}` with thin route files under `app/`.
 
-- `features/clock/lib/` — pure functions: `getEffectiveLevel`, `getRemainingMs`, `computePool`, `computePayouts`, `buildFinishResults`. No React/Supabase imports so they're easy to test.
+- `features/clock/lib/` — pure functions, no React/Supabase imports, so they're easy to test:
+  - `levels.ts`: `parseLevels` (checks a clock's `levels` with the `_blind_levels` rules), level lengths, `levelNumber`.
+  - `timing.ts`: `getClockPosition`, the clock controls, `catchUpUpdate`, `nextPlayingLevel`, `timeToNextBreakMs`, `serverOffsetMs`.
+  - `format.ts`: `formatClockTime` (`15:00`, `1:01:01`; rounds up to the second), `formatBlinds` (`1,000 / 2,000`).
+  - `money.ts`: `computePool`, `computePayouts`, `computeChips`.
+  - `entrants.ts`: `planBust`, `planUndoBust`, `planRebuy`, `planFinish`.
+  - `results.ts`: `buildFinishResults`.
+  - `result.ts`: the `{ ok, value } | { ok, reason }` type the rules return when they can refuse.
 - `features/clock/hooks/useClock(id)` — initial fetch + Realtime subscription + server-time offset; returns derived state and a `requestAnimationFrame`/interval-driven remaining time.
 - `features/clock/actions/` — server actions for every admin mutation; each re-checks admin via `getCurrentUser()` in addition to RLS.
 
 ### Entrant actions
 
-- **Bust:** sets `busted_at=now()` and `finish_place = players left before the bust`.
+- **Bust:** sets `busted_at=now` and `finish_place = players left before the bust`. Refused for the last player left.
 - **Undo bust:** clears both (only for the most recent bust, to keep places consistent).
-- **Rebuy:** increments `rebuys`; if the player is busted, also clears `busted_at`/`finish_place` (re-entry).
-- The last remaining player gets `finish_place=1` when the admin finishes the clock.
+- **Rebuy:** increments `rebuys`; if the player is busted, also clears `busted_at`/`finish_place` (re-entry, most recent bust only). See Rebuy rules.
+- The last remaining player gets `finish_place=1` when the admin finishes the clock; refused while more than one player is left.
 
 ### Sounds & TV mode
 
@@ -191,7 +203,8 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
    - **Payouts** use true finishing positions (guests included), via the payout rule.
    - **Members only** are kept; places are **re-ranked** among members (1, 2, 3…). Each member's `cash_out` is the payout of their **true** position. E.g. guest wins 1st → member who finished 2nd is saved as place 1 with the 2nd-place payout.
    - Per member: `rebuys` (count), `cash_out`, `place`. Buy-in total, net profit, and points are derived by `_tournament_session_points` (Phase 0), not written.
-   - Tournament fields prefilled: `name`, `date`, `week_id` (admin confirms), `places_paid`, `buy_in_amount`, `rebuy_amount`, `player_count` (all entrants incl. guests), `total_rebuys` (incl. guests).
+   - Tournament fields prefilled: `name`, `date`, `week_id` (admin confirms), `places_paid` (the places actually paid: fewer than the clock's when fewer played), `buy_in_amount`, `rebuy_amount`, `player_count` (all entrants incl. guests), `total_rebuys` (incl. guests).
+   - `buildFinishResults` builds everything except name, date and week. It refuses with no entrants or while anyone has no finishing place.
 3. Admin edits anything, then confirms → creates (or updates the linked) `_tournaments` row and inserts `_tournament_sessions` for members who played only (no filler rows), then runs the same ranking recalculation, `updateTag(LEAGUE_DATA_TAG)`, and revalidation as today's tournament save.
 
 ## Error handling
@@ -205,12 +218,12 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 
 ## Testing
 
-The repo has no test runner today. Add **Vitest** (dev dependency only) for the pure functions in `features/clock/lib/`, which carry all the tricky logic:
+**Vitest** (dev dependency, `vitest.config.mts`) tests the pure functions in `features/clock/lib/`, which carry all the tricky logic. Run `npm test` (or `npm run test:watch`). Tests sit next to the code as `*.test.ts`, with shared builders and the NLPT Standard levels in `test-fixtures.ts`. They cover:
 
-- Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab.
-- Pool, avg stack, and payout rule (incl. a non-$40 buy-in and entrants < places paid).
-- Rebuy rules: the per-player limit and the in-the-money cutoff.
-- Finish results: guest re-ranking, true-position cash-outs, net profit.
+- Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab; every control's result checked against the database's status rule.
+- Pool, avg stack, and payout rule (incl. a non-$40 buy-in, entrants < places paid, and the whole pool always paid out).
+- Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
+- Finish results: guest re-ranking, true-position cash-outs, places actually paid.
 
 Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs.
 
@@ -263,7 +276,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 
 0. **Tournament v2 cutover** (see Phase 0; own PR, dev first). Done (#24).
 1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC, types, the NLPT Standard template. Done on dev; goes to prod with phase 4.
-2. **Pure logic + tests:** `features/clock/lib` with Vitest.
+2. **Pure logic + tests:** `features/clock/lib` with Vitest. Done; see `docs/plans/2026-11-19-tournament-clock-phase-2-logic.md`.
 3. **Templates:** `/admin/clock/structures` CRUD.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only).
 5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
