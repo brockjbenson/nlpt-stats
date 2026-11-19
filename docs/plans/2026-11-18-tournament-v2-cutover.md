@@ -149,7 +149,9 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 
 **Commit:** `feat: read tournament stats from v2 tables`
 
-### Task 5: Migration — drop dead functions
+### Task 5: Migration — drop dead functions ✅ applied to dev 2026-11-19
+
+**Result:** `20261119134211_drop_dead_tournament_functions` drops 18 functions: 15 unused standalone functions and the 1-argument overloads of `get_career_data`, `get_career_stats` and `get_poy_info`. The app's call list was rechecked (including multi-line calls and every quote style) and is still the same 12 RPCs. No function, view, trigger or policy referenced any of the dropped ones. `get_career_stats()` with no arguments was on the candidate list but only reads cash tables, so it was kept. A guard at the end of the migration fails if any `public` function still reads v1 `tournaments` / `tournament_sessions`, and it passed. The snapshot overall md5 is unchanged at `46f88e2d…`. The app's other read RPCs (`get_member_advanced_skills`, `get_member_debut_date`, `get_nlpi_rank_records`, `get_recent_cash_session_info`, `get_stat_avgs`) run, and `insert_weekly_nlpi_rankings` exists. Dev now has 39 public functions, down from 57.
 
 **Files:**
 - Create: `supabase/migrations/<ts>_drop_dead_tournament_functions.sql`
