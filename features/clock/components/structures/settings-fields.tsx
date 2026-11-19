@@ -14,6 +14,8 @@ import {
 } from "@/features/clock/lib/structures";
 import type React from "react";
 
+const SECONDS_PER_MINUTE = 60;
+
 type NumberField =
   | "buy_in"
   | "rebuy"
@@ -88,6 +90,24 @@ function SettingsFields({ draft, errors, dispatch }: Props) {
               />
             </CompactField>
           ))}
+          <CompactField
+            htmlFor="structure-new-level-minutes"
+            label="New level length (min)"
+          >
+            <NumberInput
+              id="structure-new-level-minutes"
+              min={1}
+              step={1}
+              value={draft.new_level_seconds / SECONDS_PER_MINUTE}
+              onValueChange={(minutes) =>
+                dispatch({
+                  type: "setField",
+                  field: "new_level_seconds",
+                  value: minutes * SECONDS_PER_MINUTE,
+                })
+              }
+            />
+          </CompactField>
         </div>
         <ErrorText
           errors={errors.filter(({ field }) =>

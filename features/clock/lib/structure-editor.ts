@@ -1,4 +1,5 @@
 import {
+  DEFAULT_LEVEL_SECONDS,
   type DraftLevel,
   type StructureDraft,
   SUGGESTED_SPLITS,
@@ -10,13 +11,7 @@ const BREAK_SECONDS = 10 * 60;
 // 600, 800, 1,000, 1,500 … A suggested level moves to the next one up, a
 // 25-50% raise that never doubles.
 const BIG_BLIND_STEPS = [1, 1.5, 2, 3, 4, 5, 6, 8];
-const FIRST_LEVEL: BlindLevel = {
-  kind: "level",
-  small_blind: 100,
-  big_blind: 200,
-  ante: 0,
-  duration_seconds: 20 * 60,
-};
+const FIRST_SMALL_BLIND = 100;
 // Places paid beyond this get no automatic percentage inputs: a typo like
 // 400 shouldn't render 400 fields.
 const MAX_RESIZED_PLACES = 20;
@@ -26,7 +21,8 @@ type NumberField =
   | "rebuy"
   | "starting_chips"
   | "rebuy_chips"
-  | "max_rebuys";
+  | "max_rebuys"
+  | "new_level_seconds";
 
 // New rows bring their own key so the reducer stays pure.
 export type StructureEditorAction =
@@ -53,18 +49,28 @@ export function nextBigBlind(bigBlind: number): number {
   );
 }
 
-// The level to offer after the playing levels in `levels`: same length and
-// ante, the next round big blind, and a small blind of half that.
-function suggestLevel(levels: BlindLevel[]): BlindLevel {
+// The new level length setting, or the default while it's empty or invalid.
+function newLevelSeconds(draft: StructureDraft): number {
+  const seconds = draft.new_level_seconds;
+  return Number.isInteger(seconds) && seconds > 0
+    ? seconds
+    : DEFAULT_LEVEL_SECONDS;
+}
+
+// The level to offer after the playing levels in `levels`: the next round
+// big blind with a small blind of half that, the last level's ante, and the
+// new level length.
+function suggestLevel(levels: BlindLevel[], seconds: number): BlindLevel {
   const last = levels.findLast(({ kind }) => kind === "level");
-  if (!last?.big_blind) return FIRST_LEVEL;
-  const bigBlind = nextBigBlind(last.big_blind);
+  const bigBlind = last?.big_blind
+    ? nextBigBlind(last.big_blind)
+    : FIRST_SMALL_BLIND * 2;
   return {
     kind: "level",
     small_blind: bigBlind / 2,
     big_blind: bigBlind,
-    ante: last.ante,
-    duration_seconds: last.duration_seconds,
+    ante: last?.ante ?? 0,
+    duration_seconds: seconds,
   };
 }
 
@@ -93,16 +99,20 @@ function resizePayouts(current: number[], places: number): number[] {
 // Switching a row's kind resets it: a break loses its blinds, a new level
 // gets blinds suggested from the levels above it.
 function changeLevel(
-  levels: DraftLevel[],
+  draft: StructureDraft,
   index: number,
   change: Partial<BlindLevel>,
 ): DraftLevel {
+  const { levels } = draft;
   const row = levels[index];
   if (change.kind === "break" && row.kind !== "break") {
     return { ...breakLevel(), key: row.key };
   }
   if (change.kind === "level" && row.kind !== "level") {
-    return { ...suggestLevel(levels.slice(0, index)), key: row.key };
+    return {
+      ...suggestLevel(levels.slice(0, index), newLevelSeconds(draft)),
+      key: row.key,
+    };
   }
   return { ...row, ...change };
 }
@@ -152,7 +162,10 @@ export function structureEditorReducer(
     case "addLevel":
       return setLevels(draft, [
         ...draft.levels,
-        { ...suggestLevel(draft.levels), key: action.key },
+        {
+          ...suggestLevel(draft.levels, newLevelSeconds(draft)),
+          key: action.key,
+        },
       ]);
 
     case "addBreak":
@@ -166,7 +179,7 @@ export function structureEditorReducer(
         draft,
         draft.levels.map((row, index) =>
           index === action.index
-            ? changeLevel(draft.levels, index, action.change)
+            ? changeLevel(draft, index, action.change)
             : row,
         ),
       );

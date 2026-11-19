@@ -6,6 +6,8 @@ import type {
 } from "@/features/clock/types";
 
 export const NAME_MAX_LENGTH = 60;
+// Length of a new level when nothing else says otherwise.
+export const DEFAULT_LEVEL_SECONDS = 20 * 60;
 const MIN_PLACES_PAID = 3;
 const PERCENT_TOTAL = 100;
 // Percentages are typed by hand and can carry float error (33.3 + 33.3 + 33.4).
@@ -35,6 +37,8 @@ export type StructureDraft = {
   payout_pcts: number[];
   max_rebuys: number;
   levels: DraftLevel[];
+  // Editor only, never saved: the length of each level "Add level" creates.
+  new_level_seconds: number;
 };
 
 export type StructureField =
@@ -77,10 +81,27 @@ export function newStructureDraft(): StructureDraft {
         small_blind: 100,
         big_blind: 200,
         ante: 0,
-        duration_seconds: 1200,
+        duration_seconds: DEFAULT_LEVEL_SECONDS,
       },
     ],
+    new_level_seconds: DEFAULT_LEVEL_SECONDS,
   };
+}
+
+// The length most of a template's playing levels have (the first one wins a
+// tie), or the default with none.
+function mostCommonLevelSeconds(levels: BlindLevel[]): number {
+  const counts = new Map<number, number>();
+  for (const { kind, duration_seconds } of levels) {
+    if (kind !== "level") continue;
+    counts.set(duration_seconds, (counts.get(duration_seconds) ?? 0) + 1);
+  }
+  let best = DEFAULT_LEVEL_SECONDS;
+  let bestCount = 0;
+  counts.forEach((count, seconds) => {
+    if (count > bestCount) [best, bestCount] = [seconds, count];
+  });
+  return best;
 }
 
 export function structureToDraft(
@@ -88,6 +109,7 @@ export function structureToDraft(
   levels: BlindStructureLevel[],
 ): StructureDraft {
   return {
+    new_level_seconds: mostCommonLevelSeconds(levels),
     name: structure.name,
     buy_in: structure.default_buy_in,
     rebuy: structure.default_rebuy,
@@ -254,4 +276,17 @@ export function levelStartTimes(levels: BlindLevel[]): number[] {
     elapsedMs += levelDurationMs(level);
     return startMs;
   });
+}
+
+// Whether `draft` would save anything different from `saved`. Ignores the
+// editor-only new level length and row keys, and catches edits typed then
+// undone.
+export function hasUnsavedChanges(
+  saved: StructureDraft,
+  draft: StructureDraft,
+): boolean {
+  return (
+    JSON.stringify(draftToSaveInput(saved)) !==
+    JSON.stringify(draftToSaveInput(draft))
+  );
 }

@@ -126,12 +126,31 @@ describe("setPayoutPct", () => {
 });
 
 describe("addLevel", () => {
-  it("suggests the next blinds from the last level", () => {
+  it("suggests the next blinds at the new level length", () => {
+    // The last level is 15 minutes; new levels use the 20-minute setting.
     const draft = run(draftWith([level("a", 300, 600, 15)]), {
       type: "addLevel",
       key: "b",
     });
-    expect(draft.levels[1]).toEqual(level("b", 400, 800, 15));
+    expect(draft.levels[1]).toEqual(level("b", 400, 800, 20));
+  });
+
+  it("uses a changed new level length", () => {
+    const draft = run(
+      draftWith([level("a", 300, 600)]),
+      { type: "setField", field: "new_level_seconds", value: 12 * 60 },
+      { type: "addLevel", key: "b" },
+    );
+    expect(draft.levels[1]).toEqual(level("b", 400, 800, 12));
+  });
+
+  it("falls back to 20 minutes when the setting is empty", () => {
+    const draft = run(
+      draftWith([level("a", 300, 600, 15)]),
+      { type: "setField", field: "new_level_seconds", value: Number.NaN },
+      { type: "addLevel", key: "b" },
+    );
+    expect(draft.levels[1].duration_seconds).toBe(20 * 60);
   });
 
   it("skips a break when suggesting", () => {
@@ -219,10 +238,17 @@ describe("updateLevel", () => {
 
   it("suggests blinds when a break becomes a level", () => {
     const draft = run(
-      draftWith([level("a", 300, 600), breakRow("b"), level("c", 1000, 2000)]),
+      {
+        ...draftWith([
+          level("a", 300, 600),
+          breakRow("b"),
+          level("c", 1000, 2000),
+        ]),
+        new_level_seconds: 15 * 60,
+      },
       { type: "updateLevel", index: 1, change: { kind: "level" } },
     );
-    expect(draft.levels[1]).toEqual(level("b", 400, 800));
+    expect(draft.levels[1]).toEqual(level("b", 400, 800, 15));
   });
 });
 

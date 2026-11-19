@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   copyName,
   draftToSaveInput,
+  hasUnsavedChanges,
   levelStartTimes,
   NAME_MAX_LENGTH,
   newStructureDraft,
@@ -85,6 +86,60 @@ describe("newStructureDraft", () => {
     expect(
       validateStructureDraft({ ...newStructureDraft(), name: "Turbo" }),
     ).toEqual([]);
+  });
+});
+
+describe("new_level_seconds", () => {
+  it("starts at 20 minutes for a new template", () => {
+    expect(newStructureDraft().new_level_seconds).toBe(20 * 60);
+  });
+
+  it("starts at the template's most common level length", () => {
+    const rows: BlindStructureLevel[] = [15, 15, 20, 15].map(
+      (minutes, index) => ({
+        id: `l${index}`,
+        structure_id: NLPT_STANDARD.id,
+        position: index + 1,
+        kind: "level",
+        small_blind: 100,
+        big_blind: 200,
+        ante: 0,
+        duration_seconds: minutes * 60,
+      }),
+    );
+    expect(structureToDraft(NLPT_STANDARD, rows).new_level_seconds).toBe(
+      15 * 60,
+    );
+  });
+
+  it("isn't saved", () => {
+    const input = draftToSaveInput({ ...draft(), new_level_seconds: 300 });
+    expect(JSON.stringify(input)).not.toContain("new_level");
+  });
+});
+
+describe("hasUnsavedChanges", () => {
+  it("is false for the same template", () => {
+    expect(hasUnsavedChanges(draft(), draft())).toBe(false);
+  });
+
+  it("ignores the new level length", () => {
+    expect(
+      hasUnsavedChanges(draft(), { ...draft(), new_level_seconds: 300 }),
+    ).toBe(false);
+  });
+
+  it("is true when something saved changes", () => {
+    expect(hasUnsavedChanges(draft(), { ...draft(), buy_in: 50 })).toBe(true);
+  });
+
+  it("ignores row keys", () => {
+    const rekeyed = draft();
+    rekeyed.levels = rekeyed.levels.map((level, index) => ({
+      ...level,
+      key: `other-${index}`,
+    }));
+    expect(hasUnsavedChanges(draft(), rekeyed)).toBe(false);
   });
 });
 

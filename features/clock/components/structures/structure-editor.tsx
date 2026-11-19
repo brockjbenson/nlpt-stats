@@ -9,6 +9,7 @@ import PayoutFields from "@/features/clock/components/structures/payout-fields";
 import SettingsFields from "@/features/clock/components/structures/settings-fields";
 import { structureEditorReducer } from "@/features/clock/lib/structure-editor";
 import {
+  hasUnsavedChanges,
   type StructureDraft,
   validateStructureDraft,
 } from "@/features/clock/lib/structures";
@@ -44,8 +45,7 @@ function StructureEditor({ id, initialDraft }: Props) {
   const keyCount = useRef(0);
 
   const errors = validateStructureDraft(draft);
-  // The reducer returns the same object when nothing changed.
-  const isDirty = draft !== savedDraft;
+  const isDirty = hasUnsavedChanges(savedDraft, draft);
   const canSave = isDirty && errors.length === 0 && !isSaving;
   useUnsavedChangesWarning(isDirty && !isSaving);
 
