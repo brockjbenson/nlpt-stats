@@ -224,7 +224,14 @@ Verified: the view has 108 rows. Session buy-in, net profit, rebuys, cash-out an
 1. `npx eslint <changed files>` and `npx prettier --write <changed files>`. Commit if there are changes: `chore: lint and format`.
 2. Open a PR `feat/tournament-v2-cutover → master`. The description includes the Task 2 decision table, the snapshot diff summary, and the prod rollout steps (Task 10). End the PR body with: 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-### Task 10: Prod rollout (user-gated)
+### Task 10: Prod rollout (user-gated) ✅ migrations applied to prod 2026-11-19
+
+**Result:** Approved by the user. All 6 migrations were applied to prod (`mttdnkrtyknlmbnwdoye`) in order, and every built-in check passed. Prod's MCP was made writable for the rollout and set back to `read_only=true` afterward.
+- **Before:** `prod-before-rollout.txt` (md5 `96431a0a…`). Prod had 16 new cash sessions since `prod-before.txt`; tournament data was unchanged.
+- **After:** `prod-after-rollout.txt` (md5 `5617e7c2…`). **The same 75 calls changed on prod as on dev, with the same causes and nothing extra.** All 85 NLPI calls are unchanged.
+- **Direct checks:** 108 sessions and 13 tournaments. The only changed session rows are the 12 approved ones. Every pool equals its payouts, except Thanksgiving 2024's guest. 39 public functions remain. Signed-out reads, including NLPI, work.
+- **Remaining:** merge #24 and deploy, then smoke-test prod signed out and as admin. Until the deploy, the live app still works (same RPC outputs; v1 tables in place), but tournaments entered through the old admin forms would only reach the v1 tables, so don't enter any until the deploy is live.
+
 
 **Do not start without explicit user approval in this task.**
 1. Re-run the snapshot on prod and save it as `prod-before-rollout.txt`. Diff it against `prod-before.txt`; investigate if new tournament data has appeared since.
