@@ -17,6 +17,9 @@ import Link from "next/link";
 import { StatsData, StatsLeaders } from "../../_lib/types";
 import { getStatsLeaders } from "../../_lib/utils/getStatsLeaders";
 
+// Share of the row each card takes: 1 card, then 2 from md, 3 from lg.
+const CARD_WIDTH = "md:basis-1/2 lg:basis-1/3";
+
 interface StatCardsProps {
   data: StatsData[];
   members: Member[];
@@ -26,9 +29,12 @@ function StatCards({ data, members }: StatCardsProps) {
 
   return (
     <div>
-      <Carousel>
-        <CarouselContent>
-          <CarouselItem>
+      {/* One card per view on phones, then more as the screen widens. */}
+      <Carousel opts={{ align: "start" }}>
+        {/* No negative margin: each card's px-2 gives a 1rem gap between
+            cards and a 0.5rem inset at the row's edges. */}
+        <CarouselContent className="ml-0">
+          <CarouselItem className={CARD_WIDTH}>
             <StatCard
               title="Net Profit"
               members={members}
@@ -38,7 +44,8 @@ function StatCards({ data, members }: StatCardsProps) {
                   className={cn(
                     "font-semibold text-lg md:text-xl",
                     getProfitTextColor(item.net_profit),
-                  )}>
+                  )}
+                >
                   {formatMoney(item.net_profit)}
                 </p>
               )}
@@ -51,7 +58,8 @@ function StatCards({ data, members }: StatCardsProps) {
               renderDrawerRows={(item) => (
                 <div
                   className="w-full grid grid-cols-2 py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-net`}>
+                  key={`${item.member_id}-net`}
+                >
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
@@ -61,14 +69,15 @@ function StatCards({ data, members }: StatCardsProps) {
                     className={cn(
                       "font-semibold text-base md:text-lg text-end",
                       getProfitTextColor(item.net_profit),
-                    )}>
+                    )}
+                  >
                     {formatMoney(item.net_profit)}
                   </p>
                 </div>
               )}
             />
           </CarouselItem>
-          <CarouselItem>
+          <CarouselItem className={CARD_WIDTH}>
             <StatCard
               title="Win Percentage"
               members={members}
@@ -80,7 +89,8 @@ function StatCards({ data, members }: StatCardsProps) {
                     item.win_percentage >= 50
                       ? "text-green-500"
                       : "text-red-500",
-                  )}>
+                  )}
+                >
                   {item.win_percentage.toFixed(2)}%
                 </p>
               )}
@@ -94,7 +104,8 @@ function StatCards({ data, members }: StatCardsProps) {
               renderDrawerRows={(item) => (
                 <div
                   className="w-full grid grid-cols-3 py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-winpct`}>
+                  key={`${item.member_id}-winpct`}
+                >
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
@@ -109,14 +120,15 @@ function StatCards({ data, members }: StatCardsProps) {
                       item.win_percentage >= 50
                         ? "text-green-500"
                         : "text-red-500",
-                    )}>
+                    )}
+                  >
                     {item.win_percentage.toFixed(2)}%
                   </p>
                 </div>
               )}
             />
           </CarouselItem>
-          <CarouselItem>
+          <CarouselItem className={CARD_WIDTH}>
             <StatCard
               title="Gross Profit"
               members={members}
@@ -126,7 +138,8 @@ function StatCards({ data, members }: StatCardsProps) {
                   className={cn(
                     "font-semibold text-lg md:text-xl",
                     getProfitTextColor(item.gross_profit),
-                  )}>
+                  )}
+                >
                   {formatMoney(item.gross_profit)}
                 </p>
               )}
@@ -139,7 +152,8 @@ function StatCards({ data, members }: StatCardsProps) {
               renderDrawerRows={(item) => (
                 <div
                   className="w-full flex justify-between items-center py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-gross`}>
+                  key={`${item.member_id}-gross`}
+                >
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
@@ -149,14 +163,15 @@ function StatCards({ data, members }: StatCardsProps) {
                     className={cn(
                       "font-semibold text-base md:text-lg",
                       getProfitTextColor(item.gross_profit),
-                    )}>
+                    )}
+                  >
                     {formatMoney(item.gross_profit)}
                   </p>
                 </div>
               )}
             />
           </CarouselItem>
-          <CarouselItem>
+          <CarouselItem className={CARD_WIDTH}>
             <StatCard
               title="Session Average"
               members={members}
@@ -166,7 +181,8 @@ function StatCards({ data, members }: StatCardsProps) {
                   className={cn(
                     "font-semibold text-lg md:text-xl",
                     getProfitTextColor(item.session_avg),
-                  )}>
+                  )}
+                >
                   {formatMoney(item.session_avg)}
                 </p>
               )}
@@ -180,7 +196,8 @@ function StatCards({ data, members }: StatCardsProps) {
               renderDrawerRows={(item) => (
                 <div
                   className="w-full grid grid-cols-3 py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-avg`}>
+                  key={`${item.member_id}-avg`}
+                >
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
@@ -193,14 +210,15 @@ function StatCards({ data, members }: StatCardsProps) {
                     className={cn(
                       "font-semibold text-base md:text-lg text-end",
                       getProfitTextColor(item.session_avg),
-                    )}>
+                    )}
+                  >
                     {formatMoney(item.session_avg)}
                   </p>
                 </div>
               )}
             />
           </CarouselItem>
-          <CarouselItem>
+          <CarouselItem className={CARD_WIDTH}>
             <StatCard
               title="Sessions Played"
               members={members}
@@ -219,7 +237,8 @@ function StatCards({ data, members }: StatCardsProps) {
               renderDrawerRows={(item) => (
                 <div
                   className="w-full grid grid-cols-2 py-3 border-b border-neutral-600"
-                  key={`${item.member_id}-sessions`}>
+                  key={`${item.member_id}-sessions`}
+                >
                   <h3 className="text-base font-semibold md:text-xl">
                     <Link href={`/members/${item.member_id}`}>
                       {item.first_name}
