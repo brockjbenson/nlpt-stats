@@ -6,7 +6,7 @@
 
 **Goal:** Create the database side of the tournament clock on dev: blind structure templates, clocks and entrants, with public read, admin-only write, Realtime and a server time function, plus matching TypeScript types.
 
-**Architecture:** Four `_`-prefixed tables, following the v2 naming. A clock stores timestamps, not a ticking value; each screen counts down locally using `server_now()` to correct for its own clock, and Supabase Realtime pushes changes. Database rules enforce the rules from the design (≥3 places paid, payout split sums to 100, status/timestamp consistency, one place per bust-out), so a bad write is rejected even if the app has a bug. Permissions mirror `_tournaments`.
+**Architecture:** Four `_`-prefixed tables, following the v2 naming. A clock stores timestamps, not a ticking value; each screen counts down locally using `server_now()` to correct for its own clock, and Supabase Realtime pushes changes. Database rules enforce the rules from the design (≥3 places paid, one payout % per paid place summing to 100, status/timestamp consistency, one place per bust-out), so a bad write is rejected even if the app has a bug. Permissions mirror `_tournaments`.
 
 **Tech Stack:** Supabase Postgres (RLS, Realtime publication, SQL functions), TypeScript.
 
@@ -38,7 +38,7 @@
 - Create: `supabase/migrations/<ts>_tournament_clock_schema.sql`
 
 **Contract:**
-- `private.payout_pcts_valid(pcts numeric[], places_paid int) returns boolean`: immutable. True when `array_length(pcts, 1) = places_paid - 1`, every value is > 0, and the values sum to 100. Use `create schema if not exists private`.
+- `private.payout_pcts_valid(pcts numeric[], places_paid int) returns boolean`: immutable. True when `array_length(pcts, 1) = places_paid` (one % per paid place: payouts are a straight share of the pool), every value is > 0, and the values sum to 100. Use `create schema if not exists private`.
 - **`_blind_structures`** (templates):
   - `id uuid pk default gen_random_uuid()`
   - `name text not null unique`
@@ -46,8 +46,9 @@
   - `default_rebuy numeric not null default 40 check (>= 0)`
   - `default_starting_chips int not null check (> 0)`
   - `default_rebuy_chips int not null check (> 0)`
-  - `default_places_paid int not null default 3 check (>= 3)`
-  - `default_payout_pcts numeric[] not null default '{65,35}'`, checked with `payout_pcts_valid(default_payout_pcts, default_places_paid)`
+  - `default_places_paid int not null default 4 check (>= 3)`
+  - `default_payout_pcts numeric[] not null default '{45,30,15,10}'`, checked with `payout_pcts_valid(default_payout_pcts, default_places_paid)`
+  - `default_max_rebuys int not null default 2 check (>= 0)`: per player. Separately, no rebuys once players left ≤ places paid. That cutoff changes during play, so the app enforces it (phase 5).
   - `created_at timestamptz not null default now()`
 - **`_blind_levels`** (a template's levels, in order):
   - `id uuid pk`
@@ -72,6 +73,7 @@
   - `starting_chips int not null check (> 0)`, `rebuy_chips int not null check (> 0)`
   - `places_paid int not null check (>= 3)`
   - `payout_pcts numeric[] not null`, checked with `payout_pcts_valid(payout_pcts, places_paid)`
+  - `max_rebuys int not null check (>= 0)`: copied from the template. The rebuy action enforces it, together with the in-the-money cutoff (phase 5).
   - `created_at timestamptz not null default now()`
   - **Status consistency check:**
     - `setup` → `level_started_at` and `paused_remaining_ms` are null
@@ -95,7 +97,7 @@
 
 **Verify on dev** (each in `begin; … rollback;`):
 - Valid template and level insert → ok.
-- A template with `default_places_paid 2` is rejected; so is one with pcts `{60,30}` (sums to 90).
+- A template with `default_places_paid 2` is rejected; so is one with 4 paid and pcts `{45,30,25}` (3 values) or `{45,30,15,5}` (sums to 95).
 - A level with `kind 'break'` and blinds set is rejected; so is a level with `big_blind < small_blind`.
 - Swapping two level positions in one transaction succeeds (the unique rule is deferred).
 - A clock with `status 'running'` and `level_started_at` null is rejected.
@@ -167,13 +169,25 @@ Each gets a one-line comment naming its table. No runtime code: parsing and vali
 - Create: `supabase/migrations/<ts>_tournament_clock_starter_structure.sql`
 
 **Contract:**
-- Insert the user's structure as one `_blind_structures` row (name, e.g., "NLPT Standard", plus starting and rebuy chips, $40 / $40, 3 paid, `{65,35}`).
-- Insert its levels in order, with breaks as `kind 'break'`.
+Values from the user's sheet (`2026 Thanksgiving Showdown.pdf`, received 2026-11-19):
+- **Template** `NLPT Standard`: buy-in $40, rebuy $40, 20,000 starting chips, 20,000 rebuy chips, 4 places paid at `{45,30,15,10}`, max 2 rebuys per player.
+- **Levels** (ante 0 throughout, 20 min = 1200 s each), with a **10-minute break** (600 s) after levels 4, 8 and 12. That makes 19 rows, positions 1–19:
+
+  | Level | Blinds | Level | Blinds |
+  |---|---|---|---|
+  | 1 | 100/200 | 9 | 1,500/3,000 |
+  | 2 | 150/300 | 10 | 2,000/4,000 |
+  | 3 | 200/400 | 11 | 3,000/6,000 |
+  | 4 | 300/600 | 12 | 4,000/8,000 |
+  | 5 | 400/800 | 13 | 5,000/10,000 |
+  | 6 | 500/1,000 | 14 | 6,000/12,000 |
+  | 7 | 600/1,200 | 15 | 8,000/16,000 |
+  | 8 | 1,000/2,000 | 16 | 10,000/20,000 |
+
 - Make it idempotent: `on conflict (name) do nothing` for the template, and levels inserted only when the template was created in this run.
+- Break notes ("Remove 25's") and the starting chip breakdown on the sheet are **out of scope for now**.
 
-**Wait for** the user's structure (levels with blinds, ante and minutes; breaks; starting and rebuy stacks). Don't guess values.
-
-**Verify:** the levels come back in order, and every row passes the Task 1 checks.
+**Verify:** 19 rows (16 levels, 3 breaks) in order; total length 6h 50m (16×20 min + 3×10 min); every row passes the Task 1 checks.
 
 **Commit:** `feat: seed starter blind structure`
 
@@ -185,6 +199,8 @@ Each gets a one-line comment naming its table. No runtime code: parsing and vali
 **Changes:**
 - Rename the tables to the `_`-prefixed names.
 - Add to Decisions: players find the clock through a **"Tournament live" banner** that appears while a clock is running (phase 8); the finish step writes to `_tournaments` / `_tournament_sessions`.
+- **Replace the payout rule:** payouts are a **straight % of the pool** for every paid place (default 4 paid at 45/30/15/10, matching the league's sheet and past payouts). There is no money-back rule, and the warning about a payout at or below the buy-in goes away.
+- **Add rebuy rules:** at most `max_rebuys` per player (default 2), and none once players left ≤ places paid; both are enforced in phase 5.
 - Note `server_now()`, `replica identity full`, and the `private.payout_pcts_valid` helper.
 - Mark the routes, sync and phases sections as approved.
 
