@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { formatBlinds, formatClockTime } from "@/features/clock/lib/format";
+import {
+  formatBlinds,
+  formatChips,
+  formatClockTime,
+  formatDollars,
+  formatDuration,
+} from "@/features/clock/lib/format";
 import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
 
 describe("formatClockTime", () => {
@@ -37,5 +43,34 @@ describe("formatBlinds", () => {
 
   it("names a break", () => {
     expect(formatBlinds(NLPT_STANDARD_LEVELS[4])).toBe("Break");
+  });
+});
+
+describe("formatDuration", () => {
+  it.each([
+    [0, "0m"],
+    [20 * 60_000, "20m"],
+    [60 * 60_000, "1h"],
+    [350 * 60_000, "5h 50m"],
+    [90_000, "2m"],
+  ])("%i ms reads %s", (ms, expected) => {
+    expect(formatDuration(ms)).toBe(expected);
+  });
+});
+
+describe("formatDollars", () => {
+  it.each([
+    [40, "$40"],
+    [1500, "$1,500"],
+    [12.5, "$12.50"],
+    [0, "$0"],
+  ])("%d reads %s", (amount, expected) => {
+    expect(formatDollars(amount)).toBe(expected);
+  });
+});
+
+describe("formatChips", () => {
+  it("separates thousands", () => {
+    expect(formatChips(20000)).toBe("20,000");
   });
 });

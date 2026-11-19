@@ -3,8 +3,40 @@ import type { BlindLevel } from "@/features/clock/types";
 
 const SECONDS_PER_MINUTE = 60;
 const SECONDS_PER_HOUR = 3600;
+const MS_PER_MINUTE = SECONDS_PER_MINUTE * MS_PER_SECOND;
+const MINUTES_PER_HOUR = 60;
 
 const chipCount = new Intl.NumberFormat("en-US");
+const wholeDollars = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+const dollarsAndCents = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
+// "20,000"
+export function formatChips(chips: number): string {
+  return chipCount.format(chips);
+}
+
+// "$40", or "$12.50" when there are cents.
+export function formatDollars(amount: number): string {
+  return Number.isInteger(amount)
+    ? wholeDollars.format(amount)
+    : dollarsAndCents.format(amount);
+}
+
+// A schedule length: "5h 50m", "20m", "1h". Rounds to the nearest minute.
+export function formatDuration(ms: number): string {
+  const totalMinutes = Math.round(ms / MS_PER_MINUTE);
+  const hours = Math.floor(totalMinutes / MINUTES_PER_HOUR);
+  const minutes = totalMinutes % MINUTES_PER_HOUR;
+  if (hours === 0) return `${minutes}m`;
+  return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
+}
 
 function twoDigits(value: number): string {
   return String(value).padStart(2, "0");
@@ -27,8 +59,8 @@ export function formatClockTime(ms: number): string {
 // "1,000 / 2,000", with " (ante 200)" when there's an ante, or "Break".
 export function formatBlinds(level: BlindLevel): string {
   if (level.kind === "break") return "Break";
-  const blinds = `${chipCount.format(level.small_blind ?? 0)} / ${chipCount.format(level.big_blind ?? 0)}`;
+  const blinds = `${formatChips(level.small_blind ?? 0)} / ${formatChips(level.big_blind ?? 0)}`;
   return level.ante > 0
-    ? `${blinds} (ante ${chipCount.format(level.ante)})`
+    ? `${blinds} (ante ${formatChips(level.ante)})`
     : blinds;
 }
