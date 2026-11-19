@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldLabel } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import CompactField from "@/features/clock/components/structures/compact-field";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import NumberInput from "@/features/clock/components/structures/number-input";
 import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
@@ -17,16 +17,18 @@ import type {
   StructureError,
 } from "@/features/clock/lib/structures";
 import type { BlindLevel } from "@/features/clock/types";
+import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp, Trash2 } from "lucide-react";
 import type React from "react";
 
 const SECONDS_PER_MINUTE = 60;
+const ICON_BUTTON_CLASS = "size-8";
 
 type BlindField = "small_blind" | "big_blind" | "ante";
 
 const BLIND_FIELDS: { field: BlindField; label: string }[] = [
-  { field: "small_blind", label: "Small blind" },
-  { field: "big_blind", label: "Big blind" },
+  { field: "small_blind", label: "SB" },
+  { field: "big_blind", label: "BB" },
   { field: "ante", label: "Ante" },
 ];
 
@@ -55,18 +57,24 @@ function LevelRow({
   const update = (change: Partial<BlindLevel>): void =>
     dispatch({ type: "updateLevel", index, change });
   const id = (field: string): string => `level-${level.key}-${field}`;
+  const isBreak = level.kind === "break";
 
   return (
-    <li className="flex flex-col gap-3 border-b border-neutral-800 py-4 last:border-b-0">
+    <li
+      className={cn(
+        "mb-2 flex break-inside-avoid flex-col gap-2 rounded-lg border p-2",
+        isBreak ? "border-dashed border-neutral-700" : "border-neutral-800",
+      )}
+    >
       <div className="flex items-center gap-2">
-        <p className="min-w-20 font-semibold">{label}</p>
+        <p className="w-16 shrink-0 text-sm font-semibold">{label}</p>
         <Select
           value={level.kind}
           onValueChange={(kind) => update({ kind: kind as BlindLevel["kind"] })}
         >
           <SelectTrigger
             variant="outline"
-            className="h-9 w-28"
+            className="h-8 w-24 px-2"
             aria-label={`${label} type`}
           >
             <SelectValue />
@@ -80,41 +88,43 @@ function LevelRow({
           <Button
             variant="outline"
             size="icon"
+            className={ICON_BUTTON_CLASS}
             disabled={isFirst}
             aria-label={`Move ${label} up`}
             onClick={() =>
               dispatch({ type: "moveLevel", index, direction: "up" })
             }
           >
-            <ArrowUp size={16} />
+            <ArrowUp size={14} />
           </Button>
           <Button
             variant="outline"
             size="icon"
+            className={ICON_BUTTON_CLASS}
             disabled={isLast}
             aria-label={`Move ${label} down`}
             onClick={() =>
               dispatch({ type: "moveLevel", index, direction: "down" })
             }
           >
-            <ArrowDown size={16} />
+            <ArrowDown size={14} />
           </Button>
           <Button
             variant="outline"
             size="icon"
+            className={ICON_BUTTON_CLASS}
             disabled={!canRemove}
             aria-label={`Remove ${label}`}
             onClick={() => dispatch({ type: "removeLevel", index })}
           >
-            <Trash2 className="text-red-600" size={16} />
+            <Trash2 className="text-red-600" size={14} />
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {level.kind === "level" &&
+      <div className="grid grid-cols-4 gap-2">
+        {!isBreak &&
           BLIND_FIELDS.map(({ field, label: fieldLabel }) => (
-            <Field key={field}>
-              <FieldLabel htmlFor={id(field)}>{fieldLabel}</FieldLabel>
+            <CompactField key={field} htmlFor={id(field)} label={fieldLabel}>
               <NumberInput
                 id={id(field)}
                 min={0}
@@ -122,10 +132,9 @@ function LevelRow({
                 value={level[field]}
                 onValueChange={(value) => update({ [field]: value })}
               />
-            </Field>
+            </CompactField>
           ))}
-        <Field>
-          <FieldLabel htmlFor={id("minutes")}>Minutes</FieldLabel>
+        <CompactField htmlFor={id("minutes")} label="Min">
           <NumberInput
             id={id("minutes")}
             min={1}
@@ -135,7 +144,7 @@ function LevelRow({
               update({ duration_seconds: minutes * SECONDS_PER_MINUTE })
             }
           />
-        </Field>
+        </CompactField>
       </div>
       <ErrorText errors={errors} />
     </li>

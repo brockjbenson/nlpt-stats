@@ -75,7 +75,7 @@ function StructureEditor({ id, initialDraft }: Props) {
   };
 
   return (
-    <div className="flex w-full flex-col gap-4 px-2 pb-28">
+    <div className="flex w-full flex-col gap-3 px-2 pb-28">
       <BackToStructuresLink isDirty={isDirty} />
       <SettingsFields draft={draft} errors={errors} dispatch={dispatch} />
       <PayoutFields draft={draft} errors={errors} dispatch={dispatch} />

@@ -33,16 +33,18 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
   const levelErrors = errors.filter(({ field }) => field === "levels");
 
   return (
-    <Card>
+    <Card className="gap-2">
       <CardHeader className="flex flex-row items-baseline justify-between gap-2 space-y-0">
-        <CardTitle className="text-lg">Levels</CardTitle>
-        <p className="text-sm text-muted">
+        <CardTitle className="text-base">Levels</CardTitle>
+        <p className="text-xs text-muted">
           {plural(levelCount, "level")} · {plural(breakCount, "break")} ·{" "}
           {Number.isFinite(lengthMs) ? formatDuration(lengthMs) : "—"}
         </p>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        <ol>
+        {/* Two columns on desktop, filled down the left first so levels
+            read in order. */}
+        <ol className="md:columns-2 md:gap-3">
           {levels.map((level, index) => (
             <LevelRow
               key={level.key}
@@ -71,12 +73,14 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
         <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => dispatch({ type: "addLevel", key: nextKey() })}
           >
             <Plus size={16} /> Add Level
           </Button>
           <Button
             variant="outline"
+            size="sm"
             onClick={() => dispatch({ type: "addBreak", key: nextKey() })}
           >
             <Coffee size={16} /> Add Break
