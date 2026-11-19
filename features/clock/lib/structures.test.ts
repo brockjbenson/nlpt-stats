@@ -3,9 +3,11 @@ import {
   copyName,
   draftToSaveInput,
   hasUnsavedChanges,
+  isCompleteSplit,
   levelStartTimes,
   NAME_MAX_LENGTH,
   newStructureDraft,
+  payoutTotal,
   type StructureDraft,
   type StructureField,
   structureToDraft,
@@ -362,5 +364,19 @@ describe("levelStartTimes", () => {
 
   it("is empty with no rows", () => {
     expect(levelStartTimes([])).toEqual([]);
+  });
+});
+
+describe("payoutTotal and isCompleteSplit", () => {
+  it("adds the percentages, counting an empty box as 0", () => {
+    expect(payoutTotal([55, Number.NaN, 15])).toBe(70);
+  });
+
+  it("accepts 100 with hand-typed decimals", () => {
+    expect(isCompleteSplit([33.3, 33.3, 33.4])).toBe(true);
+  });
+
+  it("rejects anything else", () => {
+    expect(isCompleteSplit([55, 30, 10])).toBe(false);
   });
 });

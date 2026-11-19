@@ -199,6 +199,16 @@ function nameError(name: string): string | null {
   return null;
 }
 
+// The payout percentages added up, counting an empty box as 0.
+export function payoutTotal(pcts: number[]): number {
+  return pcts.reduce((sum, pct) => sum + (Number.isNaN(pct) ? 0 : pct), 0);
+}
+
+// Whether the percentages add up to 100 (allowing for hand-typed decimals).
+export function isCompleteSplit(pcts: number[]): boolean {
+  return Math.abs(payoutTotal(pcts) - PERCENT_TOTAL) <= PERCENT_TOLERANCE;
+}
+
 // Same rule as private.payout_pcts_valid: one share for each place above
 // the last paid place, each above zero, adding up to 100.
 function payoutError(draft: StructureDraft): string | null {
@@ -207,9 +217,8 @@ function payoutError(draft: StructureDraft): string | null {
     return `Enter a percentage for each of the ${places - 1} places above the last paid place.`;
   if (pcts.some((pct) => !(pct > 0)))
     return "Every paid place needs more than 0%.";
-  const total = pcts.reduce((sum, pct) => sum + pct, 0);
-  if (Math.abs(total - PERCENT_TOTAL) > PERCENT_TOLERANCE) {
-    return `Payouts add up to ${total}%; they need to add up to 100%.`;
+  if (!isCompleteSplit(pcts)) {
+    return `Payouts add up to ${payoutTotal(pcts)}%; they need to add up to 100%.`;
   }
   return null;
 }

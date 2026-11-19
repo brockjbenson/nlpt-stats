@@ -1,6 +1,7 @@
 import type { BlindLevel } from "@/features/clock/types";
 
 export const MS_PER_SECOND = 1000;
+export const SECONDS_PER_MINUTE = 60;
 export const NOTE_MAX_LENGTH = 100;
 
 type LevelRow = Record<string, unknown>;

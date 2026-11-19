@@ -15,9 +15,9 @@ import { cn } from "@/lib/utils";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, Coffee, GripVertical, Trash2 } from "lucide-react";
+import { SECONDS_PER_MINUTE } from "@/features/clock/lib/levels";
 import type React from "react";
 
-const SECONDS_PER_MINUTE = 60;
 // Break stops: a solid primary tint over the card, so a dragged break still
 // covers the stops it passes over.
 const BREAK_CARD_CLASS =

@@ -12,9 +12,8 @@ import {
   type StructureError,
   type StructureField,
 } from "@/features/clock/lib/structures";
+import { SECONDS_PER_MINUTE } from "@/features/clock/lib/levels";
 import type React from "react";
-
-const SECONDS_PER_MINUTE = 60;
 
 // Editor-only lengths for new rows, entered in minutes.
 const LENGTH_FIELDS: {

@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/select";
 import CompactField from "@/features/clock/components/structures/compact-field";
 import NumberInput from "@/features/clock/components/structures/number-input";
-import { NOTE_MAX_LENGTH } from "@/features/clock/lib/levels";
+import {
+  NOTE_MAX_LENGTH,
+  SECONDS_PER_MINUTE,
+} from "@/features/clock/lib/levels";
 import type { BlindLevel } from "@/features/clock/types";
-
-const SECONDS_PER_MINUTE = 60;
 
 type BlindField = "small_blind" | "big_blind" | "ante";
 

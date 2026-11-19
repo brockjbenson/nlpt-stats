@@ -7,6 +7,7 @@ import {
   formatDuration,
   formatElapsed,
   ordinal,
+  plural,
 } from "@/features/clock/lib/format";
 import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
 
@@ -103,5 +104,15 @@ describe("formatElapsed", () => {
     [90_000, "0:01"],
   ])("%i ms reads %s", (ms, expected) => {
     expect(formatElapsed(ms)).toBe(expected);
+  });
+});
+
+describe("plural", () => {
+  it.each([
+    [0, "0 levels"],
+    [1, "1 level"],
+    [16, "16 levels"],
+  ])("%i reads %s", (count, expected) => {
+    expect(plural(count, "level")).toBe(expected);
   });
 });

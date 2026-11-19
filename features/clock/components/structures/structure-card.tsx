@@ -8,14 +8,11 @@ import {
   formatDollars,
   formatDuration,
   ordinal,
+  plural,
 } from "@/features/clock/lib/format";
 import { summarizeLevels } from "@/features/clock/lib/structures";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-
-function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
-}
 
 function StructureCard({ structure }: { structure: StructureWithLevels }) {
   const { levelCount, breakCount, lengthMs } = summarizeLevels(

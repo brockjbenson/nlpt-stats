@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import LevelRow from "@/features/clock/components/structures/level-row";
-import { formatDuration } from "@/features/clock/lib/format";
+import { formatDuration, plural } from "@/features/clock/lib/format";
 import { levelNumber } from "@/features/clock/lib/levels";
 import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
 import {
@@ -38,10 +38,6 @@ type Props = {
   // A fresh React key for each new row.
   nextKey: () => string;
 };
-
-function plural(count: number, word: string): string {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
-}
 
 function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
   const { levels } = draft;
