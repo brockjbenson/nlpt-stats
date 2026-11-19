@@ -63,11 +63,18 @@ function LevelRow({
     <li
       className={cn(
         "mb-2 flex break-inside-avoid flex-col gap-2 rounded-lg border p-2",
-        isBreak ? "border-dashed border-neutral-700" : "border-neutral-800",
+        isBreak ? "border-primary/50 bg-primary/10" : "border-neutral-800",
       )}
     >
       <div className="flex items-center gap-2">
-        <p className="w-16 shrink-0 text-sm font-semibold">{label}</p>
+        <p
+          className={cn(
+            "w-16 shrink-0 text-sm font-semibold",
+            isBreak && "text-primary",
+          )}
+        >
+          {label}
+        </p>
         <Select
           value={level.kind}
           onValueChange={(kind) => update({ kind: kind as BlindLevel["kind"] })}
