@@ -12,6 +12,8 @@ import type {
 export const NAME_MAX_LENGTH = 60;
 // Length of a new level when nothing else says otherwise.
 export const DEFAULT_LEVEL_SECONDS = 20 * 60;
+// Length of a new break when nothing else says otherwise.
+export const DEFAULT_BREAK_SECONDS = 10 * 60;
 const MIN_PLACES_PAID = 3;
 const PERCENT_TOTAL = 100;
 // Percentages are typed by hand and can carry float error (33.3 + 33.3 + 33.4).
@@ -43,6 +45,8 @@ export type StructureDraft = {
   levels: DraftLevel[];
   // Editor only, never saved: the length of each level "Add level" creates.
   new_level_seconds: number;
+  // Editor only, never saved: the length of each break "Add break" creates.
+  new_break_seconds: number;
 };
 
 export type StructureField =
@@ -89,18 +93,24 @@ export function newStructureDraft(): StructureDraft {
       },
     ],
     new_level_seconds: DEFAULT_LEVEL_SECONDS,
+    new_break_seconds: DEFAULT_BREAK_SECONDS,
   };
 }
 
-// The length most of a template's playing levels have (the first one wins a
-// tie), or the default with none.
-function mostCommonLevelSeconds(levels: BlindLevel[]): number {
+// The length most of a template's rows of this kind have (the first one
+// wins a tie), or the fallback with none.
+function mostCommonSeconds(
+  levels: BlindLevel[],
+  kind: BlindLevel["kind"],
+  fallback: number,
+): number {
   const counts = new Map<number, number>();
-  for (const { kind, duration_seconds } of levels) {
-    if (kind !== "level") continue;
-    counts.set(duration_seconds, (counts.get(duration_seconds) ?? 0) + 1);
+  for (const level of levels) {
+    if (level.kind !== kind) continue;
+    const seconds = level.duration_seconds;
+    counts.set(seconds, (counts.get(seconds) ?? 0) + 1);
   }
-  let best = DEFAULT_LEVEL_SECONDS;
+  let best = fallback;
   let bestCount = 0;
   counts.forEach((count, seconds) => {
     if (count > bestCount) [best, bestCount] = [seconds, count];
@@ -113,7 +123,16 @@ export function structureToDraft(
   levels: BlindStructureLevel[],
 ): StructureDraft {
   return {
-    new_level_seconds: mostCommonLevelSeconds(levels),
+    new_level_seconds: mostCommonSeconds(
+      levels,
+      "level",
+      DEFAULT_LEVEL_SECONDS,
+    ),
+    new_break_seconds: mostCommonSeconds(
+      levels,
+      "break",
+      DEFAULT_BREAK_SECONDS,
+    ),
     name: structure.name,
     buy_in: structure.default_buy_in,
     rebuy: structure.default_rebuy,

@@ -216,6 +216,37 @@ describe("addBreak", () => {
   });
 });
 
+describe("new break length", () => {
+  it("uses the new break length setting", () => {
+    const draft = run(
+      draftWith([level("a", 100, 200)]),
+      { type: "setField", field: "new_break_seconds", value: 15 * 60 },
+      { type: "addBreak", key: "b" },
+    );
+    expect(draft.levels[1]).toEqual(breakRow("b", 15));
+  });
+
+  it("uses it when a level becomes a break", () => {
+    const draft = run(
+      {
+        ...draftWith([level("a", 100, 200), level("b", 200, 400)]),
+        new_break_seconds: 5 * 60,
+      },
+      { type: "updateLevel", index: 1, change: { kind: "break" } },
+    );
+    expect(draft.levels[1]).toEqual(breakRow("b", 5));
+  });
+
+  it("falls back to 10 minutes when the setting is empty", () => {
+    const draft = run(
+      draftWith([level("a", 100, 200)]),
+      { type: "setField", field: "new_break_seconds", value: Number.NaN },
+      { type: "addBreak", key: "b" },
+    );
+    expect(draft.levels[1].duration_seconds).toBe(10 * 60);
+  });
+});
+
 describe("updateLevel", () => {
   it("changes one row", () => {
     const draft = run(draftWith([level("a", 100, 200), level("b", 200, 400)]), {

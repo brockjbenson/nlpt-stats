@@ -1,4 +1,5 @@
 import {
+  DEFAULT_BREAK_SECONDS,
   DEFAULT_LEVEL_SECONDS,
   type DraftLevel,
   type StructureDraft,
@@ -6,7 +7,6 @@ import {
 } from "@/features/clock/lib/structures";
 import type { BlindLevel } from "@/features/clock/types";
 
-const BREAK_SECONDS = 10 * 60;
 // Round big blinds within each power of ten: 100, 150, 200, 300, 400, 500,
 // 600, 800, 1,000, 1,500 … A suggested level moves to the next one up, a
 // 25-50% raise that never doubles.
@@ -22,7 +22,8 @@ type NumberField =
   | "starting_chips"
   | "rebuy_chips"
   | "max_rebuys"
-  | "new_level_seconds";
+  | "new_level_seconds"
+  | "new_break_seconds";
 
 // New rows bring their own key so the reducer stays pure.
 export type StructureEditorAction =
@@ -49,12 +50,20 @@ export function nextBigBlind(bigBlind: number): number {
   );
 }
 
+function isLength(seconds: number): boolean {
+  return Number.isInteger(seconds) && seconds > 0;
+}
+
 // The new level length setting, or the default while it's empty or invalid.
 function newLevelSeconds(draft: StructureDraft): number {
   const seconds = draft.new_level_seconds;
-  return Number.isInteger(seconds) && seconds > 0
-    ? seconds
-    : DEFAULT_LEVEL_SECONDS;
+  return isLength(seconds) ? seconds : DEFAULT_LEVEL_SECONDS;
+}
+
+// The new break length setting, or the default while it's empty or invalid.
+function newBreakSeconds(draft: StructureDraft): number {
+  const seconds = draft.new_break_seconds;
+  return isLength(seconds) ? seconds : DEFAULT_BREAK_SECONDS;
 }
 
 // The level to offer after the playing levels in `levels`: the next round
@@ -74,13 +83,13 @@ function suggestLevel(levels: BlindLevel[], seconds: number): BlindLevel {
   };
 }
 
-function breakLevel(): BlindLevel {
+function breakLevel(seconds: number): BlindLevel {
   return {
     kind: "break",
     small_blind: null,
     big_blind: null,
     ante: 0,
-    duration_seconds: BREAK_SECONDS,
+    duration_seconds: seconds,
   };
 }
 
@@ -106,7 +115,7 @@ function changeLevel(
   const { levels } = draft;
   const row = levels[index];
   if (change.kind === "break" && row.kind !== "break") {
-    return { ...breakLevel(), key: row.key };
+    return { ...breakLevel(newBreakSeconds(draft)), key: row.key };
   }
   if (change.kind === "level" && row.kind !== "level") {
     return {
@@ -171,7 +180,7 @@ export function structureEditorReducer(
     case "addBreak":
       return setLevels(draft, [
         ...draft.levels,
-        { ...breakLevel(), key: action.key },
+        { ...breakLevel(newBreakSeconds(draft)), key: action.key },
       ]);
 
     case "updateLevel":

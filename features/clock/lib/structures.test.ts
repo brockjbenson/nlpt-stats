@@ -118,6 +118,40 @@ describe("new_level_seconds", () => {
   });
 });
 
+describe("new_break_seconds", () => {
+  it("starts at 10 minutes for a new template", () => {
+    expect(newStructureDraft().new_break_seconds).toBe(10 * 60);
+  });
+
+  it("starts at the template's most common break length", () => {
+    const rows: BlindStructureLevel[] = [
+      { kind: "level" as const, minutes: 20 },
+      { kind: "break" as const, minutes: 15 },
+      { kind: "level" as const, minutes: 20 },
+      { kind: "break" as const, minutes: 15 },
+      { kind: "break" as const, minutes: 5 },
+    ].map(({ kind, minutes }, index) => ({
+      id: `l${index}`,
+      structure_id: NLPT_STANDARD.id,
+      position: index + 1,
+      kind,
+      small_blind: kind === "level" ? 100 : null,
+      big_blind: kind === "level" ? 200 : null,
+      ante: 0,
+      duration_seconds: minutes * 60,
+    }));
+    const value = structureToDraft(NLPT_STANDARD, rows);
+    expect(value.new_break_seconds).toBe(15 * 60);
+    expect(value.new_level_seconds).toBe(20 * 60);
+  });
+
+  it("is ignored by unsaved changes", () => {
+    expect(
+      hasUnsavedChanges(draft(), { ...draft(), new_break_seconds: 300 }),
+    ).toBe(false);
+  });
+});
+
 describe("hasUnsavedChanges", () => {
   it("is false for the same template", () => {
     expect(hasUnsavedChanges(draft(), draft())).toBe(false);

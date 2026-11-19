@@ -16,6 +16,15 @@ import type React from "react";
 
 const SECONDS_PER_MINUTE = 60;
 
+// Editor-only lengths for new rows, entered in minutes.
+const LENGTH_FIELDS: {
+  field: "new_level_seconds" | "new_break_seconds";
+  label: string;
+}[] = [
+  { field: "new_level_seconds", label: "New level length (min)" },
+  { field: "new_break_seconds", label: "New break length (min)" },
+];
+
 type NumberField =
   | "buy_in"
   | "rebuy"
@@ -90,24 +99,27 @@ function SettingsFields({ draft, errors, dispatch }: Props) {
               />
             </CompactField>
           ))}
-          <CompactField
-            htmlFor="structure-new-level-minutes"
-            label="New level length (min)"
-          >
-            <NumberInput
-              id="structure-new-level-minutes"
-              min={1}
-              step={1}
-              value={draft.new_level_seconds / SECONDS_PER_MINUTE}
-              onValueChange={(minutes) =>
-                dispatch({
-                  type: "setField",
-                  field: "new_level_seconds",
-                  value: minutes * SECONDS_PER_MINUTE,
-                })
-              }
-            />
-          </CompactField>
+          {LENGTH_FIELDS.map(({ field, label }) => (
+            <CompactField
+              key={field}
+              htmlFor={`structure-${field}`}
+              label={label}
+            >
+              <NumberInput
+                id={`structure-${field}`}
+                min={1}
+                step={1}
+                value={draft[field] / SECONDS_PER_MINUTE}
+                onValueChange={(minutes) =>
+                  dispatch({
+                    type: "setField",
+                    field,
+                    value: minutes * SECONDS_PER_MINUTE,
+                  })
+                }
+              />
+            </CompactField>
+          ))}
         </div>
         <ErrorText
           errors={errors.filter(({ field }) =>
