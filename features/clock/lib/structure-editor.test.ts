@@ -129,7 +129,7 @@ describe("addLevel", () => {
       type: "addLevel",
       key: "b",
     });
-    expect(draft.levels[1]).toEqual(level("b", 600, 1200, 15));
+    expect(draft.levels[1]).toEqual(level("b", 450, 900, 15));
   });
 
   it("skips a break when suggesting", () => {
@@ -137,8 +137,33 @@ describe("addLevel", () => {
       type: "addLevel",
       key: "c",
     });
-    expect(draft.levels[2]).toEqual(level("c", 600, 1200));
+    expect(draft.levels[2]).toEqual(level("c", 450, 900));
   });
+
+  it.each([
+    [100, 200, 150, 300],
+    [150, 300, 225, 450],
+    [600, 1200, 900, 1800],
+    [1000, 2000, 1500, 3000],
+    [2000, 4000, 3000, 6000],
+    [10000, 20000, 15000, 30000],
+    // Rounded to a usable chip: 1,050 → 1,100 (nearest 100).
+    [700, 1400, 1100, 2200],
+    // 262.5 → 275 (nearest 25).
+    [175, 350, 275, 550],
+  ])(
+    "after %i/%i suggests %i/%i (1.5x, never 2x)",
+    (small, big, nextSmall, nextBig) => {
+      const draft = run(draftWith([level("a", small, big)]), {
+        type: "addLevel",
+        key: "b",
+      });
+      expect(draft.levels[1]).toMatchObject({
+        small_blind: nextSmall,
+        big_blind: nextBig,
+      });
+    },
+  );
 
   it("starts at 100/200 with no levels to follow", () => {
     const draft = run(draftWith([breakRow("a")]), {
@@ -184,7 +209,7 @@ describe("updateLevel", () => {
       draftWith([level("a", 300, 600), breakRow("b"), level("c", 1000, 2000)]),
       { type: "updateLevel", index: 1, change: { kind: "level" } },
     );
-    expect(draft.levels[1]).toEqual(level("b", 600, 1200));
+    expect(draft.levels[1]).toEqual(level("b", 450, 900));
   });
 });
 

@@ -6,7 +6,8 @@ import {
 import type { BlindLevel } from "@/features/clock/types";
 
 const BREAK_SECONDS = 10 * 60;
-const BLIND_STEP = 2; // a suggested level doubles the previous big blind
+// A suggested level raises the big blind by half, never doubling it.
+const BLIND_STEP = 1.5;
 const FIRST_LEVEL: BlindLevel = {
   kind: "level",
   small_blind: 100,
@@ -38,15 +39,26 @@ export type StructureEditorAction =
   | { type: "reorderLevel"; from: number; to: number }
   | { type: "removeLevel"; index: number };
 
+// The chip a small blind of this size is rounded to.
+function chipUnit(smallBlind: number): number {
+  if (smallBlind < 1000) return 25;
+  if (smallBlind < 10000) return 100;
+  return 500;
+}
+
 // The level to offer after the playing levels in `levels`: same length and
-// ante, small blind at the last big blind, big blind doubled.
+// ante, big blind raised 1.5x, with the small blind (half of it) rounded to
+// a usable chip and the big blind twice the small.
 function suggestLevel(levels: BlindLevel[]): BlindLevel {
   const last = levels.findLast(({ kind }) => kind === "level");
   if (!last?.big_blind) return FIRST_LEVEL;
+  const rawSmallBlind = (last.big_blind * BLIND_STEP) / 2;
+  const unit = chipUnit(rawSmallBlind);
+  const smallBlind = Math.round(rawSmallBlind / unit) * unit;
   return {
     kind: "level",
-    small_blind: last.big_blind,
-    big_blind: last.big_blind * BLIND_STEP,
+    small_blind: smallBlind,
+    big_blind: smallBlind * 2,
     ante: last.ante,
     duration_seconds: last.duration_seconds,
   };

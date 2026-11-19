@@ -22,7 +22,7 @@
 2. **Save the whole template at once** (settings and levels together) with a Save button, not field-by-field autosave. Leaving with unsaved changes asks for confirmation.
 3. **Durations are entered in minutes** (whole minutes); stored as seconds.
 4. **Changing places paid fills in a suggested split** for 3, 4 or 5 places (50/30/20, 45/30/15/10, 40/25/17/11/7, from the design doc). For other counts the list is resized and the admin types the split.
-5. **"Add level" copies the last playing level's length and starts its small blind at that level's big blind** (for example after 300/600 it suggests 600/1,200). The admin edits as needed.
+5. **"Add level" copies the last playing level's length and raises its big blind 1.5x** (never doubling), with the small blind half of that rounded to a usable chip (after 300/600 it suggests 450/900). The admin edits as needed.
 6. **Duplicate** makes "Copy of <name>"; delete asks for confirmation. Clocks already made from a template keep their own copy of the levels, so editing or deleting a template never changes a clock.
 7. Admin nav gets a **Clock** group with **Blind Structures**. Public navigation and the live banner stay in phase 8.
 
