@@ -27,7 +27,7 @@ function ClockDisplay({
   // The database time the page was rendered at.
   initialNowMs: number;
   initialPlayers: ClockPlayers;
-  // Members to name the players by.
+  // Members to name the players by and show the photos of.
   members: MemberOption[];
 }) {
   const { clock, view, connection, isDeleted } = useClock(
@@ -47,6 +47,9 @@ function ClockDisplay({
   const hasPlayers = entrants.length > 0;
   const names = entrantNames(entrants, members);
   const { left } = listPlayers(entrants, knockouts, names);
+  const portraits = new Map(
+    members.map(({ id, portrait_url }) => [id, portrait_url]),
+  );
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center gap-[3dvh] px-4 py-[4dvh]">
@@ -73,8 +76,14 @@ function ClockDisplay({
         {hasPlayers && (
           <FieldPanel
             field={describeField(clock, entrants)}
-            namesLeft={left.map(({ name }) => name)}
-            className="max-w-2xl landscape:w-[min(30vw,30rem)] landscape:shrink-0"
+            playersLeft={left.map(({ entrant, name }) => ({
+              id: entrant.id,
+              name,
+              portraitUrl: entrant.member_id
+                ? (portraits.get(entrant.member_id) ?? null)
+                : null,
+            }))}
+            className="max-w-2xl landscape:w-[min(36vw,36rem)] landscape:shrink-0"
           />
         )}
       </div>
