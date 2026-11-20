@@ -14,7 +14,7 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Finish flow). Earlier phases: `...-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `...-phase-6-tv-mode-sounds.md`. Branch: `feat/tournament-shot-clock`.
 
-**Status (2026-11-20):** Tasks 1–10 are done on dev; the refinement pass is next. The migration waits with the other clock migrations for the prod rollout, once the whole feature is done on staging.
+**Status (2026-11-20):** Tasks 1–10 and the refinement pass are done on dev. R1 and R3 found nothing; R2 split the review form (and fixed changing the season picking week 52); R4 shared running a control-screen action with a toast; R5 added return types to the session actions. The migration waits with the other clock migrations for the prod rollout, once the whole feature is done on staging.
 
 **Changes from this plan:**
 - **The week starts empty** (decided with the user) instead of the newest season's latest week: seasons are created with all 52 weeks and weeks have no dates, so "latest" was week 52. Save stays blocked until a week is picked. The manual tournament form still defaults to week 52; that's a separate fix.
