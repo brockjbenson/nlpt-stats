@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatBlindPair,
   formatBlinds,
   formatChips,
   formatClockTime,
@@ -26,6 +27,14 @@ describe("formatClockTime", () => {
     [-5000, "0:00"],
   ])("%i ms shows %s", (ms, expected) => {
     expect(formatClockTime(ms)).toBe(expected);
+  });
+});
+
+describe("formatBlindPair", () => {
+  it("leaves the ante off", () => {
+    expect(formatBlindPair({ ...NLPT_STANDARD_LEVELS[10], ante: 200 })).toBe(
+      "1,000 / 2,000",
+    );
   });
 });
 

@@ -67,10 +67,15 @@ export function formatElapsed(ms: number): string {
   return `${hours}:${twoDigits(totalMinutes % MINUTES_PER_HOUR)}`;
 }
 
+// "1,000 / 2,000": the small and big blind, without the ante.
+export function formatBlindPair(level: BlindLevel): string {
+  return `${formatChips(level.small_blind ?? 0)} / ${formatChips(level.big_blind ?? 0)}`;
+}
+
 // "1,000 / 2,000", with " (ante 200)" when there's an ante, or "Break".
 export function formatBlinds(level: BlindLevel): string {
   if (level.kind === "break") return "Break";
-  const blinds = `${formatChips(level.small_blind ?? 0)} / ${formatChips(level.big_blind ?? 0)}`;
+  const blinds = formatBlindPair(level);
   return level.ante > 0
     ? `${blinds} (ante ${formatChips(level.ante)})`
     : blinds;
