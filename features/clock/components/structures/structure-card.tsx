@@ -50,8 +50,8 @@ function StructureCard({ structure }: { structure: StructureWithLevels }) {
         </p>
         <p>
           {structure.default_places_paid} paid:{" "}
-          {structure.default_payout_pcts.join(" / ")} +{" "}
-          {ordinal(structure.default_places_paid)} buy-in back · max{" "}
+          {structure.default_payout_pcts.join(" / ")} ·{" "}
+          {ordinal(structure.default_places_paid)} gets 1 ÷ players · max{" "}
           {plural(structure.default_max_rebuys, "rebuy")}
         </p>
       </CardContent>
