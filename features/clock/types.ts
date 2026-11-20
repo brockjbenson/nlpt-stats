@@ -67,3 +67,15 @@ export type ClockEntrant = {
   finish_place: number | null;
   created_at: string;
 };
+
+// A _clock_knockouts row: one bust, and who caused it (null when it wasn't
+// recorded). It stays if the player rebuys back in; undoing the bust
+// deletes it.
+export type ClockKnockout = {
+  id: string;
+  clock_id: string;
+  entrant_id: string;
+  knocked_out_by: string | null;
+  busted_at: string;
+  created_at: string;
+};
