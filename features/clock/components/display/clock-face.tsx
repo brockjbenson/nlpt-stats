@@ -14,10 +14,10 @@ const SIZES: Record<
   { root: string; title: string; time: string; blinds: string; detail: string }
 > = {
   display: {
-    root: "gap-[2dvh]",
-    title: "text-[length:clamp(1.5rem,min(6vw,7dvh),4.5rem)]",
-    time: "text-[length:clamp(4.5rem,min(25vw,36dvh),24rem)]",
-    blinds: "text-[length:clamp(2rem,min(10vw,12dvh),9rem)]",
+    root: "gap-[1.5dvh]",
+    title: "text-[length:clamp(1.5rem,min(6vw,7dvh),4.5rem)] leading-tight",
+    time: "text-[length:clamp(4.5rem,min(25vw,33dvh),24rem)]",
+    blinds: "text-[length:clamp(2rem,min(10vw,12dvh),9rem)] leading-tight",
     detail: "text-[length:clamp(1rem,min(3.5vw,4dvh),2.5rem)]",
   },
   compact: {
@@ -62,7 +62,7 @@ function Blinds({ view }: { view: ClockView }) {
 
 function ProgressBar({ progress }: { progress: number }) {
   return (
-    <div className="h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-card">
+    <div className="h-1.5 w-full max-w-3xl overflow-hidden rounded-full bg-foreground/10">
       <div
         className="h-full rounded-full bg-primary transition-[width] duration-300 ease-linear"
         style={{ width: `${progress * 100}%` }}
@@ -127,8 +127,11 @@ function ClockFace({
       <p
         role="timer"
         className={cn(
-          "font-bold leading-none tabular-nums",
+          "font-bold tabular-nums",
           sizes.time,
+          // After the size: tailwind-merge drops a leading-* that comes
+          // before a text-* size.
+          "leading-none",
           !isRunning && "text-muted",
         )}
       >
