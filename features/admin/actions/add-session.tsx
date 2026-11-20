@@ -4,6 +4,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getCurrentUser } from "@/utils/supabase/user";
+import { refreshAfterTournamentSave } from "@/lib/data/refresh-after-tournament-save";
 import { CashSessionNoId, TournamentSessionInput } from "@/utils/types";
 
 // Postgres error code for a unique constraint violation.
@@ -75,30 +76,10 @@ export const addTournamentSessionAction = async (
     .from("_tournaments")
     .select("week_id")
     .in("id", tournamentIds);
-
-  const weekIds = Array.from(
-    new Set((tournaments ?? []).map((tournament) => tournament.week_id)),
+  await refreshAfterTournamentSave(
+    db,
+    (tournaments ?? []).map((tournament) => tournament.week_id),
   );
-  for (const weekId of weekIds) {
-    const { error: rankingError } = await db.rpc(
-      "insert_weekly_nlpi_rankings",
-      { target_week_id: weekId },
-    );
-    if (rankingError) {
-      // Sessions are saved; rankings catch up on the next save for the week.
-      console.error(
-        `Failed to update rankings for week ${weekId}:`,
-        rankingError,
-      );
-    }
-  }
-
-  // Clear cached league data, then revalidate specific pages
-  updateTag(LEAGUE_DATA_TAG);
-  revalidatePath("/nlpi");
-  revalidatePath("/poy/[year]", "page");
-  revalidatePath("/members/[id]", "page");
-  revalidatePath("/tournaments", "layout");
 
   return { success: true, message: "Sessions added successfully" };
 };
