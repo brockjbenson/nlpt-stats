@@ -17,6 +17,30 @@ type Props = {
   onChange: (index: number, change: Partial<FinishSessionRow>) => void;
 };
 
+// The guests, for reference: they aren't saved (guests have no stats).
+function GuestList({ guests }: { guests: FinishGuest[] }) {
+  if (guests.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-1 pt-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+        Guests · not saved (guests have no stats)
+      </p>
+      <ul className="flex flex-col gap-1 text-sm text-muted">
+        {guests.map((guest) => (
+          <li
+            key={`${guest.place}-${guest.name}`}
+            className="grid grid-cols-[2.5rem_1fr_auto] gap-x-2 tabular-nums"
+          >
+            <span>{ordinal(guest.place)}</span>
+            <span className="truncate">{guest.name}</span>
+            <span>{formatDollars(guest.cash_out)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // The members' sessions, in saved place order (re-ranked among members),
 // with rebuys and cash-out editable; then the guests, who aren't saved.
 function SessionRows({ sessions, guests, errors, onChange }: Props) {
@@ -67,25 +91,7 @@ function SessionRows({ sessions, guests, errors, onChange }: Props) {
           errors={sessionErrors.filter(({ index }) => index === undefined)}
         />
 
-        {guests.length > 0 && (
-          <div className="flex flex-col gap-1 pt-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
-              Guests · not saved (guests have no stats)
-            </p>
-            <ul className="flex flex-col gap-1 text-sm text-muted">
-              {guests.map((guest) => (
-                <li
-                  key={`${guest.place}-${guest.name}`}
-                  className="grid grid-cols-[2.5rem_1fr_auto] gap-x-2 tabular-nums"
-                >
-                  <span>{ordinal(guest.place)}</span>
-                  <span className="truncate">{guest.name}</span>
-                  <span>{formatDollars(guest.cash_out)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <GuestList guests={guests} />
       </CardContent>
     </Card>
   );

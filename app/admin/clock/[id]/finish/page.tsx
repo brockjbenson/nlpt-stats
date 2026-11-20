@@ -6,6 +6,7 @@ import { getClock } from "@/features/clock/data/clocks";
 import {
   getClockPlayers,
   getMemberNames,
+  type MemberOption,
   playingMemberIds,
 } from "@/features/clock/data/entrants";
 import { getSavedResults } from "@/features/clock/data/results";
@@ -45,6 +46,37 @@ async function getSeasonsAndWeeks(db: SupabaseClient) {
     seasons: (seasons.data ?? []) as Season[],
     weeks: (weeks.data ?? []) as Week[],
     error: seasons.error ?? weeks.error,
+  };
+}
+
+// The form to show: the clock's results, or, once saved, what was saved
+// (so a re-save edits it rather than starting again from the clock).
+async function formToEdit({
+  db,
+  tournamentId,
+  defaultForm,
+  entrants,
+  members,
+  weeks,
+}: {
+  db: SupabaseClient;
+  tournamentId: string | null;
+  defaultForm: FinishForm;
+  entrants: ClockEntrant[];
+  members: MemberOption[];
+  weeks: Week[];
+}): Promise<{ form: FinishForm } | { error: string }> {
+  if (!tournamentId) return { form: defaultForm };
+  const saved = await getSavedResults(db, tournamentId);
+  if (saved.error) return { error: saved.error.message };
+  // The tournament was deleted since: start again from the clock.
+  if (!saved.data) return { form: defaultForm };
+  return {
+    form: finishFormFromSaved({
+      ...saved.data,
+      memberNames: memberNamesOf(entrants, entrantNames(entrants, members)),
+      weeks,
+    }),
   };
 }
 
@@ -89,22 +121,15 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
     );
   }
 
-  // Saved before: edit what was saved, not the clock's numbers again.
-  let form: FinishForm = defaults.value.form;
-  if (clock.tournament_id) {
-    const saved = await getSavedResults(db, clock.tournament_id);
-    if (saved.error) return <ShowError message={saved.error.message} />;
-    if (saved.data) {
-      form = finishFormFromSaved({
-        ...saved.data,
-        memberNames: memberNamesOf(
-          entrants,
-          entrantNames(entrants, members.data),
-        ),
-        weeks,
-      });
-    }
-  }
+  const form = await formToEdit({
+    db,
+    tournamentId: clock.tournament_id,
+    defaultForm: defaults.value.form,
+    entrants,
+    members: members.data,
+    weeks,
+  });
+  if ("error" in form) return <ShowError message={form.error} />;
 
   return (
     <>
@@ -112,7 +137,7 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
       <DesktopPageHeader title={`${clock.name} · Results`} />
       <FinishReview
         clockId={clock.id}
-        initialForm={form}
+        initialForm={form.form}
         guests={defaults.value.guests}
         seasons={seasons}
         weeks={weeks}
