@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { controlClockAction } from "@/features/clock/actions/clocks";
 import ControlButtons from "@/features/clock/components/control/control-buttons";
 import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
+import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import { useClock } from "@/features/clock/hooks/use-clock";
 import type { ClockControl } from "@/features/clock/lib/controls";
@@ -101,14 +102,11 @@ function ClockControls({
       ) : (
         <>
           <Card className="relative py-6">
-            {connection === "reconnecting" && (
-              <p
-                role="status"
-                className="absolute right-3 top-3 rounded-full bg-background px-2 py-0.5 text-xs font-semibold text-muted"
-              >
-                Reconnecting…
-              </p>
-            )}
+            <ClockBadges
+              status={view.status}
+              connection={connection}
+              size="compact"
+            />
             <CardContent>
               <ClockFace view={view} size="compact" />
             </CardContent>

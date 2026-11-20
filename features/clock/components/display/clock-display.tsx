@@ -1,5 +1,6 @@
 "use client";
 
+import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import { useClock } from "@/features/clock/hooks/use-clock";
 import type { TournamentClock } from "@/features/clock/types";
@@ -32,14 +33,7 @@ function ClockDisplay({
       <h1 className="text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
         {clock.name}
       </h1>
-      {connection === "reconnecting" && (
-        <p
-          role="status"
-          className="absolute right-3 top-3 rounded-full bg-card px-3 py-1 text-xs font-semibold text-muted"
-        >
-          Reconnecting…
-        </p>
-      )}
+      <ClockBadges status={view.status} connection={connection} />
       <ClockFace view={view} />
     </main>
   );

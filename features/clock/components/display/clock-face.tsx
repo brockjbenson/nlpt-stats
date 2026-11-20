@@ -1,4 +1,3 @@
-import { clockStatusLabel } from "@/features/clock/lib/clocks";
 import type { BlindsText, ClockView } from "@/features/clock/lib/display";
 import { formatClockTime } from "@/features/clock/lib/format";
 import { cn } from "@/lib/utils";
@@ -119,11 +118,6 @@ function ClockFace({
       <div className={sizes.title}>
         <Title view={view} />
       </div>
-      {!isRunning && (
-        <p className="rounded-full border border-card-border px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted">
-          {clockStatusLabel(view.status)}
-        </p>
-      )}
       <p
         role="timer"
         className={cn(
