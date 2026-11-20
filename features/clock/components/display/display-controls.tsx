@@ -47,9 +47,9 @@ type Props = {
   className?: string;
 };
 
-// The right of the display's header: sound on/off, TV mode, and, to their
-// left, the "Tap to enable sound" prompt while the browser is waiting for
-// a tap.
+// The right of the display's header: sound on/off and TV mode. While the
+// browser waits for a tap before it plays sound, any tap on the page
+// allows it (see ClockDisplay).
 function DisplayControls({ sound, tv, isHidden, className }: Props) {
   const enterTvMode = (): void => {
     tv.enter();
@@ -59,39 +59,29 @@ function DisplayControls({ sound, tv, isHidden, className }: Props) {
   return (
     <div
       className={cn(
-        "flex flex-row-reverse items-center gap-[0.5em] transition-opacity duration-500",
+        "flex gap-[0.5em] transition-opacity duration-500",
         CONTROLS_SIZE,
         isHidden && "pointer-events-none opacity-0",
         className,
       )}
     >
-      <div className="flex gap-[0.5em]">
-        {sound.isOn ? (
-          <RoundButton label="Turn sound off" onClick={sound.turnOff}>
-            <Volume2 className={ICON_CLASS} />
-          </RoundButton>
-        ) : (
-          <RoundButton label="Turn sound on" onClick={sound.turnOn}>
-            <VolumeX className={ICON_CLASS} />
-          </RoundButton>
-        )}
-        {tv.isTvMode ? (
-          <RoundButton label="Leave TV mode" onClick={tv.exit}>
-            <Minimize className={ICON_CLASS} />
-          </RoundButton>
-        ) : (
-          <RoundButton label="TV mode" onClick={enterTvMode}>
-            <Maximize className={ICON_CLASS} />
-          </RoundButton>
-        )}
-      </div>
-      {sound.needsTap && (
-        <p
-          role="status"
-          className="whitespace-nowrap rounded-full bg-primary px-[0.75em] py-[0.25em] font-semibold text-primary-foreground"
-        >
-          Tap to enable sound
-        </p>
+      {sound.isOn ? (
+        <RoundButton label="Turn sound off" onClick={sound.turnOff}>
+          <Volume2 className={ICON_CLASS} />
+        </RoundButton>
+      ) : (
+        <RoundButton label="Turn sound on" onClick={sound.turnOn}>
+          <VolumeX className={ICON_CLASS} />
+        </RoundButton>
+      )}
+      {tv.isTvMode ? (
+        <RoundButton label="Leave TV mode" onClick={tv.exit}>
+          <Minimize className={ICON_CLASS} />
+        </RoundButton>
+      ) : (
+        <RoundButton label="TV mode" onClick={enterTvMode}>
+          <Maximize className={ICON_CLASS} />
+        </RoundButton>
       )}
     </div>
   );
