@@ -13,16 +13,19 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Spinner } from "@/components/ui/spinner";
-import { updatePayoutsAction } from "@/features/clock/actions/entrants";
+import {
+  type PayoutsActionResult,
+  updatePayoutsAction,
+} from "@/features/clock/actions/entrants";
+import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
 import type { ClockSettings } from "@/features/clock/lib/clocks";
 import { describeField, type PayoutText } from "@/features/clock/lib/display";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
 import { validatePayouts } from "@/features/clock/lib/structures";
 import type { ClockEntrant, TournamentClock } from "@/features/clock/types";
-import { useToast } from "@/hooks/use-toast";
 import { Pencil } from "lucide-react";
-import { useReducer, useState, useTransition } from "react";
+import { useReducer, useState } from "react";
 
 type Props = {
   clock: TournamentClock;
@@ -63,8 +66,9 @@ type FormProps = Props & { onSaved: () => void };
 // Places paid and the split, with what they'd pay the current field.
 // Mounted each time the drawer opens, so it starts from what's saved.
 function EditPayoutsForm({ clock, entrants, applyRow, onSaved }: FormProps) {
-  const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
+  const { run, isPending } = useActionWithToast<PayoutsActionResult>(
+    (result) => result.clock && applyRow(result.clock),
+  );
   const [settings, dispatch] = useReducer(
     settingsReducer<ClockSettings>,
     clock,
@@ -76,24 +80,16 @@ function EditPayoutsForm({ clock, entrants, applyRow, onSaved }: FormProps) {
       ? describeField({ ...clock, payout_pcts: settings.payout_pcts }, entrants)
       : null;
 
-  const save = (): void => {
-    startTransition(async () => {
-      const result = await updatePayoutsAction(clock.id, {
-        places_paid: settings.places_paid,
-        payout_pcts: settings.payout_pcts,
-      });
-      if (result.clock) applyRow(result.clock);
-      if (result.success) {
-        onSaved();
-        return;
-      }
-      toast({
-        title: "Couldn't save the payouts",
-        description: result.message,
-        variant: "destructive",
-      });
-    });
-  };
+  const save = (): void =>
+    run(
+      "Couldn't save the payouts",
+      () =>
+        updatePayoutsAction(clock.id, {
+          places_paid: settings.places_paid,
+          payout_pcts: settings.payout_pcts,
+        }),
+      onSaved,
+    );
 
   return (
     <>

@@ -20,6 +20,7 @@ import {
   reopenClockAction,
 } from "@/features/clock/actions/clocks";
 import type { MemberOption } from "@/features/clock/data/entrants";
+import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import type { LivePlayers } from "@/features/clock/hooks/use-entrants";
 import {
   canReopen,
@@ -29,10 +30,9 @@ import {
 import { clockFinishPath } from "@/features/clock/lib/paths";
 import { entrantNames } from "@/features/clock/lib/players";
 import type { TournamentClock } from "@/features/clock/types";
-import { useToast } from "@/hooks/use-toast";
 import { Flag, Trophy } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 type Props = {
   clock: TournamentClock;
@@ -43,36 +43,16 @@ type Props = {
   applyRow: (clock: TournamentClock) => void;
 };
 
-// Runs the finish or reopen action and shows what it saved.
+// Runs the finish or reopen action and shows the clock and players it
+// saved.
 function useFinishAction({
   players,
   applyRow,
 }: Pick<Props, "players" | "applyRow">) {
-  const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
-
-  const run = (
-    failureTitle: string,
-    action: () => Promise<ClockFinishResult>,
-    onSuccess?: () => void,
-  ): void => {
-    startTransition(async () => {
-      const result = await action();
-      if (result.clock) applyRow(result.clock);
-      if (result.entrants) players.applyResult({ entrants: result.entrants });
-      if (result.success) {
-        onSuccess?.();
-        return;
-      }
-      toast({
-        title: failureTitle,
-        description: result.message,
-        variant: "destructive",
-      });
-    });
-  };
-
-  return { run, isPending };
+  return useActionWithToast<ClockFinishResult>((result) => {
+    if (result.clock) applyRow(result.clock);
+    if (result.entrants) players.applyResult({ entrants: result.entrants });
+  });
 }
 
 // End tournament, while running or paused: enabled once one player is
