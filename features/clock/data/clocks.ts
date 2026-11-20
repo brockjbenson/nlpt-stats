@@ -34,6 +34,19 @@ export function toClock(row: ClockRow): TournamentClock {
   };
 }
 
+// Applies a Realtime update to the clock on screen. An update can leave
+// out columns it didn't change (Postgres skips large unchanged values such
+// as levels), so only the columns it carries are replaced.
+export function mergeClockRow(
+  current: TournamentClock,
+  row: Partial<ClockRow>,
+): TournamentClock {
+  const changed = Object.fromEntries(
+    Object.entries(row).filter(([, value]) => value !== undefined),
+  );
+  return toClock({ ...current, ...changed });
+}
+
 // Every clock, newest first. Returns a Supabase-style { data, error }.
 export async function getClocks(
   db: SupabaseClient,
