@@ -10,7 +10,11 @@ import { CashSessionNoId, TournamentSessionInput } from "@/utils/types";
 // Postgres error code for a unique constraint violation.
 const UNIQUE_VIOLATION = "23505";
 
-export const addSessionAction = async (sessions: CashSessionNoId[]) => {
+type SessionActionResult = { success: boolean; message: string };
+
+export const addSessionAction = async (
+  sessions: CashSessionNoId[],
+): Promise<SessionActionResult> => {
   const db = await createClient();
 
   const { error } = await db.from("cash_session").insert(sessions);
@@ -51,7 +55,7 @@ export const addSessionAction = async (sessions: CashSessionNoId[]) => {
 // calculated by the database.
 export const addTournamentSessionAction = async (
   sessions: TournamentSessionInput[],
-) => {
+): Promise<SessionActionResult> => {
   const user = await getCurrentUser();
   if (!user?.isAdmin) {
     return { success: false, message: "Only admins can add sessions" };
