@@ -17,8 +17,11 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 
+// Small round icon buttons in the card's top-right corner.
+const CORNER_BUTTON_CLASS = "size-9 rounded-full p-0";
+
 // Opens the display in a new tab, or copies its link to send to the TV or
-// another phone.
+// another phone. Sits in the card's top-right corner.
 function DisplayLinks({ id }: { id: string }) {
   const { toast } = useToast();
 
@@ -39,14 +42,26 @@ function DisplayLinks({ id }: { id: string }) {
   };
 
   return (
-    <div className="flex gap-2">
-      <Button className="flex-1" variant="outline" asChild>
-        <Link href={clockDisplayPath(id)} target="_blank" rel="noopener">
-          <MonitorPlay /> Open display
+    <div className="absolute right-3 top-3 flex gap-2">
+      <Button className={CORNER_BUTTON_CLASS} variant="outline" asChild>
+        <Link
+          href={clockDisplayPath(id)}
+          target="_blank"
+          rel="noopener"
+          aria-label="Open display"
+          title="Open display"
+        >
+          <MonitorPlay />
         </Link>
       </Button>
-      <Button className="flex-1" variant="outline" onClick={() => void copy()}>
-        <Link2 /> Copy display link
+      <Button
+        className={CORNER_BUTTON_CLASS}
+        variant="outline"
+        aria-label="Copy display link"
+        title="Copy display link"
+        onClick={() => void copy()}
+      >
+        <Link2 />
       </Button>
     </div>
   );
@@ -87,6 +102,7 @@ function ClockControls({
               connection={connection}
               size="compact"
             />
+            <DisplayLinks id={clock.id} />
             <CardContent>
               <ClockFace
                 view={view}
@@ -110,7 +126,6 @@ function ClockControls({
               </ClockFace>
             </CardContent>
           </Card>
-          <DisplayLinks id={clock.id} />
         </>
       )}
     </div>
