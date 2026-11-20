@@ -2,8 +2,15 @@ import {
   formatBlindPair,
   formatChips,
   formatClockTime,
+  formatDollars,
+  ordinal,
 } from "@/features/clock/lib/format";
 import { levelDurationMs, levelNumber } from "@/features/clock/lib/levels";
+import {
+  computeChips,
+  computePayouts,
+  computePool,
+} from "@/features/clock/lib/money";
 import {
   type ClockPosition,
   getClockPosition,
@@ -12,6 +19,7 @@ import {
 } from "@/features/clock/lib/timing";
 import type {
   BlindLevel,
+  ClockEntrant,
   ClockStatus,
   TournamentClock,
 } from "@/features/clock/types";
@@ -94,5 +102,55 @@ export function describeClock(
       clock.status === "running" &&
       position.isLastLevel &&
       position.remainingMs === 0,
+  };
+}
+
+const CENTS_PER_DOLLAR = 100;
+
+// Rounds to the cent, so float noise ($44.000000001) shows as $44.
+function toCents(amount: number): number {
+  return Math.round(amount * CENTS_PER_DOLLAR) / CENTS_PER_DOLLAR;
+}
+
+// One paid place on the display: "1st" and "$217.80".
+export type PayoutText = { place: number; label: string; amountText: string };
+
+// The players and money a clock screen shows.
+export type FieldView = {
+  playersLeft: number;
+  entrantCount: number;
+  pool: number;
+  poolText: string;
+  // Rounded to a whole chip; null with nobody left.
+  avgStackText: string | null;
+  // 1st place first; empty with no players.
+  payouts: PayoutText[];
+};
+
+// Players left, the prize pool, the average stack and what each paid
+// place wins, worked out from the clock's settings and its players.
+export function describeField(
+  clock: Pick<
+    TournamentClock,
+    "buy_in" | "rebuy" | "starting_chips" | "rebuy_chips" | "payout_pcts"
+  >,
+  entrants: ClockEntrant[],
+): FieldView {
+  const pool = computePool(clock, entrants);
+  const { playersLeft, averageStack } = computeChips(clock, entrants);
+  return {
+    playersLeft,
+    entrantCount: entrants.length,
+    pool,
+    poolText: formatDollars(toCents(pool)),
+    avgStackText:
+      averageStack === null ? null : formatChips(Math.round(averageStack)),
+    payouts: computePayouts(pool, clock.payout_pcts, entrants.length).map(
+      (amount, index) => ({
+        place: index + 1,
+        label: ordinal(index + 1),
+        amountText: formatDollars(toCents(amount)),
+      }),
+    ),
   };
 }
