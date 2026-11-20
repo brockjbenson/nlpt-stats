@@ -20,24 +20,18 @@ const MAIN_BUTTON = "h-14 w-full text-base";
 const STEP_BUTTON = "h-12 flex-1";
 
 type Props = {
+  // The clock as shown, with any press still being saved already applied,
+  // so presses can follow each other without waiting.
   view: ClockView;
-  // A control is being saved; every button waits for it.
-  isPending: boolean;
   onControl: (control: ClockControl) => void;
 };
 
 // Start asks first, since it starts the tournament for everyone watching.
-function StartButton({
-  disabled,
-  onStart,
-}: {
-  disabled: boolean;
-  onStart: () => void;
-}) {
+function StartButton({ onStart }: { onStart: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className={MAIN_BUTTON} disabled={disabled}>
+        <Button className={MAIN_BUTTON}>
           <Play /> Start
         </Button>
       </AlertDialogTrigger>
@@ -59,24 +53,19 @@ function StartButton({
 
 // Start, pause/resume, previous/next level and a minute more or less.
 // Only the controls that apply to the clock's state are enabled.
-function ControlButtons({ view, isPending, onControl }: Props) {
+function ControlButtons({ view, onControl }: Props) {
   const { status, position } = view;
-  const isLive = status === "running" || status === "paused";
-  const canStep = isLive && !isPending;
+  const canStep = status === "running" || status === "paused";
 
   return (
     <div className="flex flex-col gap-2">
       {status === "setup" && (
-        <StartButton
-          disabled={isPending}
-          onStart={() => onControl({ type: "start" })}
-        />
+        <StartButton onStart={() => onControl({ type: "start" })} />
       )}
       {status === "running" && (
         <Button
           className={MAIN_BUTTON}
           variant="neutral"
-          disabled={isPending}
           onClick={() => onControl({ type: "pause" })}
         >
           <Pause /> Pause
@@ -85,7 +74,6 @@ function ControlButtons({ view, isPending, onControl }: Props) {
       {status === "paused" && (
         <Button
           className={MAIN_BUTTON}
-          disabled={isPending}
           onClick={() => onControl({ type: "resume" })}
         >
           <Play /> Resume

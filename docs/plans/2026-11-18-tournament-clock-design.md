@@ -212,7 +212,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Catch-up:** while the control screen is open, it saves a level that ran out (`catchUpClockAction`), once per saved level, with the same conditional write.
 - **Live screens:** the page renders with the database time, and the client starts from it, so the first paint matches the server's HTML. Realtime updates are merged into the clock (`mergeClockRow`), since Postgres can leave unchanged large values such as `levels` out of an update. Every (re)subscribe and every wake (`visibilitychange`) refetches the row and re-measures the offset.
 - **Display:** sized with `min(vw, dvh)` so it fits a 1080p TV and a phone in either orientation. Shows the clock's name, Level N or Break (with the note), the countdown (dimmed when stopped), a progress bar, blinds and ante, and the next blinds and time to the next break, or "Final level". The top-right corner shows the status while the clock isn't running (Not started, Paused, Finished) and Reconnecting… while Realtime is down, on the display and the control card alike. A missing clock or an id that isn't a uuid is not found.
-- **Control screen:** the face in a card, then Start (asks first), Pause/Resume, Previous/Next level, −1/+1 minute, each enabled only when it applies; the row an action returns is shown at once. Links open the display or copy its address (shown in a toast where the clipboard isn't available, such as a LAN address).
+- **Control screen:** the face in a card, then Start (asks first), Pause/Resume, Previous/Next level, −1/+1 minute, each enabled only when it applies. Presses are optimistic: the screen applies the planned columns at once (`planControl` with the screen's server-corrected time, layered with React's `useOptimistic` over Realtime updates) and the buttons never wait, so presses can follow each other; the saved row replaces the plan when the action returns (usually the same second), and a refusal reverts it. Other screens follow when the save lands. Links open the display or copy its address (shown in a toast where the clipboard isn't available, such as a LAN address).
 
 ### Entrant actions
 
@@ -241,7 +241,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 ## Error handling
 
 - **Realtime disconnect:** show a subtle "reconnecting" badge; on reconnect, refetch the clock + entrants and re-sync server time (Realtime doesn't replay missed events).
-- **Mutation failure:** server actions return `{ success, message }` like existing actions; the control screen shows a toast. There's no optimistic UI: the saved row an action returns is shown as soon as it arrives.
+- **Mutation failure:** server actions return `{ success, message }` like existing actions. The control screen shows each press at once (optimistic), so on a refusal it goes back to the saved clock and shows a toast.
 - **Concurrent admins:** clock controls and level advances use conditional updates; a screen that acted on a stale clock is told to try again. Bust/rebuy are per-row updates, so last-write-wins is acceptable.
 - **Template edits mid-tournament:** no effect on running clocks (levels are snapshotted).
 - **Clock past final level:** stays on the last level with the countdown at 0:00 (no wrap).

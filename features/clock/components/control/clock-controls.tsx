@@ -8,7 +8,7 @@ import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import { useClock } from "@/features/clock/hooks/use-clock";
-import type { ClockControl } from "@/features/clock/lib/controls";
+import { type ClockControl, planControl } from "@/features/clock/lib/controls";
 import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
@@ -57,8 +57,9 @@ function DisplayLinks({ id }: { id: string }) {
 }
 
 // The admin's remote for one clock: a live view of the clock and its
-// controls. Each press is one server action; the saved row shows at once
-// and every other screen gets it over Realtime.
+// controls. A press shows its change at once (planned with the same rules
+// the server uses), then one server action saves it; the saved row
+// replaces the plan, and every other screen gets it over Realtime.
 function ClockControls({
   initialClock,
   initialNowMs,
@@ -68,15 +69,15 @@ function ClockControls({
   initialNowMs: number;
 }) {
   const { toast } = useToast();
-  const { clock, view, connection, isDeleted, applyRow } = useClock(
-    initialClock,
-    initialNowMs,
-  );
-  const [isPending, startTransition] = useTransition();
+  const { clock, view, nowMs, connection, isDeleted, applyRow, showUpdate } =
+    useClock(initialClock, initialNowMs);
+  const [, startTransition] = useTransition();
   useCatchUp(clock, view.position.levelIndex, applyRow);
 
   const control = (action: ClockControl): void => {
     startTransition(async () => {
+      const plan = planControl(clock, action, nowMs);
+      if (plan.ok) showUpdate(plan.value);
       const result = await controlClockAction(clock.id, action);
       if (result.clock) applyRow(result.clock);
       if (!result.success) {
@@ -111,11 +112,7 @@ function ClockControls({
               <ClockFace view={view} size="compact" />
             </CardContent>
           </Card>
-          <ControlButtons
-            view={view}
-            isPending={isPending}
-            onControl={control}
-          />
+          <ControlButtons view={view} onControl={control} />
           <DisplayLinks id={clock.id} />
         </>
       )}

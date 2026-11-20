@@ -55,6 +55,15 @@ export function planControl(
   }
 }
 
+// The clock with a control's columns applied, as it will be once saved.
+// The control screen shows this at once while the action runs.
+export function applyUpdate(
+  clock: TournamentClock,
+  update: ClockUpdate,
+): TournamentClock {
+  return { ...clock, ...update };
+}
+
 const REFUSAL_MESSAGES: Record<ClockControlRefusal, string> = {
   wrong_status: "The clock isn't in a state for that.",
   level_out_of_range: "There's no level that way.",

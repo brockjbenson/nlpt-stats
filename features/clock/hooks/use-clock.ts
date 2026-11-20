@@ -6,10 +6,12 @@ import {
   mergeClockRow,
 } from "@/features/clock/data/clocks";
 import { useServerOffset } from "@/features/clock/hooks/use-server-offset";
+import { applyUpdate } from "@/features/clock/lib/controls";
 import { type ClockView, describeClock } from "@/features/clock/lib/display";
+import type { ClockUpdate } from "@/features/clock/lib/timing";
 import type { TournamentClock } from "@/features/clock/types";
 import { createClient } from "@/utils/supabase/client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useOptimistic, useState } from "react";
 
 // How often the countdown redraws. Under a second, so the seconds tick
 // over close to when they really change.
@@ -19,6 +21,8 @@ const CLOCKS_TABLE = "_tournament_clocks";
 export type ClockConnection = "live" | "reconnecting";
 
 export type LiveClock = {
+  // The clock as shown: the latest saved row, with any control still being
+  // saved already applied.
   clock: TournamentClock;
   view: ClockView;
   nowMs: number;
@@ -27,6 +31,10 @@ export type LiveClock = {
   isDeleted: boolean;
   // Shows a row a control action returned, before its Realtime event.
   applyRow: (clock: TournamentClock) => void;
+  // Shows a control's planned columns at once, until its action finishes:
+  // then the saved row shows, or the clock goes back if it was refused.
+  // Call inside a transition.
+  showUpdate: (update: ClockUpdate) => void;
 };
 
 // The current time on the database's clock, redrawn every tick. Starts
@@ -53,6 +61,7 @@ export function useClock(
 ): LiveClock {
   const clockId = initialClock.id;
   const [clock, setClock] = useState(initialClock);
+  const [shownClock, showUpdate] = useOptimistic(clock, applyUpdate);
   const [isDeleted, setIsDeleted] = useState(false);
   const [connection, setConnection] = useState<ClockConnection>("live");
   const { offsetMs, resync } = useServerOffset();
@@ -114,11 +123,12 @@ export function useClock(
   }, [refetch, resync]);
 
   return {
-    clock,
-    view: describeClock(clock, nowMs),
+    clock: shownClock,
+    view: describeClock(shownClock, nowMs),
     nowMs,
     connection,
     isDeleted,
     applyRow: setClock,
+    showUpdate,
   };
 }

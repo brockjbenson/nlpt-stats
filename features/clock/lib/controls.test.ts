@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyUpdate,
   type ClockControl,
   controlRefusalMessage,
   planControl,
 } from "@/features/clock/lib/controls";
+import { describeClock } from "@/features/clock/lib/display";
 import { makeClock } from "@/features/clock/lib/test-fixtures";
 import {
   adjustTime,
@@ -127,5 +129,25 @@ describe("controlRefusalMessage", () => {
     expect(controlRefusalMessage("level_out_of_range")).toBe(
       "There's no level that way.",
     );
+  });
+});
+
+describe("applyUpdate", () => {
+  it("shows a planned pause before it's saved, holding the time left", () => {
+    const clock = running();
+    const nowMs = START_MS + 5 * MINUTE;
+    const plan = planControl(clock, { type: "pause" }, nowMs);
+    if (!plan.ok) throw new Error("pause refused");
+    const shown = applyUpdate(clock, plan.value);
+    expect(describeClock(shown, nowMs + 10 * MINUTE)).toMatchObject({
+      status: "paused",
+      timeText: "15:00",
+    });
+  });
+
+  it("leaves the clock it's given unchanged", () => {
+    const clock = running();
+    applyUpdate(clock, { status: "paused", paused_remaining_ms: 1000 });
+    expect(clock.status).toBe("running");
   });
 });

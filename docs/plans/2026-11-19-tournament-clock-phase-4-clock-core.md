@@ -21,6 +21,8 @@ Still to check, on an iPhone: the Reconnecting… badge and catching up after sl
 - `formatBlindPair` (blinds without the ante) and `formatClockDate` (dates in `America/Chicago`) were added to `format.ts`; `clockStatusLabel` to `clocks.ts`.
 - The settings and payout fields were generalized for the create form (`settingsReducer`, `SettingsFields`/`PayoutFields` with an id prefix; the template-only new row lengths moved to `NewRowLengthFields`).
 - No haptics: the other admin buttons don't use them.
+- Controls are optimistic (added after the first click-through, which felt slow): a press shows its planned change in one frame instead of after the 200–400 ms round trip, and buttons no longer disable while a save is in flight.
+- The status (Not started, Paused, Finished) sits in the top-right corner with Reconnecting…, not above the countdown.
 - Also fixed on the branch: the lockfile pointed 68 packages at an internal npm proxy (Vercel builds failed), and vitest ran the test suites of worktrees under `.claude/`.
 
 **Goal:** An admin creates a clock from a template, runs it from `/admin/clock/[id]` (start, pause, resume, previous/next level, ±1 minute), and anyone can watch the same clock live at `/clock/[id]` on a TV or phone. Timing only; entrants, money and the finish flow come in phases 5 and 7.
