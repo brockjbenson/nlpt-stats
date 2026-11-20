@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–5 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`.
+- **Status:** Approved. Phases 1–6 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`.
 
 ## Goal
 
@@ -259,11 +259,13 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Rebuy:** increments `rebuys`; if the player is busted, also clears `busted_at`/`finish_place` (re-entry, most recent bust only). See Rebuy rules.
 - The last remaining player gets `finish_place=1` when the admin finishes the clock; refused while more than one player is left.
 
-### Sounds & TV mode
+### Sounds & TV mode (phase 6)
 
-- Chimes at the 1-minute warning and at level change, played on display devices.
-- Browsers block audio until a user gesture, so the display shows a one-time "Tap to enable sound" control; TV mode entry counts as that gesture.
-- TV mode: Fullscreen API + Screen Wake Lock API (re-acquired on `visibilitychange`); fails gracefully where unsupported.
+- **Chimes,** on the display only (`/clock/[id]`), synthesized with the Web Audio API from note lists (`features/clock/sounds/chimes.ts`; no audio files): **warning**, two high pips when the time left crosses one minute (levels and breaks); **level**, a rising C–E–G when a new playing level starts; **break**, two soft falling notes when a break starts. Nothing plays when the last level runs out.
+- **When they play** (`planSoundCue` in `lib/sounds.ts`): each display tick (4 a second, and every Realtime update) is compared with the one before. A chime plays only if both ticks are running and less than 2 seconds apart, so starting, pausing, resuming, level changes made while paused, the first tick after loading, and a tab catching up after sleeping or reconnecting are all silent. Next/Previous while running chime like a level change; a minute added or removed that crosses the one-minute mark warns.
+- **Sound control:** a speaker button in the display's top-right corner, off by default, remembered per browser (localStorage, read with `useSyncExternalStore` so the server HTML has it off; kept in memory where storage is blocked). Browsers only start audio from a tap, so with sound on, a fresh page load shows "Tap to enable sound" until any tap on the page.
+- **TV mode:** a button next to the speaker: fullscreen (Fullscreen API) plus a screen wake lock (taken again when the tab becomes visible; a lock that arrives after leaving TV mode is released), and it turns sound on in the same tap. Esc or the button leaves it. In TV mode the corner buttons fade and the cursor hides after 3 seconds without mouse, touch or keys; the status badges stay. Fullscreen or the wake lock is skipped quietly where the browser lacks it (an iPhone can't make a page fullscreen).
+- **Development:** each chime logs `[clock-sound] <cue>` with `console.debug` in development, so it can be checked without hearing it.
 
 ## Finish flow
 
@@ -294,6 +296,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - Pool, avg stack, and payout rule (last-place share rounded up from 1 ÷ players and kept through rebuys, entrants < places paid, and the whole pool always paid out).
 - Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
 - Finish results: guest re-ranking, true-position cash-outs, places actually paid.
+- Chimes (phase 6): when the warning, level and break chimes play and every case that stays silent (`lib/sounds.test.ts`); the chime note lists (`sounds/chimes.test.ts`).
 - Players (phase 5): names, list order and knockout counts, adding (status, while anyone is out, duplicates, guest name length), removing, bust and undo checks, refusal messages, the display's players and money (`describeField`), and applying Realtime changes (`data/entrants.test.ts`).
 
 Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs. Phase 5 was clicked through on dev (add, bust with and without a knockout, undo, rebuy limit, re-entry, the in-the-money cutoff, payout edits); offline/online, two admins pressing at once, and phone width weren't checked in the browser.
@@ -351,7 +354,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 3. **Templates:** `/admin/clock/structures` CRUD. Done on dev; see `docs/plans/2026-11-19-tournament-clock-phase-3-templates.md`.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only). Built on dev; the on-device check and the prod rollout are still to do (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
 5. **Entrants:** add members/guests, rebuy, bust/undo with knockouts, players left, avg stack, pool & payouts on display. Built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-5-entrants.md`. Its migration goes to prod with phase 4's rollout.
-6. **TV mode & sounds.**
+6. **TV mode & sounds.** Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`. No database changes. Fullscreen still needs checking on a real screen (it didn't go fullscreen under browser automation).
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.
 8. **Nav:** admin nav link; "Tournament live" banner while a clock is running; link from tournament page when a clock is attached.
 

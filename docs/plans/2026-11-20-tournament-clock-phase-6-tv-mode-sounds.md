@@ -14,6 +14,15 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Sounds & TV mode). Earlier phases: `...-phase-4-clock-core.md`, `...-phase-5-entrants.md`. Branch: `feat/tournament-shot-clock`.
 
+**Status (2026-11-20):** Tasks 1–7 are done on dev; the R1–R5 refinement pass is next.
+
+**Changes from this plan:**
+- **`useSound` reads the saved choice with `useSyncExternalStore`** (server snapshot: off) instead of setting state in an effect, which React's lint rule flags. It also follows changes from other tabs, and keeps the choice in memory where storage is blocked.
+- **The page's tap-to-unlock listens for `click`**, not `pointerdown`: on touch screens browsers only count a tap as permission for audio once the finger lifts.
+- **Removing a minute across the one-minute mark warns** (it really is under a minute now).
+- **Task 6 drove the clock with SQL updates** (70-second levels, jumping to a few seconds before each moment) instead of the control screen, and read the chimes from the console. Every case matched: start silent, warning once per level and break, `level` when a level ends and on Next while running, `break` at a break, pause / change while paused / resume silent.
+- **Not checked:** fullscreen (it didn't go fullscreen when the TV mode button was clicked under automation, though the browser reports it as available; testing it was stopped at the user's request), the wake lock that comes with it, silence after a sleeping tab (unit tested only), and how the chimes sound.
+
 ---
 
 ## Decisions made in this plan (confirm before starting)
