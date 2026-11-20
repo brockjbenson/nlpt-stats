@@ -3,12 +3,12 @@
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import FieldPanel from "@/features/clock/components/display/field-panel";
-import type { MemberOption } from "@/features/clock/data/entrants";
+import type {
+  ClockPlayers,
+  MemberOption,
+} from "@/features/clock/data/entrants";
 import { useClock } from "@/features/clock/hooks/use-clock";
-import {
-  type ClockPlayers,
-  useEntrants,
-} from "@/features/clock/hooks/use-entrants";
+import { useEntrants } from "@/features/clock/hooks/use-entrants";
 import { describeField } from "@/features/clock/lib/display";
 import { entrantNames, listPlayers } from "@/features/clock/lib/players";
 import type { TournamentClock } from "@/features/clock/types";

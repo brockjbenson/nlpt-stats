@@ -7,6 +7,12 @@ type Rows<T> =
   | { data: T[]; error: null }
   | { data: null; error: PostgrestError };
 
+// A clock's players and knockouts.
+export type ClockPlayers = {
+  entrants: ClockEntrant[];
+  knockouts: ClockKnockout[];
+};
+
 // A member the screens can name, and whether they show in the add list.
 export type MemberOption = MemberName & { visible: boolean };
 
@@ -36,6 +42,30 @@ export async function getKnockouts(
     .order("busted_at");
   if (error) return { data: null, error };
   return { data: data as ClockKnockout[], error: null };
+}
+
+// A clock's players and knockouts, read together.
+export async function getClockPlayers(
+  db: SupabaseClient,
+  clockId: string,
+): Promise<
+  { data: ClockPlayers; error: null } | { data: null; error: PostgrestError }
+> {
+  const [entrants, knockouts] = await Promise.all([
+    getEntrants(db, clockId),
+    getKnockouts(db, clockId),
+  ]);
+  const error = entrants.error ?? knockouts.error;
+  if (error) return { data: null, error };
+  return {
+    data: { entrants: entrants.data ?? [], knockouts: knockouts.data ?? [] },
+    error: null,
+  };
+}
+
+// The members playing in a clock, for getMemberNames.
+export function playingMemberIds(entrants: ClockEntrant[]): string[] {
+  return entrants.flatMap(({ member_id }) => (member_id ? [member_id] : []));
 }
 
 // The PostgREST filter for getMemberNames: visible members, plus the

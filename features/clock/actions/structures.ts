@@ -10,8 +10,8 @@ import {
   structureToDraft,
   validateStructureDraft,
 } from "@/features/clock/lib/structures";
+import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
-import { getCurrentUser } from "@/utils/supabase/user";
 
 export type StructureActionResult = {
   success: boolean;
@@ -43,11 +43,6 @@ function saveErrorMessage(error: { code?: string; message: string }): string {
 function revalidateStructures(id?: string): void {
   revalidatePath(STRUCTURES_PATH);
   if (id) revalidatePath(`${STRUCTURES_PATH}/${id}`);
-}
-
-async function isAdmin(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return user?.isAdmin === true;
 }
 
 // Validates and saves a whole template (settings and levels) in one

@@ -12,12 +12,12 @@ import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import PayoutsCard from "@/features/clock/components/control/payouts-card";
 import PlayersCard from "@/features/clock/components/players/players-card";
-import type { MemberOption } from "@/features/clock/data/entrants";
+import type {
+  ClockPlayers,
+  MemberOption,
+} from "@/features/clock/data/entrants";
 import { useClock } from "@/features/clock/hooks/use-clock";
-import {
-  type ClockPlayers,
-  useEntrants,
-} from "@/features/clock/hooks/use-entrants";
+import { useEntrants } from "@/features/clock/hooks/use-entrants";
 import { CLOCKS_PATH, clockDisplayPath } from "@/features/clock/lib/paths";
 import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";

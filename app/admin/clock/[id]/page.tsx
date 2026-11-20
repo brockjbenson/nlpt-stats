@@ -4,9 +4,9 @@ import PageHeader from "@/components/page-header/page-header";
 import ClockControls from "@/features/clock/components/control/clock-controls";
 import { getClock, getServerNowMs } from "@/features/clock/data/clocks";
 import {
-  getEntrants,
-  getKnockouts,
+  getClockPlayers,
   getMemberNames,
+  playingMemberIds,
 } from "@/features/clock/data/entrants";
 import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
@@ -16,22 +16,18 @@ const TITLE = "Clock";
 async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const db = await createClient();
-  const [{ data: clock, error: clockError }, entrants, knockouts, nowMs] =
+  const [{ data: clock, error: clockError }, players, nowMs] =
     await Promise.all([
       getClock(db, id),
-      getEntrants(db, id),
-      getKnockouts(db, id),
+      getClockPlayers(db, id),
       getServerNowMs(db),
     ]);
   // Members to pick from, plus any hidden member already playing.
   const members = await getMemberNames(
     db,
-    (entrants.data ?? []).flatMap(({ member_id }) =>
-      member_id ? [member_id] : [],
-    ),
+    playingMemberIds(players.data?.entrants ?? []),
   );
-  const error =
-    clockError ?? entrants.error ?? knockouts.error ?? members.error;
+  const error = clockError ?? players.error ?? members.error;
 
   if (error) {
     return (
@@ -52,10 +48,7 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
       <ClockControls
         initialClock={clock}
         initialNowMs={nowMs}
-        initialPlayers={{
-          entrants: entrants.data ?? [],
-          knockouts: knockouts.data ?? [],
-        }}
+        initialPlayers={players.data ?? { entrants: [], knockouts: [] }}
         members={members.data ?? []}
       />
     </>

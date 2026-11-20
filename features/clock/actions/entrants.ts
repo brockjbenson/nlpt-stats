@@ -7,7 +7,7 @@ import {
   getServerNowMs,
   toClock,
 } from "@/features/clock/data/clocks";
-import { getEntrants, getKnockouts } from "@/features/clock/data/entrants";
+import { getClockPlayers } from "@/features/clock/data/entrants";
 import { planRebuy } from "@/features/clock/lib/entrants";
 import {
   addRefusalMessage,
@@ -31,8 +31,8 @@ import type {
   ClockKnockout,
   TournamentClock,
 } from "@/features/clock/types";
+import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
-import { getCurrentUser } from "@/utils/supabase/user";
 
 // A player change's outcome. On success, the clock's players and
 // knockouts as saved, so the screen can show them before the Realtime
@@ -79,12 +79,7 @@ function writeFailure(error: PostgrestError): PlayersActionResult {
   return failed(error.message);
 }
 
-async function isAdmin(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return user?.isAdmin === true;
-}
-
-type ClockPlayers = {
+type LoadedClock = {
   db: SupabaseClient;
   clock: TournamentClock;
   entrants: ClockEntrant[];
@@ -94,28 +89,21 @@ type ClockPlayers = {
 // The clock with its players and knockouts, or a failure to return.
 async function loadPlayers(
   clockId: string,
-): Promise<ClockPlayers | PlayersActionResult> {
+): Promise<LoadedClock | PlayersActionResult> {
   const db = await createClient();
-  const [clockResult, entrantsResult, knockoutsResult] = await Promise.all([
+  const [clockResult, playersResult] = await Promise.all([
     getClock(db, clockId),
-    getEntrants(db, clockId),
-    getKnockouts(db, clockId),
+    getClockPlayers(db, clockId),
   ]);
-  const error =
-    clockResult.error ?? entrantsResult.error ?? knockoutsResult.error;
+  const error = clockResult.error ?? playersResult.error;
   if (error) return failed(error.message);
-  if (!clockResult.data) return failed(CLOCK_GONE);
-  return {
-    db,
-    clock: clockResult.data,
-    entrants: entrantsResult.data ?? [],
-    knockouts: knockoutsResult.data ?? [],
-  };
+  if (!clockResult.data || !playersResult.data) return failed(CLOCK_GONE);
+  return { db, clock: clockResult.data, ...playersResult.data };
 }
 
 function isLoaded(
-  value: ClockPlayers | PlayersActionResult,
-): value is ClockPlayers {
+  value: LoadedClock | PlayersActionResult,
+): value is LoadedClock {
   return "clock" in value;
 }
 
@@ -125,17 +113,9 @@ async function savedPlayers(
   clockId: string,
   message: string,
 ): Promise<PlayersActionResult> {
-  const [entrants, knockouts] = await Promise.all([
-    getEntrants(db, clockId),
-    getKnockouts(db, clockId),
-  ]);
+  const { data } = await getClockPlayers(db, clockId);
   // The write went through; if the re-read fails, Realtime brings the rows.
-  return {
-    success: true,
-    message,
-    entrants: entrants.data ?? undefined,
-    knockouts: knockouts.data ?? undefined,
-  };
+  return { success: true, message, ...data };
 }
 
 // Runs a player change for an admin: loads the clock's players, applies
@@ -144,7 +124,7 @@ async function changePlayers(
   clockId: string,
   // What the change does, for messages: "add players".
   task: string,
-  change: (loaded: ClockPlayers) => Promise<PlayersActionResult>,
+  change: (loaded: LoadedClock) => Promise<PlayersActionResult>,
 ): Promise<PlayersActionResult> {
   if (!(await isAdmin())) return NOT_ADMIN;
   try {

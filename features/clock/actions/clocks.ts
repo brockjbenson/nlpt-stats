@@ -22,8 +22,8 @@ import { CLOCKS_PATH } from "@/features/clock/lib/paths";
 import type { StructureError } from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
 import type { TournamentClock } from "@/features/clock/types";
+import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
-import { getCurrentUser } from "@/utils/supabase/user";
 
 export type ClockActionResult = {
   success: boolean;
@@ -51,11 +51,6 @@ const NOT_ADMIN: ClockActionResult = {
   success: false,
   message: "Only admins can change tournament clocks.",
 };
-
-async function isAdmin(): Promise<boolean> {
-  const user = await getCurrentUser();
-  return user?.isAdmin === true;
-}
 
 async function insertClock(
   structureId: string,

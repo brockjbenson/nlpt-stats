@@ -2,8 +2,8 @@
 
 import {
   applyRowChange,
-  getEntrants,
-  getKnockouts,
+  type ClockPlayers,
+  getClockPlayers,
   type RowChange,
 } from "@/features/clock/data/entrants";
 import { useOnVisible } from "@/features/clock/hooks/use-on-visible";
@@ -18,12 +18,6 @@ const KNOCKOUTS_TABLE = "_clock_knockouts";
 // subscribing), and a bust or undo always changes both tables, so this
 // heals a missed event within a moment. The lists are small.
 const RESYNC_DELAY_MS = 1000;
-
-// A clock's players and knockouts.
-export type ClockPlayers = {
-  entrants: ClockEntrant[];
-  knockouts: ClockKnockout[];
-};
 
 export type LivePlayers = ClockPlayers & {
   // Shows the lists a player action returned, before its Realtime events.
@@ -77,12 +71,10 @@ export function useEntrants(
   const [knockouts, setKnockouts] = useState(initial.knockouts);
 
   const refetch = useCallback((): void => {
-    const db = createClient();
-    void getEntrants(db, clockId).then(({ data }) => {
-      if (data) setEntrants(data);
-    });
-    void getKnockouts(db, clockId).then(({ data }) => {
-      if (data) setKnockouts(data);
+    void getClockPlayers(createClient(), clockId).then(({ data }) => {
+      if (!data) return;
+      setEntrants(data.entrants);
+      setKnockouts(data.knockouts);
     });
   }, [clockId]);
 
