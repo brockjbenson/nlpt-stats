@@ -10,20 +10,25 @@ const BADGE_SIZES: Record<ClockFaceSize, string> = {
   compact: "text-xs",
 };
 
-const BADGE_CLASS =
-  "rounded-full px-[0.75em] py-[0.25em] font-semibold text-muted";
+const BADGE_CLASS = "rounded-full px-[0.75em] py-[0.25em] font-semibold";
+const STATUS_CLASS = "uppercase tracking-wider";
+// Paused stands out in red; Not started and Finished stay quiet.
+const PAUSED_CLASS = "bg-red-600 text-white";
+const QUIET_STATUS_CLASS = "border border-card-border text-muted";
 
-// The top-right corner of a clock screen: the status while the clock isn't
-// running (Not started, Paused, Finished), and Reconnecting… while
-// Realtime is down. Goes inside a relative container.
+// The status while the clock isn't running (Not started, Paused,
+// Finished), and Reconnecting… while Realtime is down. The caller places
+// it: the display's top-left corner, or the control card's header.
 function ClockBadges({
   status,
   connection,
   size = "display",
+  className,
 }: {
   status: ClockStatus;
   connection: ClockConnection;
   size?: ClockFaceSize;
+  className?: string;
 }) {
   const showStatus = status !== "running";
   const showReconnecting = connection === "reconnecting";
@@ -32,22 +37,27 @@ function ClockBadges({
   return (
     <div
       className={cn(
-        "absolute right-3 top-3 flex flex-col items-end gap-1",
+        "flex flex-col items-start gap-1",
         BADGE_SIZES[size],
+        className,
       )}
     >
       {showStatus && (
         <p
           className={cn(
             BADGE_CLASS,
-            "border border-card-border uppercase tracking-wider",
+            STATUS_CLASS,
+            status === "paused" ? PAUSED_CLASS : QUIET_STATUS_CLASS,
           )}
         >
           {clockStatusLabel(status)}
         </p>
       )}
       {showReconnecting && (
-        <p role="status" className={cn(BADGE_CLASS, "bg-foreground/10")}>
+        <p
+          role="status"
+          className={cn(BADGE_CLASS, "bg-foreground/10 text-muted")}
+        >
           Reconnecting…
         </p>
       )}

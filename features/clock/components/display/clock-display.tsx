@@ -33,7 +33,11 @@ function ClockDisplay({
       <h1 className="text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
         {clock.name}
       </h1>
-      <ClockBadges status={view.status} connection={connection} />
+      <ClockBadges
+        status={view.status}
+        connection={connection}
+        className="absolute left-3 top-3"
+      />
       <ClockFace view={view} />
     </main>
   );

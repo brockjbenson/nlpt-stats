@@ -30,7 +30,8 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
   return (
     <>
       <PageHeader title={TITLE} />
-      <DesktopPageHeader title={clock.name} />
+      {/* The clock's name heads its card. */}
+      <DesktopPageHeader title={TITLE} />
       <ClockControls initialClock={clock} initialNowMs={nowMs} />
     </>
   );

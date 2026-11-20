@@ -15,25 +15,34 @@ import { Button } from "@/components/ui/button";
 import type { ClockControl } from "@/features/clock/lib/controls";
 import type { ClockView } from "@/features/clock/lib/display";
 import type { ClockStatus } from "@/features/clock/types";
-import { Minus, Pause, Play, Plus, SkipBack, SkipForward } from "lucide-react";
+import { ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
+import { TbPlayerPauseFilled, TbPlayerPlayFilled } from "react-icons/tb";
 
-const MAIN_BUTTON_CLASS = "h-14 w-full text-base";
-const STEP_BUTTON_CLASS = "h-12 flex-1";
+// Round, icon-only buttons in three sizes: ± beside the countdown, the
+// level arrows, and play/pause between them.
+const ROUND_CLASS = "rounded-full p-0";
+const TIME_BUTTON_CLASS = `${ROUND_CLASS} size-11 [&_svg]:size-5`;
+const LEVEL_BUTTON_CLASS = `${ROUND_CLASS} size-14 [&_svg]:size-6`;
+const MAIN_BUTTON_CLASS = `${ROUND_CLASS} size-20 [&_svg]:size-9`;
+// Solid, rounded play and pause (Tabler's filled player icons). The play
+// triangle's weight sits left of its box; nudge it to look centred.
+const PLAY_ICON_CLASS = "translate-x-0.5";
 
-type Props = {
-  // The clock as shown, with any press still being saved already applied,
-  // so presses can follow each other without waiting.
-  view: ClockView;
-  onControl: (control: ClockControl) => void;
-};
+type OnControl = (control: ClockControl) => void;
+
+// Steps and time changes only apply once the clock has started and until
+// it finishes.
+function isLive(status: ClockStatus): boolean {
+  return status === "running" || status === "paused";
+}
 
 // Start asks first, since it starts the tournament for everyone watching.
 function StartButton({ onStart }: { onStart: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className={MAIN_BUTTON_CLASS}>
-          <Play /> Start
+        <Button className={MAIN_BUTTON_CLASS} aria-label="Start">
+          <TbPlayerPlayFilled className={PLAY_ICON_CLASS} />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -52,14 +61,15 @@ function StartButton({ onStart }: { onStart: () => void }) {
   );
 }
 
-// The big button: Start before the clock starts, then Pause or Resume.
-// None once the clock has finished.
+// The big round button: Start before the clock starts, then Pause or
+// Resume. Shown but disabled once the clock has finished, so the row keeps
+// its shape.
 function MainButton({
   status,
   onControl,
 }: {
   status: ClockStatus;
-  onControl: (control: ClockControl) => void;
+  onControl: OnControl;
 }) {
   switch (status) {
     case "setup":
@@ -69,74 +79,90 @@ function MainButton({
         <Button
           className={MAIN_BUTTON_CLASS}
           variant="neutral"
+          aria-label="Pause"
           onClick={() => onControl({ type: "pause" })}
         >
-          <Pause /> Pause
+          <TbPlayerPauseFilled />
         </Button>
       );
     case "paused":
       return (
         <Button
           className={MAIN_BUTTON_CLASS}
+          aria-label="Resume"
           onClick={() => onControl({ type: "resume" })}
         >
-          <Play /> Resume
+          <TbPlayerPlayFilled className={PLAY_ICON_CLASS} />
         </Button>
       );
     case "finished":
-      return null;
+      return (
+        <Button className={MAIN_BUTTON_CLASS} aria-label="Finished" disabled>
+          <TbPlayerPlayFilled className={PLAY_ICON_CLASS} />
+        </Button>
+      );
   }
 }
 
-// Start, pause/resume, previous/next level and a minute more or less.
-// Only the controls that apply to the clock's state are enabled.
-function ControlButtons({ view, onControl }: Props) {
-  const { status, position } = view;
-  const canStep = status === "running" || status === "paused";
-
+// − or + a minute, beside the countdown.
+export function AdjustTimeButton({
+  minutes,
+  view,
+  onControl,
+}: {
+  minutes: 1 | -1;
+  view: ClockView;
+  onControl: OnControl;
+}) {
+  const isAdding = minutes > 0;
   return (
-    <div className="flex flex-col gap-2">
-      <MainButton status={status} onControl={onControl} />
-      <div className="flex gap-2">
-        <Button
-          className={STEP_BUTTON_CLASS}
-          variant="outline"
-          disabled={!canStep || position.levelIndex === 0}
-          onClick={() => onControl({ type: "previous" })}
-        >
-          <SkipBack /> Previous level
-        </Button>
-        <Button
-          className={STEP_BUTTON_CLASS}
-          variant="outline"
-          disabled={!canStep || position.isLastLevel}
-          onClick={() => onControl({ type: "next" })}
-        >
-          Next level <SkipForward />
-        </Button>
-      </div>
-      <div className="flex gap-2">
-        <Button
-          className={STEP_BUTTON_CLASS}
-          variant="outline"
-          disabled={!canStep}
-          aria-label="Remove 1 minute"
-          onClick={() => onControl({ type: "adjust", minutes: -1 })}
-        >
-          <Minus /> 1 min
-        </Button>
-        <Button
-          className={STEP_BUTTON_CLASS}
-          variant="outline"
-          disabled={!canStep}
-          aria-label="Add 1 minute"
-          onClick={() => onControl({ type: "adjust", minutes: 1 })}
-        >
-          <Plus /> 1 min
-        </Button>
-      </div>
-    </div>
+    <Button
+      className={TIME_BUTTON_CLASS}
+      variant="outline"
+      disabled={!isLive(view.status)}
+      aria-label={isAdding ? "Add 1 minute" : "Remove 1 minute"}
+      onClick={() => onControl({ type: "adjust", minutes })}
+    >
+      {isAdding ? <Plus /> : <Minus />}
+    </Button>
   );
 }
 
-export default ControlButtons;
+// Previous level, play/pause, next level, in one row. Only the controls
+// that apply to the clock's state are enabled.
+export function PlaybackControls({
+  view,
+  onControl,
+}: {
+  // The clock as shown, with any press still being saved already applied,
+  // so presses can follow each other without waiting.
+  view: ClockView;
+  onControl: OnControl;
+}) {
+  const { status, position } = view;
+  const canStep = isLive(status);
+
+  return (
+    <div className="flex items-center justify-center gap-6 pt-2">
+      <Button
+        className={LEVEL_BUTTON_CLASS}
+        variant="outline"
+        aria-label="Previous level"
+        disabled={!canStep || position.levelIndex === 0}
+        onClick={() => onControl({ type: "previous" })}
+      >
+        <ChevronLeft />
+      </Button>
+      <MainButton status={status} onControl={onControl} />
+      <Button
+        className={LEVEL_BUTTON_CLASS}
+        variant="outline"
+        aria-label="Next level"
+        disabled={!canStep || position.isLastLevel}
+        onClick={() => onControl({ type: "next" })}
+      >
+        <ChevronRight />
+      </Button>
+    </div>
+  );
+}

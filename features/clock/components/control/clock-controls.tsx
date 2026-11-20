@@ -1,8 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import ControlButtons from "@/features/clock/components/control/control-buttons";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  AdjustTimeButton,
+  PlaybackControls,
+} from "@/features/clock/components/control/control-buttons";
 import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
 import { useClockControl } from "@/features/clock/components/control/use-clock-control";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
@@ -13,6 +16,12 @@ import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
+
+// Small round icon buttons at the right of the card's header.
+const HEADER_BUTTON_CLASS = "size-9 rounded-full p-0";
+// The header's left slot is as wide as the two buttons on the right, so the
+// name stays centred whether or not a status tag is showing.
+const HEADER_SIDE_CLASS = "min-w-20 shrink-0";
 
 // Opens the display in a new tab, or copies its link to send to the TV or
 // another phone.
@@ -36,14 +45,26 @@ function DisplayLinks({ id }: { id: string }) {
   };
 
   return (
-    <div className="flex gap-2">
-      <Button className="flex-1" variant="outline" asChild>
-        <Link href={clockDisplayPath(id)} target="_blank" rel="noopener">
-          <MonitorPlay /> Open display
+    <div className="flex shrink-0 gap-2">
+      <Button className={HEADER_BUTTON_CLASS} variant="outline" asChild>
+        <Link
+          href={clockDisplayPath(id)}
+          target="_blank"
+          rel="noopener"
+          aria-label="Open display"
+          title="Open display"
+        >
+          <MonitorPlay />
         </Link>
       </Button>
-      <Button className="flex-1" variant="outline" onClick={() => void copy()}>
-        <Link2 /> Copy display link
+      <Button
+        className={HEADER_BUTTON_CLASS}
+        variant="outline"
+        aria-label="Copy display link"
+        title="Copy display link"
+        onClick={() => void copy()}
+      >
+        <Link2 />
       </Button>
     </div>
   );
@@ -78,18 +99,43 @@ function ClockControls({
         <p className="py-8 text-center text-muted">This clock was deleted.</p>
       ) : (
         <>
-          <Card className="relative py-6">
-            <ClockBadges
-              status={view.status}
-              connection={connection}
-              size="compact"
-            />
+          <Card className="py-4">
+            <CardHeader className="items-start gap-2">
+              <div className={HEADER_SIDE_CLASS}>
+                <ClockBadges
+                  status={view.status}
+                  connection={connection}
+                  size="compact"
+                />
+              </div>
+              <h2 className="line-clamp-2 min-w-0 flex-1 text-center font-semibold leading-tight">
+                {clock.name}
+              </h2>
+              <DisplayLinks id={clock.id} />
+            </CardHeader>
             <CardContent>
-              <ClockFace view={view} size="compact" />
+              <ClockFace
+                view={view}
+                size="compact"
+                beforeTime={
+                  <AdjustTimeButton
+                    minutes={-1}
+                    view={view}
+                    onControl={control}
+                  />
+                }
+                afterTime={
+                  <AdjustTimeButton
+                    minutes={1}
+                    view={view}
+                    onControl={control}
+                  />
+                }
+              >
+                <PlaybackControls view={view} onControl={control} />
+              </ClockFace>
             </CardContent>
           </Card>
-          <ControlButtons view={view} onControl={control} />
-          <DisplayLinks id={clock.id} />
         </>
       )}
     </div>

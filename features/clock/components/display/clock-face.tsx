@@ -2,6 +2,7 @@ import type { BlindsText, ClockView } from "@/features/clock/lib/display";
 import { formatClockTime } from "@/features/clock/lib/format";
 import { cn } from "@/lib/utils";
 import { Coffee } from "lucide-react";
+import type React from "react";
 
 export type ClockFaceSize = "display" | "compact";
 
@@ -22,7 +23,8 @@ const SIZES: Record<
   compact: {
     root: "gap-2",
     title: "text-lg",
-    time: "text-7xl",
+    // Leaves room for the ± buttons beside it on a phone.
+    time: "text-6xl",
     blinds: "text-3xl",
     detail: "text-sm",
   },
@@ -96,13 +98,20 @@ function UpNext({ view }: { view: ClockView }) {
 }
 
 // A clock's level, countdown, blinds and what's next. Presentational: the
-// display page and the admin control screen pass in a live ClockView.
+// display page and the admin control screen pass in a live ClockView. The
+// control screen also puts buttons beside the countdown and below.
 function ClockFace({
   view,
   size = "display",
+  beforeTime,
+  afterTime,
+  children,
 }: {
   view: ClockView;
   size?: ClockFaceSize;
+  beforeTime?: React.ReactNode;
+  afterTime?: React.ReactNode;
+  children?: React.ReactNode;
 }) {
   const sizes = SIZES[size];
   const isRunning = view.status === "running";
@@ -117,19 +126,23 @@ function ClockFace({
       <div className={sizes.title}>
         <Title view={view} />
       </div>
-      <p
-        role="timer"
-        className={cn(
-          "font-bold tabular-nums",
-          sizes.time,
-          // After the size: tailwind-merge drops a leading-* that comes
-          // before a text-* size.
-          "leading-none",
-          !isRunning && "text-muted",
-        )}
-      >
-        {view.timeText}
-      </p>
+      <div className="flex items-center justify-center gap-3">
+        {beforeTime}
+        <p
+          role="timer"
+          className={cn(
+            "font-bold tabular-nums",
+            sizes.time,
+            // After the size: tailwind-merge drops a leading-* that comes
+            // before a text-* size.
+            "leading-none",
+            !isRunning && "text-muted",
+          )}
+        >
+          {view.timeText}
+        </p>
+        {afterTime}
+      </div>
       <ProgressBar progress={view.progress} />
       <div className={sizes.blinds}>
         <Blinds view={view} />
@@ -137,6 +150,7 @@ function ClockFace({
       <div className={sizes.detail}>
         <UpNext view={view} />
       </div>
+      {children}
     </div>
   );
 }

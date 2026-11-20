@@ -88,19 +88,13 @@ function TemplatePicker({
 // The template's money, chips and payouts, editable before the clock is
 // made. Keyed by template, so picking another one starts over from its
 // defaults.
-function NewClockSettings({
-  structure,
-  dateLabel,
-}: {
-  structure: StructureWithLevels;
-  dateLabel: string;
-}) {
+function NewClockSettings({ structure }: { structure: StructureWithLevels }) {
   const router = useRouter();
   const { toast } = useToast();
   const [settings, dispatch] = useReducer(
     settingsReducer<ClockSettings>,
     structure,
-    (template) => clockSettingsFromStructure(template, dateLabel),
+    clockSettingsFromStructure,
   );
   const [isCreating, startCreating] = useTransition();
   const errors = validateClockSettings(settings);
@@ -164,12 +158,9 @@ function NewClockSettings({
 // can't be changed per clock.
 function CreateClockForm({
   structures,
-  dateLabel,
 }: {
   // At least one.
   structures: StructureWithLevels[];
-  // Today, for the default name ("NLPT Standard – Nov 27, 2026").
-  dateLabel: string;
 }) {
   const [structureId, setStructureId] = useState(() =>
     defaultStructureId(structures),
@@ -190,11 +181,7 @@ function CreateClockForm({
         structure={structure}
         onChange={setStructureId}
       />
-      <NewClockSettings
-        key={structure.id}
-        structure={structure}
-        dateLabel={dateLabel}
-      />
+      <NewClockSettings key={structure.id} structure={structure} />
     </div>
   );
 }
