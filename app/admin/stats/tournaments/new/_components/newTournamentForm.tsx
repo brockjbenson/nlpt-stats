@@ -97,16 +97,18 @@ function NewTournamentForm({ seasons, weeks }: Props) {
     setFormData((prev) => ({ ...prev, [field]: Number(value) }));
   };
 
-  // Picking a season defaults to its latest week, the usual case when
-  // entering a tournament that just happened.
+  // Picking a season leaves the week to choose. Seasons are created with
+  // all 52 weeks and weeks have no dates, so the "latest" week was always
+  // week 52, never the week the tournament was played.
   const selectSeason = (seasonId: string) => {
-    const latestWeek = weeks.find((week) => week.season_id === seasonId);
-    setFormData((prev) => ({
-      ...prev,
-      season_id: seasonId,
-      week_id: latestWeek?.id ?? "",
-    }));
+    setFormData((prev) => ({ ...prev, season_id: seasonId, week_id: "" }));
   };
+
+  const weekPlaceholder = ((): string => {
+    if (!formData.season_id) return "Select a season first";
+    if (seasonWeeks.length === 0) return "No weeks yet";
+    return "Select a week";
+  })();
 
   const addTournament = async () => {
     if (!canSave || !date) return;
@@ -177,11 +179,7 @@ function NewTournamentForm({ seasons, weeks }: Props) {
             }
           >
             <SelectTrigger id="week">
-              <SelectValue
-                placeholder={
-                  formData.season_id ? "No weeks yet" : "Select a season first"
-                }
-              />
+              <SelectValue placeholder={weekPlaceholder} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
