@@ -26,7 +26,7 @@ function TournamentCard({ data, isAdmin, members }: Props) {
             className="underline"
             href={
               isAdmin
-                ? `/admin/tournaments/${data.id}`
+                ? `/admin/stats/tournaments/${data.id}`
                 : `/tournaments/${data.season_year}/${data.id}`
             }
           >

@@ -1,6 +1,11 @@
+import { Suspense } from "react";
 import ErrorHandler from "@/components/error-handler";
 import PageHeader from "@/components/page-header/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import DesktopPageHeader from "@/components/page-header/desktop-page-header";
+import SeasonTabs, {
+  SeasonTabsSkeleton,
+} from "@/components/page-header/season-tabs";
 import {
   Empty,
   EmptyDescription,
@@ -95,6 +100,14 @@ async function Page({ params }: Params) {
           </YearSelector>
         </div>
       </PageHeader>
+      <DesktopPageHeader title="Player of the Year Standings">
+        <Suspense fallback={<SeasonTabsSkeleton />}>
+          <SeasonTabs
+            activeYear={String(activeSeason.year)}
+            hrefFor={(seasonYear) => `/poy/${seasonYear}`}
+          />
+        </Suspense>
+      </DesktopPageHeader>
       <div className="w-full mb-8 max-w-(--breakpoint-xl) mx-auto px-2">
         {poyData.length === 0 ? (
           <Empty>
@@ -111,12 +124,6 @@ async function Page({ params }: Params) {
           </Empty>
         ) : (
           <Card className="w-full">
-            {/* Mobile already shows "{year} POY" in the page header */}
-            <CardHeader className="max-md:hidden">
-              <CardTitle>
-                Player of the Year Standings - {currentYear}
-              </CardTitle>
-            </CardHeader>
             <CardContent>
               <POYRankings data={poyData} portraits={portraits} />
             </CardContent>
