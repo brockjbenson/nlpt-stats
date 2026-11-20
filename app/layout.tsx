@@ -16,10 +16,12 @@ const defaultUrl =
 export const metadata = {
   metadataBase: new URL(defaultUrl), // Ensures metadataBase is always a valid URL
   manifest: "/manifest.json",
-  title: "NLPT - Stats",
+  title: "NLPT Stats",
   description: "Northern Lights Poker Tour Stats",
   other: { "apple-mobile-web-app-capable": "yes" },
   appleWebApp: {
+    // The Home Screen name on iOS, whichever page the app is added from.
+    title: "NLPT Stats",
     capable: true,
     statusBarStyle: "black",
     startupImage: [
