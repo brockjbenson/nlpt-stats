@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 import {
   type ClockRow,
   getClock,
@@ -115,12 +116,14 @@ export async function deleteClockAction(
     .from("_tournament_clocks")
     .delete()
     .eq("id", id)
-    .select("id");
+    .select("id, tournament_id");
   if (error) return { success: false, message: error.message };
   if (!data || data.length === 0) {
     return { success: false, message: CLOCK_GONE };
   }
 
+  // Its tournament's page links to it; refresh that so the link goes.
+  if (data[0].tournament_id) updateTag(LEAGUE_DATA_TAG);
   revalidatePath(CLOCKS_PATH);
   return { success: true, message: "Clock deleted." };
 }

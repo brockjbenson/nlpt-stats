@@ -1,5 +1,6 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { parseLevels } from "@/features/clock/lib/levels";
+import { LIVE_STATUSES } from "@/features/clock/lib/live";
 import type { ClockStatus, TournamentClock } from "@/features/clock/types";
 
 // A clock as the list shows it: no levels or settings, and its saved
@@ -91,6 +92,23 @@ export async function getClock(
     .maybeSingle();
   if (error) return { data: null, error };
   return { data: data ? toClock(data as ClockRow) : null, error: null };
+}
+
+// The clocks a "Tournament live" banner can show: every running or paused
+// clock. A failed query logs and returns none, so the banner just doesn't
+// show.
+export async function getLiveClocks(
+  db: SupabaseClient,
+): Promise<TournamentClock[]> {
+  const { data, error } = await db
+    .from("_tournament_clocks")
+    .select("*")
+    .in("status", LIVE_STATUSES);
+  if (error) {
+    console.error("Error loading live clocks:", error.message);
+    return [];
+  }
+  return (data as ClockRow[]).map(toClock);
 }
 
 // The database's current time (server_now()), in ms. Throws when the call

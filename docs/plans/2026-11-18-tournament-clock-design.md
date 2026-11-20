@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–7 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`.
+- **Status:** Approved. Phases 1–8 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`, `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`.
 
 ## Goal
 
@@ -23,7 +23,7 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Places paid | Default on the template, editable per clock; **minimum 3** |
 | Starter default | "NLPT Standard": $40 buy-in and rebuy, 20,000 chips each, 4 paid: 1st–3rd split 55/30/15, 4th gets the last-place share. 16 levels of 20 min on the round big blind ladder (100/200 … 7,500/15,000), 10-min breaks after levels 4, 8 and 12; 5h 50m |
 | Rebuys | At most `max_rebuys` per player (default 2), and none once players left ≤ places paid |
-| Finding the clock | A "Tournament live" banner appears while a clock is running (phase 8) |
+| Finding the clock | A "Tournament live" banner on the league pages while a clock is running or paused, linking to its display (phase 8) |
 | Results | The finish step writes `_tournaments` / `_tournament_sessions` |
 | Player phone view | None in v1; the shared display is enough |
 | Tests | Vitest for the pure logic (`npm test`) |
@@ -360,7 +360,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 5. **Entrants:** add members/guests, rebuy, bust/undo with knockouts, players left, avg stack, pool & payouts on display. Built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-5-entrants.md`. Its migration goes to prod with phase 4's rollout.
 6. **TV mode & sounds.** Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`. No database changes. Fullscreen still needs checking on a real screen (it didn't go fullscreen under browser automation).
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`. Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`.
-8. **Nav:** admin nav link; "Tournament live" banner while a clock is running; link from tournament page when a clock is attached.
+8. **Nav:** admin nav link (done in phases 3–4); "Tournament live" banner while a clock is running or paused (league pages, above the tab bar); link from tournament page when a clock is attached. Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`. No database changes.
 
 ## Out of scope for v1
 
