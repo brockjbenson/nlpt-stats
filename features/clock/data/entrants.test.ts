@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  applyRowChange,
   memberNamesFilter,
   removeRow,
   upsertRow,
@@ -55,5 +56,59 @@ describe("memberNamesFilter", () => {
     expect(memberNamesFilter(["1),visible.eq.false", ID_1])).toBe(
       `visible.eq.true,id.in.(${ID_1})`,
     );
+  });
+});
+
+describe("applyRowChange", () => {
+  const MINE = { id: "a", clock_id: "clock-1", rebuys: 0 };
+  const OTHER = { id: "z", clock_id: "clock-2", rebuys: 0 };
+
+  it("adds an inserted row for this clock", () => {
+    expect(
+      applyRowChange(
+        [],
+        { eventType: "INSERT", new: MINE, old: {} },
+        "clock-1",
+      ),
+    ).toEqual([MINE]);
+  });
+
+  it("replaces an updated row", () => {
+    const updated = { ...MINE, rebuys: 1 };
+    expect(
+      applyRowChange(
+        [MINE],
+        { eventType: "UPDATE", new: updated, old: MINE },
+        "clock-1",
+      ),
+    ).toEqual([updated]);
+  });
+
+  it("removes a deleted row of this clock", () => {
+    expect(
+      applyRowChange(
+        [MINE],
+        { eventType: "DELETE", new: {}, old: MINE },
+        "clock-1",
+      ),
+    ).toEqual([]);
+  });
+
+  it("ignores rows of another clock, including deletes", () => {
+    const rows = [MINE];
+    expect(
+      applyRowChange(
+        rows,
+        { eventType: "INSERT", new: OTHER, old: {} },
+        "clock-1",
+      ),
+    ).toBe(rows);
+    expect(
+      applyRowChange(
+        rows,
+        { eventType: "DELETE", new: {}, old: { ...OTHER, id: "a" } },
+        "clock-1",
+      ),
+    ).toBe(rows);
   });
 });

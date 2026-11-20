@@ -84,3 +84,28 @@ export function removeRow<T extends { id: string }>(
 ): T[] {
   return rows.filter((row) => row.id !== id);
 }
+
+// A Realtime change to a row with a clock_id: the new row for an insert or
+// update, the old one for a delete (whole, since these tables have replica
+// identity full).
+export type RowChange<T> = {
+  eventType: "INSERT" | "UPDATE" | "DELETE";
+  new: Partial<T>;
+  old: Partial<T>;
+};
+
+// Applies a Realtime change to one clock's list. Realtime doesn't filter
+// deletes, so a change to another clock's row leaves the list as it was.
+export function applyRowChange<T extends { id: string; clock_id: string }>(
+  rows: T[],
+  change: RowChange<T>,
+  clockId: string,
+): T[] {
+  if (change.eventType === "DELETE") {
+    const { id, clock_id } = change.old;
+    return id && clock_id === clockId ? removeRow(rows, id) : rows;
+  }
+  return change.new.clock_id === clockId
+    ? upsertRow(rows, change.new as T)
+    : rows;
+}
