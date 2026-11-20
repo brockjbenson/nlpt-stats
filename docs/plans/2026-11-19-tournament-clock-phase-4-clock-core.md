@@ -260,6 +260,7 @@ Fix anything found (with a test where the bug is in `lib/`); commit each fix sep
 1. Check prod's migration list again: the clock migrations are still missing and nothing else has changed.
 2. Apply the 11 clock migrations to prod **in order** through the prod MCP, using the repo files verbatim and their file names as migration names: `20261119163253_tournament_clock_schema` … `20261119192537_blind_level_break_notes`. If one fails, stop and report; don't edit and retry without asking.
    - **Update (2026-11-20):** phase 5 added a 12th, `20261120043702_tournament_clock_knockouts`; apply it last, and include `_clock_knockouts` (RLS, publication) in the checks below.
+   - **Update (2026-11-20):** phase 7 added a 13th, `20261120162924_tournament_clock_finish` (three functions: `finish_tournament_clock`, `reopen_tournament_clock`, `save_clock_results`); apply it after the knockouts. The rollout happens once the whole feature is done on staging (decided with the user), not phase by phase.
 3. Verify on prod (read-only queries): the four tables exist with RLS on; the publication includes `_tournament_clocks` and `_clock_entrants`; `server_now()` answers as anon; NLPT Standard has 19 levels and payout `{55,30,15}`; `get_advisors` (security) shows nothing new for these tables.
 4. Prod's `list_migrations` versions match the repo file names.
 

@@ -14,6 +14,16 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Finish flow). Earlier phases: `...-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `...-phase-6-tv-mode-sounds.md`. Branch: `feat/tournament-shot-clock`.
 
+**Status (2026-11-20):** Tasks 1–10 are done on dev; the refinement pass is next. The migration waits with the other clock migrations for the prod rollout, once the whole feature is done on staging.
+
+**Changes from this plan:**
+- **The week starts empty** (decided with the user) instead of the newest season's latest week: seasons are created with all 52 weeks and weeks have no dates, so "latest" was week 52. Save stays blocked until a week is picked. The manual tournament form still defaults to week 52; that's a separate fix.
+- **The control screen links to the review screen** ("Review results" / "Edit results") rather than to the tournament page, which needs a year the control screen doesn't have; the review screen and the clock list link to the tournament.
+- **The clock list takes the tournament page's year from the tournament's date**: signed out, `_weeks` isn't readable, and the page reads only the id.
+- **`finishFormFromSaved`** was added to prefill a re-save from what was saved; `getSavedResults` reads it.
+- **Task 9 drove the screens with scripted events**: the browser tool's simulated mouse and keyboard stopped reaching the page (scripted clicks worked, and nothing covered the controls). Everything else was checked as planned, including the saved points and the tournament page; the test tournament and clock were deleted and week 30's rankings recalculated afterwards.
+- **Found, not fixed (pre-existing):** the tournament page shows every tournament's date a day early for US viewers (`new Date("yyyy-mm-dd")` is midnight UTC, then shown in local time). This affects prod; it needs its own fix to `master`.
+
 ---
 
 ## Decisions made in this plan (confirm before starting)
@@ -152,7 +162,7 @@ Browser 1 (confirm first). A test clock with 4 members and 2 guests:
 - Re-save with a changed cash-out → the same tournament updated, no duplicate sessions; Reopen is gone.
 - Afterwards: delete the test tournament and clock on dev and recalc that week's rankings.
 
-### Task 10: Docs
+### Task 10: Docs (done)
 
 Design doc (Finish flow as built, the three functions, re-saving), this plan's status, and the phase 4 rollout list (this migration added).
 
