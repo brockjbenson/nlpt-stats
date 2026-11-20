@@ -8,16 +8,11 @@ import { useClockControl } from "@/features/clock/components/control/use-clock-c
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import { useClock } from "@/features/clock/hooks/use-clock";
+import { CLOCKS_PATH, clockDisplayPath } from "@/features/clock/lib/paths";
 import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
-
-const CLOCKS_HREF = "/admin/clock";
-
-function displayPath(id: string): string {
-  return `/clock/${id}`;
-}
 
 // Opens the display in a new tab, or copies its link to send to the TV or
 // another phone.
@@ -25,7 +20,7 @@ function DisplayLinks({ id }: { id: string }) {
   const { toast } = useToast();
 
   const copy = async (): Promise<void> => {
-    const url = `${window.location.origin}${displayPath(id)}`;
+    const url = `${window.location.origin}${clockDisplayPath(id)}`;
     // The clipboard needs a secure context (https or localhost); on a LAN
     // address, show the link instead so it can be copied by hand.
     if (!navigator.clipboard) {
@@ -43,7 +38,7 @@ function DisplayLinks({ id }: { id: string }) {
   return (
     <div className="flex gap-2">
       <Button className="flex-1" variant="outline" asChild>
-        <Link href={displayPath(id)} target="_blank" rel="noopener">
+        <Link href={clockDisplayPath(id)} target="_blank" rel="noopener">
           <MonitorPlay /> Open display
         </Link>
       </Button>
@@ -74,7 +69,7 @@ function ClockControls({
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
       <Link
-        href={CLOCKS_HREF}
+        href={CLOCKS_PATH}
         className="inline-flex items-center gap-1 text-sm text-muted hover:text-primary"
       >
         <ChevronLeft size={16} /> Clocks

@@ -9,14 +9,13 @@ import {
 } from "@/components/ui/empty";
 import ClockCard from "@/features/clock/components/clocks/clock-card";
 import type { ClockSummary } from "@/features/clock/data/clocks";
+import { NEW_CLOCK_PATH } from "@/features/clock/lib/paths";
 import { Timer } from "lucide-react";
 import Link from "next/link";
 
-const NEW_CLOCK_HREF = "/admin/clock/new";
-
 function NewClockLink() {
   return (
-    <Link className={ADMIN_ACTION_CLASS} href={NEW_CLOCK_HREF}>
+    <Link className={ADMIN_ACTION_CLASS} href={NEW_CLOCK_PATH}>
       New Clock
     </Link>
   );

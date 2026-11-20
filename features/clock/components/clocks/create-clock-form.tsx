@@ -20,6 +20,7 @@ import {
   validateClockSettings,
 } from "@/features/clock/lib/clocks";
 import { formatDuration, plural } from "@/features/clock/lib/format";
+import { CLOCKS_PATH, clockControlPath } from "@/features/clock/lib/paths";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
 import { summarizeLevels } from "@/features/clock/lib/structures";
 import { useToast } from "@/hooks/use-toast";
@@ -29,7 +30,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducer, useState, useTransition } from "react";
 
-const CLOCKS_HREF = "/admin/clock";
 // Picked first when it exists: the league's usual structure.
 const DEFAULT_STRUCTURE_NAME = "NLPT Standard";
 
@@ -117,7 +117,7 @@ function NewClockSettings({
         });
         return;
       }
-      router.push(`${CLOCKS_HREF}/${result.id}`);
+      router.push(clockControlPath(result.id));
     });
   };
 
@@ -180,7 +180,7 @@ function CreateClockForm({
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
       <Link
-        href={CLOCKS_HREF}
+        href={CLOCKS_PATH}
         className="inline-flex items-center gap-1 text-sm text-muted hover:text-primary"
       >
         <ChevronLeft size={16} /> Clocks

@@ -18,6 +18,7 @@ import {
   controlRefusalMessage,
   planControl,
 } from "@/features/clock/lib/controls";
+import { CLOCKS_PATH } from "@/features/clock/lib/paths";
 import type { StructureError } from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
 import type { TournamentClock } from "@/features/clock/types";
@@ -41,7 +42,6 @@ export type ClockControlResult = {
   clock?: TournamentClock;
 };
 
-const CLOCKS_PATH = "/admin/clock";
 const CLOCK_GONE = "This clock no longer exists.";
 const CHANGED_ELSEWHERE = "The clock changed on another screen. Try again.";
 // A catch-up with nothing to do: another screen saved it, or the clock

@@ -5,6 +5,7 @@ import DeleteClockButton from "@/features/clock/components/clocks/delete-clock-b
 import type { ClockSummary } from "@/features/clock/data/clocks";
 import { clockStatusLabel } from "@/features/clock/lib/clocks";
 import { formatClockDate } from "@/features/clock/lib/format";
+import { clockControlPath, clockDisplayPath } from "@/features/clock/lib/paths";
 import type { ClockStatus } from "@/features/clock/types";
 import { MonitorPlay, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -17,8 +18,8 @@ const STATUS_BADGES: Record<ClockStatus, BadgeProps["variant"]> = {
 };
 
 function ClockCard({ clock }: { clock: ClockSummary }) {
-  const controlHref = `/admin/clock/${clock.id}`;
-  const displayHref = `/clock/${clock.id}`;
+  const controlHref = clockControlPath(clock.id);
+  const displayHref = clockDisplayPath(clock.id);
 
   return (
     <Card className="h-full">
