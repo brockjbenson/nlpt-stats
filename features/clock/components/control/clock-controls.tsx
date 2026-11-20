@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   AdjustTimeButton,
   PlaybackControls,
@@ -17,11 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
 
-// Small round icon buttons in the card's top-right corner.
-const CORNER_BUTTON_CLASS = "size-9 rounded-full p-0";
+// Small round icon buttons at the right of the card's header.
+const HEADER_BUTTON_CLASS = "size-9 rounded-full p-0";
+// The header's left slot is as wide as the two buttons on the right, so the
+// name stays centred whether or not a status tag is showing.
+const HEADER_SIDE_CLASS = "min-w-20 shrink-0";
 
 // Opens the display in a new tab, or copies its link to send to the TV or
-// another phone. Sits in the card's top-right corner.
+// another phone.
 function DisplayLinks({ id }: { id: string }) {
   const { toast } = useToast();
 
@@ -42,8 +45,8 @@ function DisplayLinks({ id }: { id: string }) {
   };
 
   return (
-    <div className="absolute right-3 top-3 flex gap-2">
-      <Button className={CORNER_BUTTON_CLASS} variant="outline" asChild>
+    <div className="flex shrink-0 gap-2">
+      <Button className={HEADER_BUTTON_CLASS} variant="outline" asChild>
         <Link
           href={clockDisplayPath(id)}
           target="_blank"
@@ -55,7 +58,7 @@ function DisplayLinks({ id }: { id: string }) {
         </Link>
       </Button>
       <Button
-        className={CORNER_BUTTON_CLASS}
+        className={HEADER_BUTTON_CLASS}
         variant="outline"
         aria-label="Copy display link"
         title="Copy display link"
@@ -96,13 +99,20 @@ function ClockControls({
         <p className="py-8 text-center text-muted">This clock was deleted.</p>
       ) : (
         <>
-          <Card className="relative py-6">
-            <ClockBadges
-              status={view.status}
-              connection={connection}
-              size="compact"
-            />
-            <DisplayLinks id={clock.id} />
+          <Card className="py-4">
+            <CardHeader className="items-start gap-2">
+              <div className={HEADER_SIDE_CLASS}>
+                <ClockBadges
+                  status={view.status}
+                  connection={connection}
+                  size="compact"
+                />
+              </div>
+              <h2 className="line-clamp-2 min-w-0 flex-1 text-center font-semibold leading-tight">
+                {clock.name}
+              </h2>
+              <DisplayLinks id={clock.id} />
+            </CardHeader>
             <CardContent>
               <ClockFace
                 view={view}

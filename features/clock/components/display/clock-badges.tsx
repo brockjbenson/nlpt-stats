@@ -16,17 +16,19 @@ const STATUS_CLASS = "uppercase tracking-wider";
 const PAUSED_CLASS = "bg-red-600 text-white";
 const QUIET_STATUS_CLASS = "border border-card-border text-muted";
 
-// The top-left corner of a clock screen: the status while the clock isn't
-// running (Not started, Paused, Finished), and Reconnecting… while
-// Realtime is down. Goes inside a relative container.
+// The status while the clock isn't running (Not started, Paused,
+// Finished), and Reconnecting… while Realtime is down. The caller places
+// it: the display's top-left corner, or the control card's header.
 function ClockBadges({
   status,
   connection,
   size = "display",
+  className,
 }: {
   status: ClockStatus;
   connection: ClockConnection;
   size?: ClockFaceSize;
+  className?: string;
 }) {
   const showStatus = status !== "running";
   const showReconnecting = connection === "reconnecting";
@@ -35,8 +37,9 @@ function ClockBadges({
   return (
     <div
       className={cn(
-        "absolute left-3 top-3 flex flex-col items-start gap-1",
+        "flex flex-col items-start gap-1",
         BADGE_SIZES[size],
+        className,
       )}
     >
       {showStatus && (
