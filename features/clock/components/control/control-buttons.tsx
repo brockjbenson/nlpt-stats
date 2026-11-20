@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { ClockControl } from "@/features/clock/lib/controls";
 import type { ClockView } from "@/features/clock/lib/display";
+import type { ClockStatus } from "@/features/clock/types";
 import { Minus, Pause, Play, Plus, SkipBack, SkipForward } from "lucide-react";
 
 const MAIN_BUTTON = "h-14 w-full text-base";
@@ -51,6 +52,42 @@ function StartButton({ onStart }: { onStart: () => void }) {
   );
 }
 
+// The big button: Start before the clock starts, then Pause or Resume.
+// None once the clock has finished.
+function MainButton({
+  status,
+  onControl,
+}: {
+  status: ClockStatus;
+  onControl: (control: ClockControl) => void;
+}) {
+  switch (status) {
+    case "setup":
+      return <StartButton onStart={() => onControl({ type: "start" })} />;
+    case "running":
+      return (
+        <Button
+          className={MAIN_BUTTON}
+          variant="neutral"
+          onClick={() => onControl({ type: "pause" })}
+        >
+          <Pause /> Pause
+        </Button>
+      );
+    case "paused":
+      return (
+        <Button
+          className={MAIN_BUTTON}
+          onClick={() => onControl({ type: "resume" })}
+        >
+          <Play /> Resume
+        </Button>
+      );
+    case "finished":
+      return null;
+  }
+}
+
 // Start, pause/resume, previous/next level and a minute more or less.
 // Only the controls that apply to the clock's state are enabled.
 function ControlButtons({ view, onControl }: Props) {
@@ -59,26 +96,7 @@ function ControlButtons({ view, onControl }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      {status === "setup" && (
-        <StartButton onStart={() => onControl({ type: "start" })} />
-      )}
-      {status === "running" && (
-        <Button
-          className={MAIN_BUTTON}
-          variant="neutral"
-          onClick={() => onControl({ type: "pause" })}
-        >
-          <Pause /> Pause
-        </Button>
-      )}
-      {status === "paused" && (
-        <Button
-          className={MAIN_BUTTON}
-          onClick={() => onControl({ type: "resume" })}
-        >
-          <Play /> Resume
-        </Button>
-      )}
+      <MainButton status={status} onControl={onControl} />
       <div className="flex gap-2">
         <Button
           className={STEP_BUTTON}

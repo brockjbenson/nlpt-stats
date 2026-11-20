@@ -2,18 +2,16 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { controlClockAction } from "@/features/clock/actions/clocks";
 import ControlButtons from "@/features/clock/components/control/control-buttons";
 import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
+import { useClockControl } from "@/features/clock/components/control/use-clock-control";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
 import { useClock } from "@/features/clock/hooks/use-clock";
-import { type ClockControl, planControl } from "@/features/clock/lib/controls";
 import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Link2, MonitorPlay } from "lucide-react";
 import Link from "next/link";
-import { useTransition } from "react";
 
 const CLOCKS_HREF = "/admin/clock";
 
@@ -68,27 +66,10 @@ function ClockControls({
   // The database time the page was rendered at.
   initialNowMs: number;
 }) {
-  const { toast } = useToast();
-  const { clock, view, nowMs, connection, isDeleted, applyRow, showUpdate } =
-    useClock(initialClock, initialNowMs);
-  const [, startTransition] = useTransition();
+  const live = useClock(initialClock, initialNowMs);
+  const { clock, view, connection, isDeleted, applyRow } = live;
   useCatchUp(clock, view.position.levelIndex, applyRow);
-
-  const control = (action: ClockControl): void => {
-    startTransition(async () => {
-      const plan = planControl(clock, action, nowMs);
-      if (plan.ok) showUpdate(plan.value);
-      const result = await controlClockAction(clock.id, action);
-      if (result.clock) applyRow(result.clock);
-      if (!result.success) {
-        toast({
-          title: "Couldn't update the clock",
-          description: result.message,
-          variant: "destructive",
-        });
-      }
-    });
-  };
+  const control = useClockControl(live);
 
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
