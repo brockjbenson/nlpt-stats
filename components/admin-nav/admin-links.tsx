@@ -1,8 +1,10 @@
 import React from "react";
 import {
+  FaClock,
   FaList,
   FaMoneyBill,
   FaPlus,
+  FaStopwatch,
   FaTrophy,
   FaUserPlus,
   FaUsers,
@@ -51,6 +53,21 @@ export const ADMIN_LINK_GROUPS: AdminLinkGroup[] = [
         href: "/admin/stats/tournaments/new",
         label: "Add Tournament",
         icon: <FaPlus className="w-5 h-5" />,
+      },
+    ],
+  },
+  {
+    title: "Clock",
+    links: [
+      {
+        href: "/admin/clock",
+        label: "Clocks",
+        icon: <FaStopwatch className="w-5 h-5" />,
+      },
+      {
+        href: "/admin/clock/structures",
+        label: "Blind Structures",
+        icon: <FaClock className="w-5 h-5" />,
       },
     ],
   },

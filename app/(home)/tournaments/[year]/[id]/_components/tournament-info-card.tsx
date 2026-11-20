@@ -4,13 +4,29 @@ import { MajorData } from "@/utils/types";
 import { formatMoney } from "@/utils/utils";
 import Link from "next/link";
 import MemberImage from "@/components/members/member-image";
+import { Button } from "@/components/ui/button";
+import { clockDisplayPath } from "@/features/clock/lib/paths";
 
 interface Props {
   isAdmin?: boolean;
   data: MajorData;
+  // The clock its results were saved from; null for one entered by hand.
+  clockId?: string | null;
 }
 
-function TournamentInfo({ data }: Props) {
+// Links a tournament played on the clock back to the clock's display.
+function ClockLink({ clockId }: { clockId: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-t border-neutral-800 pt-4">
+      <p className="text-sm text-muted md:text-base">Played on the clock</p>
+      <Button asChild size="sm" variant="outline">
+        <Link href={clockDisplayPath(clockId)}>View clock</Link>
+      </Button>
+    </div>
+  );
+}
+
+function TournamentInfo({ data, clockId = null }: Props) {
   const sessions = data.sessions;
   const tournamentWinner = sessions.find((session) => session.place === 1);
   return (
@@ -25,7 +41,8 @@ function TournamentInfo({ data }: Props) {
             {tournamentWinner ? (
               <Link
                 href={`/members/${tournamentWinner.member_id}`}
-                className="grid grid-cols-[50px_1fr] gap-2 items-center">
+                className="grid grid-cols-[50px_1fr] gap-2 items-center"
+              >
                 <MemberImage
                   src={tournamentWinner.portrait_url}
                   alt={tournamentWinner.first_name}
@@ -76,6 +93,7 @@ function TournamentInfo({ data }: Props) {
               </p>
             </div>
           </div>
+          {clockId && <ClockLink clockId={clockId} />}
         </div>
       </CardContent>
     </Card>

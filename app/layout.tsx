@@ -6,6 +6,7 @@ import { Viewport } from "next";
 import InstallPrompt from "@/components/install-prompt";
 import { ScrollProvider } from "./providers/scroll-context";
 import { RouteVisitTracker } from "@/lib/route-visited-wrapper";
+import { APP_SHORT_NAME, APP_TITLE } from "@/lib/app-name";
 
 const defaultUrl =
   process.env.NEXT_PUBLIC_SITE_URL || // Preferred for public environment variables
@@ -15,11 +16,12 @@ const defaultUrl =
 
 export const metadata = {
   metadataBase: new URL(defaultUrl), // Ensures metadataBase is always a valid URL
-  manifest: "/manifest.json",
-  title: "NLPT - Stats",
+  title: APP_TITLE,
   description: "Northern Lights Poker Tour Stats",
   other: { "apple-mobile-web-app-capable": "yes" },
   appleWebApp: {
+    // The Home Screen name on iOS, whichever page the app is added from.
+    title: APP_SHORT_NAME,
     capable: true,
     statusBarStyle: "black",
     startupImage: [
@@ -165,12 +167,14 @@ export default function RootLayout({
         <ScrollProvider>
           <RouteVisitTracker
             routesToTrack={ROUTES_TO_TRACK}
-            storageKey="nlpt-visited-routes">
+            storageKey="nlpt-visited-routes"
+          >
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
               enableSystem
-              disableTransitionOnChange>
+              disableTransitionOnChange
+            >
               {children}
               <InstallPrompt />
             </ThemeProvider>

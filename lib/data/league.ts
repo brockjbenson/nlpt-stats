@@ -210,6 +210,25 @@ export const getTournaments = leagueQuery(async (seasonId: string | null) => {
   return must((db) => selectTournamentsWithSessions(db, seasonId));
 });
 
+// The clock a tournament's results were saved from, or null for one
+// entered by hand. Saving results clears the league cache, so a newly
+// saved tournament picks it up.
+export const getTournamentClockId = leagueQuery(
+  async (tournamentId: string): Promise<string | null> => {
+    "use cache";
+    leagueCache();
+    const clocks = await must(
+      (db): DbResponse<{ id: string }[]> =>
+        db
+          .from("_tournament_clocks")
+          .select("id")
+          .eq("tournament_id", tournamentId)
+          .limit(1),
+    );
+    return clocks[0]?.id ?? null;
+  },
+);
+
 export const getMajorData = leagueQuery(
   async (tournamentId: string | undefined) => {
     "use cache";

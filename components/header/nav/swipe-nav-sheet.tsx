@@ -273,11 +273,16 @@ export function SwipeNavSheet({
   });
 
   // A closed drawer is parked in px once an animation ends; re-park it if the
-  // screen width changes (rotation) so it can't peek in.
+  // screen width changes (rotation) so it can't peek in. This also runs when
+  // a hidden layout is shown again (Back), so it resets the overlay too:
+  // stopping a motion animation writes the value it stopped at on the next
+  // frame, after parkClosed's write, which left the overlay showing.
   useEffect(() => {
     const drawer = drawerRef.current;
+    const overlay = overlayRef.current;
     if (!drawer || openRef.current || animationsRef.current.length > 0) return;
     drawer.style.transform = CLOSED_TRANSFORM;
+    if (overlay) overlay.style.opacity = "0";
   }, [viewportWidth, isClient]);
 
   // Escape closes while open.
@@ -290,14 +295,24 @@ export function SwipeNavSheet({
     return () => document.removeEventListener("keydown", onKey);
   }, [open, closeWithHaptic]);
 
-  // Leaving the page mid-animation or while open: stop and unlock.
-  useEffect(
-    () => () => {
-      animationsRef.current.forEach((a) => a.stop());
-      unlockScroll();
-    },
-    [unlockScroll],
-  );
+  // Puts the drawer fully closed, with no animation: used when this
+  // layout is hidden or removed.
+  const parkClosed = useCallback(() => {
+    stopAnimations();
+    unlockScroll();
+    openRef.current = false;
+    setOpen(false);
+    if (drawerRef.current) drawerRef.current.style.transform = CLOSED_TRANSFORM;
+    if (overlayRef.current) overlayRef.current.style.opacity = "0";
+  }, [stopAnimations, unlockScroll]);
+
+  // Leaving the layout, often mid-animation (tapping a link starts the
+  // close). With Cache Components, Next keeps a layout it navigates away
+  // from hidden (React <Activity>) so Back can restore it, and hiding runs
+  // this cleanup. Stopping the animation alone froze the drawer where it was,
+  // nearly open, and Back showed it on screen but inert, with an overlay
+  // that ignored taps. Park it closed instead.
+  useEffect(() => parkClosed, [parkClosed]);
 
   return (
     <>

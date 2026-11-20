@@ -1,7 +1,7 @@
 const CACHE_NAME = "nlptstats-cache-v2";
 const STATIC_ASSETS = [
   "/favicon.ico",
-  "/manifest.json",
+  "/manifest.webmanifest",
   "/icons/nlpt-192.png",
   "/icons/nlpt-512.png",
 ];
