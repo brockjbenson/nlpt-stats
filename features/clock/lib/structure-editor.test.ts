@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import type { ClockSettings } from "@/features/clock/lib/clocks";
 import {
   nextBigBlind,
+  type SettingsAction,
+  settingsReducer,
   structureEditorReducer,
   type StructureEditorAction,
 } from "@/features/clock/lib/structure-editor";
@@ -345,5 +348,43 @@ describe("removeLevel", () => {
   it("keeps the last row", () => {
     const start = draftWith([level("a", 100, 200)]);
     expect(run(start, { type: "removeLevel", index: 0 })).toBe(start);
+  });
+});
+
+describe("settingsReducer", () => {
+  const clockSettings: ClockSettings = {
+    name: "NLPT Standard – Nov 27, 2026",
+    buy_in: 40,
+    rebuy: 40,
+    starting_chips: 20000,
+    rebuy_chips: 20000,
+    places_paid: 4,
+    payout_pcts: [55, 30, 15],
+    max_rebuys: 2,
+  };
+
+  it("edits a new clock's settings the same way as a template's", () => {
+    const settings = [
+      { type: "setField", field: "buy_in", value: 50 },
+      { type: "setPlacesPaid", value: 3 },
+      { type: "setPayoutPct", index: 0, value: 60 },
+      { type: "setPayoutPct", index: 1, value: 40 },
+    ].reduce(
+      (state, action) => settingsReducer(state, action as SettingsAction),
+      clockSettings,
+    );
+    expect(settings).toEqual({
+      ...clockSettings,
+      buy_in: 50,
+      places_paid: 3,
+      payout_pcts: [60, 40],
+    });
+  });
+
+  it("keeps fields it doesn't know about", () => {
+    const draft = newStructureDraft();
+    const changed = settingsReducer(draft, { type: "setPlacesPaid", value: 5 });
+    expect(changed.levels).toBe(draft.levels);
+    expect(changed.payout_pcts).toEqual([45, 28, 17, 10]);
   });
 });

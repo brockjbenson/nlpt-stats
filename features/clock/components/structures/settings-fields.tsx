@@ -5,33 +5,23 @@ import { Input } from "@/components/ui/input";
 import CompactField from "@/features/clock/components/structures/compact-field";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import NumberInput from "@/features/clock/components/structures/number-input";
-import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
+import type {
+  SettingsAction,
+  SettingsNumberField,
+} from "@/features/clock/lib/structure-editor";
 import {
   NAME_MAX_LENGTH,
-  type StructureDraft,
+  type SettingsFields as Settings,
   type StructureError,
   type StructureField,
 } from "@/features/clock/lib/structures";
-import { SECONDS_PER_MINUTE } from "@/features/clock/lib/levels";
 import type React from "react";
 
-// Editor-only lengths for new rows, entered in minutes.
-const LENGTH_FIELDS: {
-  field: "new_level_seconds" | "new_break_seconds";
+const NUMBER_FIELDS: {
+  field: SettingsNumberField;
   label: string;
+  step: number;
 }[] = [
-  { field: "new_level_seconds", label: "New level length (min)" },
-  { field: "new_break_seconds", label: "New break length (min)" },
-];
-
-type NumberField =
-  | "buy_in"
-  | "rebuy"
-  | "starting_chips"
-  | "rebuy_chips"
-  | "max_rebuys";
-
-const NUMBER_FIELDS: { field: NumberField; label: string; step: number }[] = [
   { field: "buy_in", label: "Buy-in ($)", step: 1 },
   { field: "rebuy", label: "Rebuy ($)", step: 1 },
   { field: "starting_chips", label: "Starting chips", step: 1000 },
@@ -48,12 +38,26 @@ const SETTINGS_ERROR_FIELDS: StructureField[] = [
 ];
 
 type Props = {
-  draft: StructureDraft;
+  // Prefix for the inputs' ids ("structure", "clock").
+  idPrefix: string;
+  settings: Settings;
   errors: StructureError[];
-  dispatch: React.Dispatch<StructureEditorAction>;
+  dispatch: React.Dispatch<SettingsAction>;
+  namePlaceholder?: string;
+  // More fields after the shared ones, in the same grid.
+  children?: React.ReactNode;
 };
 
-function SettingsFields({ draft, errors, dispatch }: Props) {
+// Name, money, chips and rebuy limit: the settings a template and a new
+// clock share.
+function SettingsFields({
+  idPrefix,
+  settings,
+  errors,
+  dispatch,
+  namePlaceholder,
+  children,
+}: Props) {
   return (
     <Card className="gap-2">
       <CardHeader>
@@ -62,16 +66,16 @@ function SettingsFields({ draft, errors, dispatch }: Props) {
       <CardContent className="flex flex-col gap-2">
         <div className="grid grid-cols-2 gap-x-3 gap-y-2 md:grid-cols-4">
           <CompactField
-            htmlFor="structure-name"
+            htmlFor={`${idPrefix}-name`}
             label="Name"
             className="col-span-2"
           >
             <Input
-              id="structure-name"
+              id={`${idPrefix}-name`}
               className="h-9 px-2 text-sm"
-              value={draft.name}
+              value={settings.name}
               maxLength={NAME_MAX_LENGTH}
-              placeholder="NLPT Standard"
+              placeholder={namePlaceholder}
               onChange={(event) =>
                 dispatch({
                   type: "setField",
@@ -84,41 +88,21 @@ function SettingsFields({ draft, errors, dispatch }: Props) {
           {NUMBER_FIELDS.map(({ field, label, step }) => (
             <CompactField
               key={field}
-              htmlFor={`structure-${field}`}
+              htmlFor={`${idPrefix}-${field}`}
               label={label}
             >
               <NumberInput
-                id={`structure-${field}`}
+                id={`${idPrefix}-${field}`}
                 min={0}
                 step={step}
-                value={draft[field]}
+                value={settings[field]}
                 onValueChange={(value) =>
                   dispatch({ type: "setField", field, value })
                 }
               />
             </CompactField>
           ))}
-          {LENGTH_FIELDS.map(({ field, label }) => (
-            <CompactField
-              key={field}
-              htmlFor={`structure-${field}`}
-              label={label}
-            >
-              <NumberInput
-                id={`structure-${field}`}
-                min={1}
-                step={1}
-                value={draft[field] / SECONDS_PER_MINUTE}
-                onValueChange={(minutes) =>
-                  dispatch({
-                    type: "setField",
-                    field,
-                    value: minutes * SECONDS_PER_MINUTE,
-                  })
-                }
-              />
-            </CompactField>
-          ))}
+          {children}
         </div>
         <ErrorText
           errors={errors.filter(({ field }) =>

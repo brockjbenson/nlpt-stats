@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { saveStructureAction } from "@/features/clock/actions/structures";
 import BackToStructuresLink from "@/features/clock/components/structures/back-to-structures-link";
 import LevelsFields from "@/features/clock/components/structures/levels-fields";
+import NewRowLengthFields from "@/features/clock/components/structures/new-row-length-fields";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
 import SettingsFields from "@/features/clock/components/structures/settings-fields";
 import { structureEditorReducer } from "@/features/clock/lib/structure-editor";
@@ -77,8 +78,21 @@ function StructureEditor({ id, initialDraft }: Props) {
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
       <BackToStructuresLink isDirty={isDirty} />
-      <SettingsFields draft={draft} errors={errors} dispatch={dispatch} />
-      <PayoutFields draft={draft} errors={errors} dispatch={dispatch} />
+      <SettingsFields
+        idPrefix="structure"
+        settings={draft}
+        errors={errors}
+        dispatch={dispatch}
+        namePlaceholder="NLPT Standard"
+      >
+        <NewRowLengthFields draft={draft} dispatch={dispatch} />
+      </SettingsFields>
+      <PayoutFields
+        idPrefix="structure"
+        settings={draft}
+        errors={errors}
+        dispatch={dispatch}
+      />
       <LevelsFields
         draft={draft}
         errors={errors}

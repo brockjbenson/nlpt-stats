@@ -2,6 +2,7 @@ import {
   DEFAULT_BREAK_SECONDS,
   DEFAULT_LEVEL_SECONDS,
   type DraftLevel,
+  type SettingsFields,
   type StructureDraft,
   SUGGESTED_SPLITS,
 } from "@/features/clock/lib/structures";
@@ -16,21 +17,28 @@ const FIRST_SMALL_BLIND = 100;
 // 400 shouldn't render 400 fields.
 const MAX_RESIZED_PLACES = 20;
 
-type NumberField =
+export type SettingsNumberField =
   | "buy_in"
   | "rebuy"
   | "starting_chips"
   | "rebuy_chips"
-  | "max_rebuys"
-  | "new_level_seconds"
-  | "new_break_seconds";
+  | "max_rebuys";
+
+// Edits to the settings templates and new clocks share (SettingsFields).
+export type SettingsAction =
+  | { type: "setField"; field: "name"; value: string }
+  | { type: "setField"; field: SettingsNumberField; value: number }
+  | { type: "setPlacesPaid"; value: number }
+  | { type: "setPayoutPct"; index: number; value: number };
 
 // New rows bring their own key so the reducer stays pure.
 export type StructureEditorAction =
-  | { type: "setField"; field: "name"; value: string }
-  | { type: "setField"; field: NumberField; value: number }
-  | { type: "setPlacesPaid"; value: number }
-  | { type: "setPayoutPct"; index: number; value: number }
+  | SettingsAction
+  | {
+      type: "setField";
+      field: "new_level_seconds" | "new_break_seconds";
+      value: number;
+    }
   | { type: "addLevel"; key: string }
   | { type: "addBreak"; key: string }
   | { type: "updateLevel"; index: number; change: Partial<BlindLevel> }
@@ -145,6 +153,33 @@ function setLevels(
   return { ...draft, levels };
 }
 
+// Applies a settings edit to a template draft or a new clock's settings,
+// keeping every other field as it is.
+export function settingsReducer<T extends SettingsFields>(
+  settings: T,
+  action: SettingsAction,
+): T {
+  switch (action.type) {
+    case "setField":
+      return { ...settings, [action.field]: action.value };
+
+    case "setPlacesPaid":
+      return {
+        ...settings,
+        places_paid: action.value,
+        payout_pcts: resizePayouts(settings.payout_pcts, action.value),
+      };
+
+    case "setPayoutPct":
+      return {
+        ...settings,
+        payout_pcts: settings.payout_pcts.map((pct, index) =>
+          index === action.index ? action.value : pct,
+        ),
+      };
+  }
+}
+
 export function structureEditorReducer(
   draft: StructureDraft,
   action: StructureEditorAction,
@@ -154,19 +189,8 @@ export function structureEditorReducer(
       return { ...draft, [action.field]: action.value };
 
     case "setPlacesPaid":
-      return {
-        ...draft,
-        places_paid: action.value,
-        payout_pcts: resizePayouts(draft.payout_pcts, action.value),
-      };
-
     case "setPayoutPct":
-      return {
-        ...draft,
-        payout_pcts: draft.payout_pcts.map((pct, index) =>
-          index === action.index ? action.value : pct,
-        ),
-      };
+      return settingsReducer(draft, action);
 
     case "addLevel":
       return setLevels(draft, [
