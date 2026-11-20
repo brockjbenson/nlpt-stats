@@ -2,7 +2,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import ControlButtons from "@/features/clock/components/control/control-buttons";
+import {
+  AdjustTimeButton,
+  PlaybackControls,
+} from "@/features/clock/components/control/control-buttons";
 import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
 import { useClockControl } from "@/features/clock/components/control/use-clock-control";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
@@ -85,10 +88,28 @@ function ClockControls({
               size="compact"
             />
             <CardContent>
-              <ClockFace view={view} size="compact" />
+              <ClockFace
+                view={view}
+                size="compact"
+                beforeTime={
+                  <AdjustTimeButton
+                    minutes={-1}
+                    view={view}
+                    onControl={control}
+                  />
+                }
+                afterTime={
+                  <AdjustTimeButton
+                    minutes={1}
+                    view={view}
+                    onControl={control}
+                  />
+                }
+              >
+                <PlaybackControls view={view} onControl={control} />
+              </ClockFace>
             </CardContent>
           </Card>
-          <ControlButtons view={view} onControl={control} />
           <DisplayLinks id={clock.id} />
         </>
       )}
