@@ -13,8 +13,12 @@ export type ClockPlayers = {
   knockouts: ClockKnockout[];
 };
 
-// A member the screens can name, and whether they show in the add list.
-export type MemberOption = MemberName & { visible: boolean };
+// A member the screens can name (and show the photo of), and whether they
+// show in the add list.
+export type MemberOption = MemberName & {
+  visible: boolean;
+  portrait_url: string | null;
+};
 
 // Every player in a clock, in the order they were added.
 export async function getEntrants(
@@ -86,15 +90,22 @@ export async function getMemberNames(
 ): Promise<Rows<MemberOption>> {
   const { data, error } = await db
     .from("members")
-    .select("id, first_name, last_name, visible")
+    .select("id, first_name, last_name, visible, portrait_url")
     .or(memberNamesFilter(playingMemberIds))
     .order("first_name")
     .order("last_name");
   if (error) return { data: null, error };
   return {
-    data: (data as (MemberName & { visible: boolean | null })[]).map(
-      (member) => ({ ...member, visible: member.visible === true }),
-    ),
+    data: (
+      data as (MemberName & {
+        visible: boolean | null;
+        portrait_url: string | null;
+      })[]
+    ).map((member) => ({
+      ...member,
+      visible: member.visible === true,
+      portrait_url: member.portrait_url || null,
+    })),
     error: null,
   };
 }

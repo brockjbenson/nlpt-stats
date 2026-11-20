@@ -1,15 +1,18 @@
+import MemberImage from "@/components/members/member-image";
 import type { FieldView } from "@/features/clock/lib/display";
 import { cn } from "@/lib/utils";
-import { Fragment } from "react";
 
 // Text sizes that scale with the screen, like the clock face's.
 const LABEL_SIZE = "text-[length:clamp(0.7rem,min(1.6vw,2.2dvh),1.25rem)]";
-const VALUE_SIZE = "text-[length:clamp(1.1rem,min(3vw,4.5dvh),2.75rem)]";
+const VALUE_SIZE = "text-[length:clamp(1rem,min(2.4vw,4.5dvh),2.5rem)]";
+// The photos are small circles; this keeps the image loader from fetching
+// large versions for every player on a TV.
+const PHOTO_SIZES = "64px";
 const BODY_SIZE = "text-[length:clamp(0.85rem,min(1.9vw,2.8dvh),1.6rem)]";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex min-w-0 flex-col items-center">
       <p
         className={cn(
           "whitespace-nowrap font-semibold uppercase tracking-wider text-muted",
@@ -36,17 +39,25 @@ function SectionLabel({ children }: { children: string }) {
   );
 }
 
+// A player still in, as the panel lists them.
+export type PlayerLeft = {
+  id: string;
+  name: string;
+  // Null for guests and members without a photo: a person icon shows.
+  portraitUrl: string | null;
+};
+
 type Props = {
   field: FieldView;
-  // Names of the players still in, in display order.
-  namesLeft: string[];
+  // The players still in, in display order.
+  playersLeft: PlayerLeft[];
   className?: string;
 };
 
-// The display's players and money: players left (with their names),
+// The display's players and money: players left (with photos and names),
 // average stack, prize pool and each paid place's payout. Beside the clock
 // in landscape, under it in portrait.
-function FieldPanel({ field, namesLeft, className }: Props) {
+function FieldPanel({ field, playersLeft, className }: Props) {
   return (
     <aside
       className={cn(
@@ -63,20 +74,29 @@ function FieldPanel({ field, namesLeft, className }: Props) {
         <Stat label="Pool" value={field.poolText} />
       </div>
 
-      {namesLeft.length > 0 && (
-        <div className="flex flex-col gap-1">
+      {playersLeft.length > 0 && (
+        <div className="flex flex-col gap-[1dvh]">
           <SectionLabel>Still in</SectionLabel>
-          {/* Wraps; in portrait it stops after a few lines and the count
-              above says how many. */}
-          <p className={cn("leading-snug portrait:line-clamp-3", BODY_SIZE)}>
-            {/* Each name stays on one line; lines break between names. */}
-            {namesLeft.map((name, index) => (
-              <Fragment key={index}>
-                {index > 0 && " · "}
-                <span className="whitespace-nowrap">{name}</span>
-              </Fragment>
+          {/* One player per line with their photo, two columns. */}
+          <ul
+            className={cn(
+              "grid grid-cols-2 gap-x-[1.5vw] gap-y-[0.8dvh] text-left",
+              BODY_SIZE,
+            )}
+          >
+            {playersLeft.map(({ id, name, portraitUrl }) => (
+              <li key={id} className="flex min-w-0 items-center gap-[0.5em]">
+                <MemberImage
+                  zoom="1.5"
+                  className="size-[1.75em] shrink-0"
+                  src={portraitUrl ?? ""}
+                  alt={name}
+                  sizes={PHOTO_SIZES}
+                />
+                <span className="truncate font-medium">{name}</span>
+              </li>
             ))}
-          </p>
+          </ul>
         </div>
       )}
 
