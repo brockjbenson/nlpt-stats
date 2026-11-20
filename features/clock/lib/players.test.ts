@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addPlayersBlocked,
   canRemoveEntrant,
   cleanGuestName,
   entrantNames,
@@ -372,5 +373,26 @@ describe("planUndoPlayer", () => {
       ok: false,
       reason: "wrong_status",
     });
+  });
+});
+
+describe("addPlayersBlocked", () => {
+  it("is null before anyone busts", () => {
+    expect(addPlayersBlocked(makeClock(), [guest("Bea")])).toBeNull();
+  });
+
+  it("blocks after the first bust", () => {
+    expect(
+      addPlayersBlocked(makeClock({ status: "running" }), [
+        guest("Bea", busted(2)),
+        guest("Cy"),
+      ]),
+    ).toBe("after_first_bust");
+  });
+
+  it("blocks once finished", () => {
+    expect(addPlayersBlocked(makeClock({ status: "finished" }), [])).toBe(
+      "finished",
+    );
   });
 });

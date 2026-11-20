@@ -152,6 +152,17 @@ function guestNameProblem(
   return new Set(keys).size === keys.length ? null : "duplicate_guest";
 }
 
+// Why no players can be added right now, or null when they can: not once
+// the clock is finished, or after the first bust (see planAddEntrants).
+export function addPlayersBlocked(
+  clock: Pick<TournamentClock, "status">,
+  entrants: ClockEntrant[],
+): "finished" | "after_first_bust" | null {
+  if (clock.status === "finished") return "finished";
+  if (playersLeft(entrants).length < entrants.length) return "after_first_bust";
+  return null;
+}
+
 // The rows to add for the members and guests picked. Players can be added
 // in any status but finished, and only until the first bust: a bust's
 // place is the number of players left, so a player added afterwards would
@@ -162,12 +173,10 @@ export function planAddEntrants(
   memberIds: string[],
   guestNames: string[],
 ): Result<NewEntrant[], AddEntrantsRefusal> {
-  if (clock.status === "finished") return fail("finished");
-  if (playersLeft(entrants).length < entrants.length) {
-    return fail("after_first_bust");
-  }
+  const blocked = addPlayersBlocked(clock, entrants);
+  if (blocked) return fail(blocked);
 
-  const uniqueMemberIds = [...new Set(memberIds)];
+  const uniqueMemberIds = Array.from(new Set(memberIds));
   if (uniqueMemberIds.length === 0 && guestNames.length === 0) {
     return fail("nothing_to_add");
   }

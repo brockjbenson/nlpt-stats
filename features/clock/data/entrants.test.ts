@@ -65,7 +65,7 @@ describe("applyRowChange", () => {
 
   it("adds an inserted row for this clock", () => {
     expect(
-      applyRowChange(
+      applyRowChange<typeof MINE>(
         [],
         { eventType: "INSERT", new: MINE, old: {} },
         "clock-1",

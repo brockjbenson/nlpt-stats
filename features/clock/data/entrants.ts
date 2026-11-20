@@ -42,7 +42,7 @@ export async function getKnockouts(
 // members already playing (who may since have been hidden). Only real ids
 // go into the filter text.
 export function memberNamesFilter(playingMemberIds: string[]): string {
-  const ids = [...new Set(playingMemberIds.filter(isUuid))];
+  const ids = Array.from(new Set(playingMemberIds.filter(isUuid)));
   return ids.length === 0
     ? "visible.eq.true"
     : `visible.eq.true,id.in.(${ids.join(",")})`;
