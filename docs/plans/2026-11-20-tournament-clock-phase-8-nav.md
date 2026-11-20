@@ -14,7 +14,7 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Implementation phases, item 8). Earlier phases: `...-phase-4-clock-core.md` through `...-phase-7-finish-flow.md`. Branch: `feat/tournament-shot-clock`.
 
-**Status (2026-11-20):** Tasks 1–6 are done on dev; the refinement pass is next. No migration.
+**Status (2026-11-20):** Tasks 1–6 and the refinement pass are done on dev. R1, R2, R4 and R5 found nothing (R4: the inline table name is the codebase's convention, and the delayed refetch and server-time sync appear only twice); R3 named the banner's screen-reader label and fixed the `(home)` layout's comment order. No migration.
 
 **Changes from this plan:**
 - **`useLiveClock` loads on mount as well as on every (re)subscribe.** At first it loaded only once Realtime said it was subscribed, and on the first check no banner showed: nothing had been fetched. Loading straight away also covers a network that blocks websockets.
