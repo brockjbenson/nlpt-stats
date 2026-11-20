@@ -51,6 +51,56 @@ function useServerNow(initialNowMs: number, offsetMs: number): number {
   return nowMs;
 }
 
+type ClockChannelHandlers = {
+  onUpdate: (row: Partial<ClockRow>) => void;
+  onDelete: () => void;
+  // true once (re)subscribed; false while Realtime is down or retrying.
+  onSubscribed: (isSubscribed: boolean) => void;
+};
+
+// Listens for changes to one clock's row. Returns the unsubscribe.
+function subscribeToClock(
+  clockId: string,
+  handlers: ClockChannelHandlers,
+): () => void {
+  const db = createClient();
+  const filter = `id=eq.${clockId}`;
+  const channel = db
+    .channel(`clock-${clockId}`)
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: CLOCKS_TABLE, filter },
+      (payload) => handlers.onUpdate(payload.new as Partial<ClockRow>),
+    )
+    .on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: CLOCKS_TABLE, filter },
+      // Realtime doesn't filter deletes, so check it's this clock.
+      (payload) => {
+        if ((payload.old as { id?: string }).id === clockId) {
+          handlers.onDelete();
+        }
+      },
+    )
+    .subscribe((status) => handlers.onSubscribed(status === "SUBSCRIBED"));
+
+  return () => {
+    void db.removeChannel(channel);
+  };
+}
+
+// Calls callback whenever the tab becomes visible again, such as a phone
+// waking up.
+function useOnVisible(callback: () => void): void {
+  useEffect(() => {
+    const onChange = (): void => {
+      if (document.visibilityState === "visible") callback();
+    };
+    document.addEventListener("visibilitychange", onChange);
+    return () => document.removeEventListener("visibilitychange", onChange);
+  }, [callback]);
+}
+
 // A clock kept live: Realtime updates, the server time offset, and a
 // countdown worked out locally every tick. Missed updates (Realtime
 // doesn't replay them) are fetched again on every (re)subscribe and when
@@ -74,53 +124,25 @@ export function useClock(
     else setIsDeleted(true);
   }, [clockId]);
 
-  useEffect(() => {
-    const db = createClient();
-    const filter = `id=eq.${clockId}`;
-    const channel = db
-      .channel(`clock-${clockId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: CLOCKS_TABLE, filter },
-        (payload) =>
-          setClock((current) =>
-            mergeClockRow(current, payload.new as Partial<ClockRow>),
-          ),
-      )
-      .on(
-        "postgres_changes",
-        { event: "DELETE", schema: "public", table: CLOCKS_TABLE, filter },
-        // Realtime doesn't filter deletes, so check it's this clock.
-        (payload) => {
-          if ((payload.old as { id?: string }).id === clockId) {
-            setIsDeleted(true);
-          }
-        },
-      )
-      .subscribe((status) => {
-        if (status !== "SUBSCRIBED") {
-          setConnection("reconnecting");
-          return;
-        }
-        setConnection("live");
-        void refetch();
-        void resync();
-      });
-
-    return () => {
-      void db.removeChannel(channel);
-    };
-  }, [clockId, refetch, resync]);
-
-  useEffect(() => {
-    const onVisible = (): void => {
-      if (document.visibilityState !== "visible") return;
-      void refetch();
-      void resync();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
+  // What may have been missed: the row and the time offset.
+  const refresh = useCallback((): void => {
+    void refetch();
+    void resync();
   }, [refetch, resync]);
+
+  useEffect(
+    () =>
+      subscribeToClock(clockId, {
+        onUpdate: (row) => setClock((current) => mergeClockRow(current, row)),
+        onDelete: () => setIsDeleted(true),
+        onSubscribed: (isSubscribed) => {
+          setConnection(isSubscribed ? "live" : "reconnecting");
+          if (isSubscribed) refresh();
+        },
+      }),
+    [clockId, refresh],
+  );
+  useOnVisible(refresh);
 
   return {
     clock: shownClock,
