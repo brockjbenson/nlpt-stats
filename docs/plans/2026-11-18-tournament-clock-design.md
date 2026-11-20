@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–8 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`, `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`.
+- **Status:** Approved. Phases 1–8 are built on dev. All 13 clock migrations were applied to prod on 2026-11-20 (phase 4's Task 10). Still to do: merge PR #28 and smoke-test on prod. Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`, `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`.
 
 ## Goal
 

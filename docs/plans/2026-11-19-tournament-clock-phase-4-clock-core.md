@@ -254,7 +254,14 @@ Run `npm run dev`. Use the admin control in one browser and the display, signed 
 
 Fix anything found (with a test where the bug is in `lib/`); commit each fix separately.
 
-### Task 10: Prod rollout (only with your go-ahead)
+### Task 10: Prod rollout (only with your go-ahead) ✅ applied to prod 2026-11-20
+
+**Result:** Approved by the user after the whole feature was checked on staging. Before applying, prod had none of the clock objects, and all 13 repo files matched the SQL dev ran (md5 with whitespace removed). All 13 were applied to prod (`mttdnkrtyknlmbnwdoye`) with the files' contents verbatim. Prod's MCP was made writable by the user for the rollout and set back to `read_only=true` afterward.
+- **Checks:** 13 migrations recorded; `_tournament_clocks`, `_clock_entrants` and `_clock_knockouts` in the Realtime publication; 25 policies across the five clock tables; the 7 functions; NLPT Standard with 19 levels (5h 50m, last level 7,500/15,000) and `{55,30,15}` for 4 paid; anon can read the clock tables and call `server_now()`; existing data unchanged (13 tournaments, 108 sessions); the security advisor shows nothing new.
+- **Versions:** `apply_migration` stamps its own versions (the time applied), so prod's versions don't match the file names; dev's don't either. The names do.
+- **Order:** the first batch was sent in parallel and two (`tournament_clock_realtime`, `tournament_clock_fk_indexes`) failed on a duplicate version timestamp; both rolled back fully and were then applied one at a time, so prod records `tournament_clock_realtime` after `tournament_clock_starter_structure`. Neither depends on the other.
+- **Remaining:** merge PR #28 (after #25), then smoke-test on prod: create a test clock, watch the display signed out, delete it.
+
 
 **Ask the user in chat first** and wait for a clear yes. Then:
 1. Check prod's migration list again: the clock migrations are still missing and nothing else has changed.
