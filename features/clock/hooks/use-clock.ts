@@ -41,7 +41,7 @@ export type LiveClock = {
 // The current time on the database's clock, redrawn every tick. Starts
 // from the time the page was rendered with, so the first paint matches
 // the server's HTML.
-function useServerNow(initialNowMs: number, offsetMs: number): number {
+export function useServerNow(initialNowMs: number, offsetMs: number): number {
   const [nowMs, setNowMs] = useState(initialNowMs);
   useEffect(() => {
     const tick = (): void => setNowMs(Date.now() + offsetMs);

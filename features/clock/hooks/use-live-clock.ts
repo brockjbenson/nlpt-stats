@@ -58,6 +58,9 @@ export function useLiveClock(): TournamentClock | null {
   // Set up and torn down entirely here: a hidden layout (React <Activity>)
   // runs this cleanup and subscribes again when it's shown.
   useEffect(() => {
+    // Load at once rather than waiting for Realtime, which may be slow to
+    // connect (or never connect, on a network that blocks websockets).
+    refetch();
     const unsubscribe = subscribeToClocks(refetchSoon, refetch);
     return () => {
       unsubscribe();
