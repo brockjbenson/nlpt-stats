@@ -26,8 +26,8 @@ describe("player refusal messages", () => {
       "Only the most recent bust can rebuy back in.",
     ],
     [
-      addRefusalMessage("after_first_bust"),
-      "Players can't be added after the first bust.",
+      addRefusalMessage("player_out"),
+      "Players can't be added while anyone is out.",
     ],
   ])("says %j", (message, expected) => {
     expect(message).toBe(expected);
@@ -71,7 +71,7 @@ describe("player refusal messages", () => {
       ...(
         [
           "finished",
-          "after_first_bust",
+          "player_out",
           "nothing_to_add",
           "already_playing",
           "bad_guest_name",

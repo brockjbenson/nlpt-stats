@@ -124,7 +124,7 @@ export type NewEntrant = {
 
 export type AddEntrantsRefusal =
   | "finished"
-  | "after_first_bust"
+  | "player_out"
   | "nothing_to_add"
   | "already_playing"
   | "bad_guest_name"
@@ -153,20 +153,21 @@ function guestNameProblem(
 }
 
 // Why no players can be added right now, or null when they can: not once
-// the clock is finished, or after the first bust (see planAddEntrants).
+// the clock is finished, or while anyone is out (see planAddEntrants).
 export function addPlayersBlocked(
   clock: Pick<TournamentClock, "status">,
   entrants: ClockEntrant[],
-): "finished" | "after_first_bust" | null {
+): "finished" | "player_out" | null {
   if (clock.status === "finished") return "finished";
-  if (playersLeft(entrants).length < entrants.length) return "after_first_bust";
+  if (playersLeft(entrants).length < entrants.length) return "player_out";
   return null;
 }
 
 // The rows to add for the members and guests picked. Players can be added
-// in any status but finished, and only until the first bust: a bust's
-// place is the number of players left, so a player added afterwards would
-// give the next bust a place that's already taken.
+// in any status but finished, and only while nobody is out: a bust's place
+// is the number of players left, so a player added while someone is out
+// would give the next bust a place that's already taken. (Once a re-entry
+// brings everyone back in, players can be added again.)
 export function planAddEntrants(
   clock: Pick<TournamentClock, "status">,
   entrants: ClockEntrant[],

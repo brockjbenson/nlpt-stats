@@ -127,7 +127,7 @@ function PlayersCard({ clock, players, members }: Props) {
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {blocked === "after_first_bust" && (
+        {blocked === "player_out" && (
           <p className="text-xs text-muted">{addRefusalMessage(blocked)}</p>
         )}
         {note && <p className="text-xs text-muted">{note}</p>}

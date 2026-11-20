@@ -192,14 +192,14 @@ describe("planAddEntrants", () => {
       "finished",
     ],
     [
-      "adding after the first bust",
+      "adding while a player is out",
       [
         setup,
         [member(ALEX_SMITH.id, busted(2)), guest("Bea")],
         [SAM_JONES.id],
         [],
       ],
-      "after_first_bust",
+      "player_out",
     ],
     ["nobody to add", [setup, [], [], []], "nothing_to_add"],
     [
@@ -377,17 +377,26 @@ describe("planUndoPlayer", () => {
 });
 
 describe("addPlayersBlocked", () => {
+  it("allows adding again once a re-entry brings everyone back", () => {
+    expect(
+      addPlayersBlocked(makeClock({ status: "running" }), [
+        guest("Bea", { rebuys: 1 }),
+        guest("Cy"),
+      ]),
+    ).toBeNull();
+  });
+
   it("is null before anyone busts", () => {
     expect(addPlayersBlocked(makeClock(), [guest("Bea")])).toBeNull();
   });
 
-  it("blocks after the first bust", () => {
+  it("blocks while a player is out", () => {
     expect(
       addPlayersBlocked(makeClock({ status: "running" }), [
         guest("Bea", busted(2)),
         guest("Cy"),
       ]),
-    ).toBe("after_first_bust");
+    ).toBe("player_out");
   });
 
   it("blocks once finished", () => {

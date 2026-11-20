@@ -155,7 +155,7 @@ async function changePlayers(
   }
 }
 
-// Adds members and guests, before the first bust.
+// Adds members and guests while nobody is out.
 export async function addEntrantsAction(
   clockId: string,
   memberIds: string[],

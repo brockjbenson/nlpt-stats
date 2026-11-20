@@ -29,11 +29,11 @@ const UNDO_MESSAGES: Record<UndoPlayerRefusal, string> = {
 
 const ADD_MESSAGES: Record<AddEntrantsRefusal, string> = {
   finished: "This clock is finished.",
-  after_first_bust: "Players can't be added after the first bust.",
+  player_out: "Players can't be added while anyone is out.",
   nothing_to_add: "Pick a member or type a guest's name.",
   already_playing: "A member you picked is already playing.",
   bad_guest_name: `Guest names need 1 to ${GUEST_NAME_MAX_LENGTH} characters.`,
-  duplicate_guest: "A guest with that name is already playing.",
+  duplicate_guest: "There's already a guest with that name.",
 };
 
 export function bustRefusalMessage(reason: BustPlayerRefusal): string {

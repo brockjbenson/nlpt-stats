@@ -12,7 +12,7 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="flex flex-col items-center">
       <p
         className={cn(
-          "font-semibold uppercase tracking-wider text-muted",
+          "whitespace-nowrap font-semibold uppercase tracking-wider text-muted",
           LABEL_SIZE,
         )}
       >
@@ -27,7 +27,7 @@ function SectionLabel({ children }: { children: string }) {
   return (
     <p
       className={cn(
-        "font-semibold uppercase tracking-wider text-muted",
+        "whitespace-nowrap font-semibold uppercase tracking-wider text-muted",
         LABEL_SIZE,
       )}
     >
