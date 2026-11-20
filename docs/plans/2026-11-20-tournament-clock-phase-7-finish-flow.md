@@ -18,7 +18,7 @@
 
 ## Decisions made in this plan (confirm before starting)
 
-1. **Finish appears on the control screen once one player is left** (running or paused), with a confirmation: "Finish the tournament? Alex S. wins." It stops the clock, saves where it was, and places the winner 1st. Before that it isn't shown; the clock can still be deleted.
+1. **An End tournament button, never automatic** (confirmed 2026-11-20). It's on the control screen whenever the clock is running or paused, enabled once one player is left (with a note to bust players down to one before that), and asks first: "End the tournament? Alex S. wins." It stops the clock, saves where it was, and places the winner 1st.
 2. **Reopen** puts a finished clock back to paused at the level it stopped on and un-places the winner, for a finish pressed by mistake. Only until results are saved.
 3. **Review screen** (`/admin/clock/[id]/finish`), prefilled and editable:
    - **Name:** the clock's name. **Date:** the day the clock was created, in the league's time zone (a late game saved the next morning still gets the game's date). **Season and week:** the current season's latest week; the admin confirms. All required.
@@ -27,7 +27,7 @@
 4. **Saving** creates the tournament and its sessions in one transaction and links the clock to it. **Saving again** (from the same review screen) updates that tournament and replaces its sessions, so a mistake can be fixed from the clock. Once saved, the clock list and control screen show "Results saved" with a link to the tournament's page.
 5. **After saving**, rankings and caches refresh exactly as manual entry does: the week's NLPI rankings are recalculated, the league cache tag is cleared, and the same pages revalidated. That code moves into a shared helper both use.
 6. **No points or net profit are written**: `_tournament_session_points` works them out, as for manual entry.
-7. **Prod:** the new migration joins the clock migrations waiting for phase 4's prod rollout (needs your go-ahead).
+7. **Prod:** every clock migration goes to prod once the whole feature is done and checked on staging (confirmed 2026-11-20), not phase by phase.
 
 ## Ground rules
 
