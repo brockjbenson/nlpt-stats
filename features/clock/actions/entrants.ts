@@ -142,7 +142,8 @@ async function savedPlayers(
 // the change, and turns anything unexpected into a message.
 async function changePlayers(
   clockId: string,
-  what: string,
+  // What the change does, for messages: "add players".
+  task: string,
   change: (loaded: ClockPlayers) => Promise<PlayersActionResult>,
 ): Promise<PlayersActionResult> {
   if (!(await isAdmin())) return NOT_ADMIN;
@@ -150,8 +151,8 @@ async function changePlayers(
     const loaded = await loadPlayers(clockId);
     return isLoaded(loaded) ? await change(loaded) : loaded;
   } catch (error) {
-    console.error(`Error trying to ${what}:`, error);
-    return failed(`Couldn't ${what}.`);
+    console.error(`Error trying to ${task}:`, error);
+    return failed(`Couldn't ${task}.`);
   }
 }
 

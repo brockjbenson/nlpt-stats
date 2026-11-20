@@ -49,7 +49,7 @@ function latestKnockers(knockouts: ClockKnockout[]): Map<string, string> {
 }
 
 // One line under the header when buttons are missing for a common reason.
-function statusNote(
+function buttonsNote(
   clock: TournamentClock,
   left: PlayerRowData[],
   entrantCount: number,
@@ -60,7 +60,9 @@ function statusNote(
   }
   const isInTheMoney =
     clock.status !== "finished" && left.length <= clock.places_paid;
-  return isInTheMoney ? rebuyRefusalMessage("in_the_money", 0) : null;
+  return isInTheMoney
+    ? rebuyRefusalMessage("in_the_money", clock.max_rebuys)
+    : null;
 }
 
 // The control screen's players: add them, bust them (with who knocked
@@ -73,8 +75,8 @@ function PlayersCard({ clock, players, members }: Props) {
   const names = entrantNames(entrants, members);
   const { left, out } = listPlayers(entrants, knockouts, names);
   const knockers = latestKnockers(knockouts);
-  const blocked = addPlayersBlocked(clock, entrants);
-  const note = statusNote(clock, left, entrants.length);
+  const addBlockedReason = addPlayersBlocked(clock, entrants);
+  const note = buttonsNote(clock, left, entrants.length);
   const buttonProps = { clock, entrants, run, isPending };
 
   return (
@@ -88,7 +90,7 @@ function PlayersCard({ clock, players, members }: Props) {
             </span>
           )}
         </CardTitle>
-        {!blocked && (
+        {!addBlockedReason && (
           <AddPlayersDrawer
             clock={clock}
             entrants={entrants}
@@ -99,8 +101,10 @@ function PlayersCard({ clock, players, members }: Props) {
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        {blocked === "player_out" && (
-          <p className="text-xs text-muted">{addRefusalMessage(blocked)}</p>
+        {addBlockedReason === "player_out" && (
+          <p className="text-xs text-muted">
+            {addRefusalMessage(addBlockedReason)}
+          </p>
         )}
         {note && <p className="text-xs text-muted">{note}</p>}
         {entrants.length === 0 && (
