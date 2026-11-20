@@ -1,6 +1,11 @@
 import ErrorHandler from "@/components/error-handler";
 import ClockDisplay from "@/features/clock/components/display/clock-display";
 import { getClock, getServerNowMs } from "@/features/clock/data/clocks";
+import {
+  getEntrants,
+  getKnockouts,
+  getMemberNames,
+} from "@/features/clock/data/entrants";
 import { createPublicClient } from "@/utils/supabase/public";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -20,10 +25,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 async function Page({ params }: Props) {
   const { id } = await params;
-  const [{ data: clock, error }, nowMs] = await Promise.all([
-    loadClock(id),
-    getServerNowMs(createPublicClient()),
-  ]);
+  const db = createPublicClient();
+  const [{ data: clock, error: clockError }, entrants, knockouts, nowMs] =
+    await Promise.all([
+      loadClock(id),
+      getEntrants(db, id),
+      getKnockouts(db, id),
+      getServerNowMs(db),
+    ]);
+  const members = await getMemberNames(
+    db,
+    (entrants.data ?? []).flatMap(({ member_id }) =>
+      member_id ? [member_id] : [],
+    ),
+  );
+  const error =
+    clockError ?? entrants.error ?? knockouts.error ?? members.error;
 
   if (error) {
     return (
@@ -37,7 +54,17 @@ async function Page({ params }: Props) {
   }
   if (!clock) notFound();
 
-  return <ClockDisplay initialClock={clock} initialNowMs={nowMs} />;
+  return (
+    <ClockDisplay
+      initialClock={clock}
+      initialNowMs={nowMs}
+      initialPlayers={{
+        entrants: entrants.data ?? [],
+        knockouts: knockouts.data ?? [],
+      }}
+      members={members.data ?? []}
+    />
+  );
 }
 
 export default Page;
