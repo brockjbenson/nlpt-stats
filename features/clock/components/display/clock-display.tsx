@@ -1,8 +1,7 @@
 "use client";
 
-import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
-import DisplayControls from "@/features/clock/components/display/display-controls";
+import DisplayHeader from "@/features/clock/components/display/display-header";
 import FieldPanel from "@/features/clock/components/display/field-panel";
 import type {
   ClockPlayers,
@@ -19,8 +18,9 @@ import { entrantNames, listPlayers } from "@/features/clock/lib/players";
 import type { TournamentClock } from "@/features/clock/types";
 import { cn } from "@/lib/utils";
 
-// The public, full-screen clock for a TV or phone: no header or tab bar,
-// big text, kept live over Realtime. Once there are players, a panel
+// The public, full-screen clock for a TV or phone: its own slim header
+// (status, name, controls) instead of the app's header and tab bar, big
+// text, kept live over Realtime. Once there are players, a panel
 // beside (landscape) or under (portrait) the clock shows them and the money.
 function ClockDisplay({
   initialClock,
@@ -62,55 +62,48 @@ function ClockDisplay({
   );
 
   return (
-    <main
-      className={cn(
-        "relative flex min-h-dvh flex-col items-center justify-center gap-[3dvh] px-4 py-[4dvh]",
-        isIdle && "cursor-none",
-      )}
+    <div
+      className={cn("flex min-h-dvh flex-col", isIdle && "cursor-none")}
       // While sound waits for a tap, any tap on the page allows it.
       onClick={sound.needsTap ? sound.unlockFromTap : undefined}
     >
-      <h1 className="text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
-        {clock.name}
-      </h1>
-      <ClockBadges
+      <DisplayHeader
+        name={clock.name}
         status={view.status}
         connection={connection}
-        className="absolute left-3 top-3"
-      />
-      <DisplayControls
         sound={sound}
         tv={tv}
-        isHidden={isIdle}
-        className="absolute right-3 top-3"
+        isIdle={isIdle}
       />
-      <div
-        className={cn(
-          "flex w-full flex-col items-center gap-[3dvh]",
-          hasPlayers && "landscape:flex-row landscape:gap-[3vw]",
-        )}
-      >
-        <div className="flex min-w-0 flex-1 justify-center">
-          <ClockFace
-            view={view}
-            size={hasPlayers ? "beside-panel" : "display"}
-          />
+      <main className="flex flex-1 flex-col items-center justify-center px-4 pb-[4dvh] pt-[2dvh]">
+        <div
+          className={cn(
+            "flex w-full flex-col items-center gap-[3dvh]",
+            hasPlayers && "landscape:flex-row landscape:gap-[3vw]",
+          )}
+        >
+          <div className="flex min-w-0 flex-1 justify-center">
+            <ClockFace
+              view={view}
+              size={hasPlayers ? "beside-panel" : "display"}
+            />
+          </div>
+          {hasPlayers && (
+            <FieldPanel
+              field={describeField(clock, entrants)}
+              playersLeft={left.map(({ entrant, name }) => ({
+                id: entrant.id,
+                name,
+                portraitUrl: entrant.member_id
+                  ? (portraits.get(entrant.member_id) ?? null)
+                  : null,
+              }))}
+              className="max-w-2xl landscape:w-[min(36vw,36rem)] landscape:shrink-0"
+            />
+          )}
         </div>
-        {hasPlayers && (
-          <FieldPanel
-            field={describeField(clock, entrants)}
-            playersLeft={left.map(({ entrant, name }) => ({
-              id: entrant.id,
-              name,
-              portraitUrl: entrant.member_id
-                ? (portraits.get(entrant.member_id) ?? null)
-                : null,
-            }))}
-            className="max-w-2xl landscape:w-[min(36vw,36rem)] landscape:shrink-0"
-          />
-        )}
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 

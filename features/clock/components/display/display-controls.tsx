@@ -7,7 +7,8 @@ import { Maximize, Minimize, Volume2, VolumeX } from "lucide-react";
 import type React from "react";
 
 // Same scale as the display's badges.
-const CONTROLS_SIZE = "text-[length:clamp(0.75rem,min(2vw,2.5dvh),1.5rem)]";
+export const CONTROLS_SIZE =
+  "text-[length:clamp(0.75rem,min(2vw,2.5dvh),1.5rem)]";
 const BUTTON_CLASS =
   "flex size-[2.4em] items-center justify-center rounded-full border border-card-border bg-card/60 text-muted transition-colors hover:text-foreground";
 const ICON_CLASS = "size-[1.1em]";
@@ -46,8 +47,9 @@ type Props = {
   className?: string;
 };
 
-// The display's top-right corner: sound on/off, TV mode, and the "Tap to
-// enable sound" prompt while the browser is waiting for a tap.
+// The right of the display's header: sound on/off, TV mode, and, to their
+// left, the "Tap to enable sound" prompt while the browser is waiting for
+// a tap.
 function DisplayControls({ sound, tv, isHidden, className }: Props) {
   const enterTvMode = (): void => {
     tv.enter();
@@ -57,7 +59,7 @@ function DisplayControls({ sound, tv, isHidden, className }: Props) {
   return (
     <div
       className={cn(
-        "flex flex-col items-end gap-[0.5em] transition-opacity duration-500",
+        "flex flex-row-reverse items-center gap-[0.5em] transition-opacity duration-500",
         CONTROLS_SIZE,
         isHidden && "pointer-events-none opacity-0",
         className,
@@ -86,7 +88,7 @@ function DisplayControls({ sound, tv, isHidden, className }: Props) {
       {sound.needsTap && (
         <p
           role="status"
-          className="rounded-full bg-primary px-[0.75em] py-[0.25em] font-semibold text-primary-foreground"
+          className="whitespace-nowrap rounded-full bg-primary px-[0.75em] py-[0.25em] font-semibold text-primary-foreground"
         >
           Tap to enable sound
         </p>
