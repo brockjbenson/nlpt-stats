@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   type ClockRow,
   getClock,
+  getLiveClocks,
   mergeClockRow,
   toClock,
 } from "@/features/clock/data/clocks";
@@ -75,5 +76,45 @@ describe("getClock", () => {
       data: null,
       error: null,
     });
+  });
+});
+
+// A client whose clocks query resolves to result, recording the statuses
+// it was filtered on.
+function fakeClocksDb(result: { data: unknown; error: unknown }): {
+  db: SupabaseClient;
+  statuses: () => unknown;
+} {
+  let statuses: unknown = null;
+  const query = {
+    select: () => query,
+    in: (_column: string, values: unknown) => {
+      statuses = values;
+      return Promise.resolve(result);
+    },
+  };
+  const db = { from: () => query } as unknown as SupabaseClient;
+  return { db, statuses: () => statuses };
+}
+
+describe("getLiveClocks", () => {
+  it("asks only for running and paused clocks, as clocks", async () => {
+    const row = rowFrom({ status: "running", buy_in: "40" });
+    const { db, statuses } = fakeClocksDb({ data: [row], error: null });
+    const clocks = await getLiveClocks(db);
+    expect(statuses()).toEqual(["running", "paused"]);
+    expect(clocks).toHaveLength(1);
+    expect(clocks[0].buy_in).toBe(40);
+  });
+
+  it("returns no clocks when the query fails", async () => {
+    const { db } = fakeClocksDb({
+      data: null,
+      error: { message: "offline" },
+    });
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    await expect(getLiveClocks(db)).resolves.toEqual([]);
+    expect(error).toHaveBeenCalled();
+    error.mockRestore();
   });
 });

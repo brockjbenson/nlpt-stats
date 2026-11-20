@@ -10,19 +10,18 @@ export type LiveClockText = {
   time: string | null;
 };
 
-// Live clocks in the order the banner prefers them: running before paused.
-const LIVE_RANK: Partial<Record<ClockStatus, number>> = {
-  running: 0,
-  paused: 1,
-};
+// The statuses a live clock can have, in the order the banner prefers them:
+// running before paused.
+export const LIVE_STATUSES: ClockStatus[] = ["running", "paused"];
 
 function isLive(clock: TournamentClock): boolean {
-  return LIVE_RANK[clock.status] !== undefined;
+  return LIVE_STATUSES.includes(clock.status);
 }
 
 // Running first, then the newest.
 function compareLive(a: TournamentClock, b: TournamentClock): number {
-  const byStatus = (LIVE_RANK[a.status] ?? 0) - (LIVE_RANK[b.status] ?? 0);
+  const byStatus =
+    LIVE_STATUSES.indexOf(a.status) - LIVE_STATUSES.indexOf(b.status);
   if (byStatus !== 0) return byStatus;
   return Date.parse(b.created_at) - Date.parse(a.created_at);
 }
