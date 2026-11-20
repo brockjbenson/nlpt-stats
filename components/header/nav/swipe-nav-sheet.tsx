@@ -273,11 +273,16 @@ export function SwipeNavSheet({
   });
 
   // A closed drawer is parked in px once an animation ends; re-park it if the
-  // screen width changes (rotation) so it can't peek in.
+  // screen width changes (rotation) so it can't peek in. This also runs when
+  // a hidden layout is shown again (Back), so it resets the overlay too:
+  // stopping a motion animation writes the value it stopped at on the next
+  // frame, after parkClosed's write, which left the overlay showing.
   useEffect(() => {
     const drawer = drawerRef.current;
+    const overlay = overlayRef.current;
     if (!drawer || openRef.current || animationsRef.current.length > 0) return;
     drawer.style.transform = CLOSED_TRANSFORM;
+    if (overlay) overlay.style.opacity = "0";
   }, [viewportWidth, isClient]);
 
   // Escape closes while open.
