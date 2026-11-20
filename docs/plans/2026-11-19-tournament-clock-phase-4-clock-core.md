@@ -4,7 +4,7 @@
 
 **Ticket:** none
 
-**Status (2026-11-19):** Tasks 1–8 and 11 are done on dev, and the R1–R5 refinement pass follows. Task 9 is partly done (see below). Task 10 (prod rollout) is **still pending** and needs the go-ahead in chat.
+**Status (2026-11-19):** Tasks 1–8, 11 and the R1–R5 refinement pass are done on dev (R1 and R5 found nothing to change). Task 9 is partly done (see below). Task 10 (prod rollout) is **still pending** and needs the go-ahead in chat.
 
 **Task 9 so far** (in-app browser, control screen and signed-out display side by side, against dev):
 - Create, bad split, template switch (settings refill, break notes copied) and delete.
