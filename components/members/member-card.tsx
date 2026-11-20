@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import MemberImage from "./member-image";
+import { parseDateOnly } from "@/lib/dates";
 
 type MemberWithDebut = Member & {
   debutDate: string | null;
@@ -74,7 +75,7 @@ function MemberCard({
         <li className="text-muted text-sm">
           Joined:{" "}
           {debutDate
-            ? new Date(debutDate).toLocaleDateString("en-US", {
+            ? parseDateOnly(debutDate).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "short",
               })

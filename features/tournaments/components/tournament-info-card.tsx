@@ -4,6 +4,7 @@ import { MajorData } from "@/utils/types";
 import { formatMoney } from "@/utils/utils";
 import Link from "next/link";
 import MemberImage from "@/components/members/member-image";
+import { parseDateOnly } from "@/lib/dates";
 
 interface Props {
   isAdmin?: boolean;
@@ -68,7 +69,7 @@ function TournamentInfo({ data }: Props) {
             <div className="flex flex-col gap-1 items-end md:items-center justify-center">
               <p className="text-sm text-muted md:text-base">Date</p>
               <p className="text-lg font-semibold md:text-xl">
-                {new Date(data.date).toLocaleDateString("en-US", {
+                {parseDateOnly(data.date).toLocaleDateString("en-US", {
                   month: "numeric",
                   day: "numeric",
                   year: "2-digit",

@@ -4,6 +4,7 @@ import { CareerData, Season } from "@/utils/types";
 import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import React from "react";
 import { Select, SelectContent, SelectTrigger } from "../ui/select";
+import { parseDateOnly } from "@/lib/dates";
 
 interface Props {
   careerStats: CareerData;
@@ -226,7 +227,7 @@ function MemberCashStats({ careerStats, seasons }: Props) {
               )}>
               {formatMoney(careerCashStats.best_month.net_profit)}
               <span className="text-xs ml-2 text-muted font-normal">
-                {new Date(careerCashStats.best_month.month).toLocaleString(
+                {parseDateOnly(careerCashStats.best_month.month).toLocaleString(
                   "en-US",
                   {
                     month: "long",

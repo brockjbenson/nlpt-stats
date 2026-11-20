@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatMoney } from "@/utils/utils";
 import MemberImage from "@/components/members/member-image";
 import { MajorsData, Member } from "@/utils/types";
+import { parseDateOnly } from "@/lib/dates";
 
 interface Props {
   isAdmin?: boolean;
@@ -34,7 +35,7 @@ function TournamentCard({ data, isAdmin, members }: Props) {
           </Link>
         </h2>
         <p className="text-xs text-muted">
-          {new Date(data.date).toLocaleDateString()}
+          {parseDateOnly(data.date).toLocaleDateString()}
         </p>
       </div>
       <div className="flex flex-col gap-2 justify-center items-center">
