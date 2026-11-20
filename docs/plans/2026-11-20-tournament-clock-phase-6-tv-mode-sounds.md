@@ -14,7 +14,7 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Sounds & TV mode). Earlier phases: `...-phase-4-clock-core.md`, `...-phase-5-entrants.md`. Branch: `feat/tournament-shot-clock`.
 
-**Status (2026-11-20):** Tasks 1–7 are done on dev; the R1–R5 refinement pass is next.
+**Status (2026-11-20):** Tasks 1–7 and the R1–R5 refinement pass are done on dev. Only R2 changed anything (the wake lock moved into `useWakeLock`); R4 left the four `.catch(() => undefined)` calls as they are, since a helper for a one-liner wouldn't read better.
 
 **Changes from this plan:**
 - **`useSound` reads the saved choice with `useSyncExternalStore`** (server snapshot: off) instead of setting state in an effect, which React's lint rule flags. It also follows changes from other tabs, and keeps the choice in memory where storage is blocked.
