@@ -14,6 +14,15 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Implementation phases, item 8). Earlier phases: `...-phase-4-clock-core.md` through `...-phase-7-finish-flow.md`. Branch: `feat/tournament-shot-clock`.
 
+**Status (2026-11-20):** Tasks 1–6 are done on dev; the refinement pass is next. No migration.
+
+**Changes from this plan:**
+- **`useLiveClock` loads on mount as well as on every (re)subscribe.** At first it loaded only once Realtime said it was subscribed, and on the first check no banner showed: nothing had been fetched. Loading straight away also covers a network that blocks websockets.
+- **`LIVE_STATUSES` lives in `lib/live.ts`**: the query and the picking use one list, whose order (running, then paused) is the preference.
+- **`useServerNow` is exported from `use-clock.ts`** so the banner counts down exactly as the display does.
+- **Task 5 ran in iframes**: the browser window wouldn't resize, so the league page was loaded in a 390 px iframe beside the control screen in a second one, driven with scripted clicks. Every step passed: the banner appeared within ~3 s of Start (preferring the running clock over two paused ones), showed Paused, the level, and Break, moved inline when the tab bar minimized, wasn't on admin pages, and dropped the clock the moment it ended. Saving the results gave the tournament page its "View clock" link; deleting the clock removed it. Signed-out reads were checked with the anon role in SQL rather than a signed-out browser. The test clock and tournament were deleted and week 30's rankings recalculated.
+- **Two paused clocks from earlier testing ("Thanksgiving Showdown 2026" and "NLPT Standard – Nov 19, 2026") are on dev**, so the banner shows "Paused" on staging until they're finished or deleted. While checking, the second one was briefly started by SQL; it was put back paused with a full level 6 (20:00), since its earlier time wasn't recorded.
+
 ---
 
 ## Decisions made in this plan (confirm before starting)
