@@ -16,3 +16,8 @@ export function clockDisplayPath(id: string): string {
 export function clockFinishPath(id: string): string {
   return `${CLOCKS_PATH}/${id}/finish`;
 }
+
+// A saved tournament's page.
+export function tournamentPath(year: number, id: string): string {
+  return `/tournaments/${year}/${id}`;
+}

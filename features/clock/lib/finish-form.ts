@@ -50,18 +50,15 @@ function toCents(amount: number): number {
   return Math.round(amount * CENTS_PER_DOLLAR) / CENTS_PER_DOLLAR;
 }
 
-// The newest season and its latest week, the usual week for a game that
-// just happened. Empty when there are none.
-function latestWeek(
-  seasons: Season[],
-  weeks: Week[],
-): { season_id: string; week_id: string } {
+// The newest season, with no week chosen: seasons are created with all
+// their weeks up front and weeks have no dates, so there's no safe guess
+// (the latest would be the end of the year). The admin picks the week.
+function newestSeason(seasons: Season[]): {
+  season_id: string;
+  week_id: string;
+} {
   const season = [...seasons].sort((a, b) => b.year - a.year)[0];
-  if (!season) return { season_id: "", week_id: "" };
-  const week = weeks
-    .filter(({ season_id }) => season_id === season.id)
-    .sort((a, b) => b.week_number - a.week_number)[0];
-  return { season_id: season.id, week_id: week?.id ?? "" };
+  return { season_id: season?.id ?? "", week_id: "" };
 }
 
 // The guests, by finishing place, with what their place paid.
@@ -89,20 +86,19 @@ function guestResults(
 
 // The review form prefilled from a finished clock: its name, the day it
 // was created in the league's time zone (a game saved the next morning
-// keeps the game's date), the newest season's latest week, and the results
+// keeps the game's date), the newest season (the week is left to pick),
+// and the results
 // (members re-ranked, each with their true place's payout).
 export function finishFormDefaults({
   clock,
   entrants,
   members,
   seasons,
-  weeks,
 }: {
   clock: TournamentClock;
   entrants: ClockEntrant[];
   members: MemberName[];
   seasons: Season[];
-  weeks: Week[];
 }): Result<{ form: FinishForm; guests: FinishGuest[] }, FinishResultsRefusal> {
   const results = buildFinishResults(clock, entrants);
   if (!results.ok) return fail(results.reason);
@@ -118,7 +114,7 @@ export function finishFormDefaults({
     form: {
       name: clock.name,
       date: formatLeagueIsoDate(Date.parse(clock.created_at)),
-      ...latestWeek(seasons, weeks),
+      ...newestSeason(seasons),
       tournament: results.value.tournament,
       sessions: results.value.sessions.map((session) => ({
         ...session,
@@ -128,6 +124,65 @@ export function finishFormDefaults({
     },
     guests: guestResults(clock, entrants),
   });
+}
+
+// A saved _tournaments row and its sessions, as Supabase returns them
+// (numeric columns may come back as text).
+export type SavedTournament = {
+  name: string;
+  date: string;
+  week_id: string;
+  places_paid: number | null;
+  buy_in_amount: number | string;
+  rebuy_amount: number | string;
+  player_count: number;
+  total_rebuys: number;
+};
+
+export type SavedSession = {
+  member_id: string;
+  rebuys: number;
+  cash_out: number | string;
+  place: number;
+};
+
+// The review form prefilled from results saved before, so a re-save edits
+// what was saved rather than starting again from the clock.
+export function finishFormFromSaved({
+  tournament,
+  sessions,
+  memberNames,
+  weeks,
+}: {
+  tournament: SavedTournament;
+  sessions: SavedSession[];
+  // member id → the name the form shows.
+  memberNames: Map<string, string>;
+  weeks: Week[];
+}): FinishForm {
+  const week = weeks.find(({ id }) => id === tournament.week_id);
+  return {
+    name: tournament.name,
+    date: tournament.date,
+    season_id: week?.season_id ?? "",
+    week_id: tournament.week_id,
+    tournament: {
+      places_paid: tournament.places_paid ?? sessions.length,
+      buy_in_amount: Number(tournament.buy_in_amount),
+      rebuy_amount: Number(tournament.rebuy_amount),
+      player_count: tournament.player_count,
+      total_rebuys: tournament.total_rebuys,
+    },
+    sessions: [...sessions]
+      .sort((a, b) => a.place - b.place)
+      .map((session) => ({
+        member_id: session.member_id,
+        name: memberNames.get(session.member_id) ?? "Member",
+        rebuys: session.rebuys,
+        cash_out: Number(session.cash_out),
+        place: session.place,
+      })),
+  };
 }
 
 function isWholeAtLeast(value: number, min: number): boolean {

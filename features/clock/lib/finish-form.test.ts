@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type FinishForm,
   finishFormDefaults,
+  finishFormFromSaved,
   finishFormToSave,
   validateFinishForm,
 } from "@/features/clock/lib/finish-form";
@@ -59,7 +60,6 @@ function defaults() {
     entrants: ENTRANTS,
     members: MEMBERS,
     seasons: SEASONS,
-    weeks: WEEKS,
   });
   if (!result.ok) throw new Error(result.reason);
   return result.value;
@@ -72,10 +72,10 @@ describe("finishFormDefaults", () => {
     expect(form.date).toBe("2026-11-27");
   });
 
-  it("picks the newest season's latest week", () => {
+  it("picks the newest season and leaves the week to choose", () => {
     const { form } = defaults();
     expect(form.season_id).toBe("s-2026");
-    expect(form.week_id).toBe("w-2026-47");
+    expect(form.week_id).toBe("");
   });
 
   it("fills in the tournament numbers, guests included", () => {
@@ -112,7 +112,6 @@ describe("finishFormDefaults", () => {
       entrants: [...ENTRANTS, makeEntrant()],
       members: MEMBERS,
       seasons: SEASONS,
-      weeks: WEEKS,
     });
     expect(result).toEqual({ ok: false, reason: "unplaced_entrants" });
   });
@@ -123,7 +122,6 @@ describe("finishFormDefaults", () => {
       entrants: ENTRANTS,
       members: MEMBERS,
       seasons: [],
-      weeks: [],
     });
     expect(
       result.ok && [result.value.form.season_id, result.value.form.week_id],
@@ -132,9 +130,12 @@ describe("finishFormDefaults", () => {
 });
 
 describe("validateFinishForm", () => {
-  const valid = (): FinishForm => structuredClone(defaults().form);
+  const valid = (): FinishForm => ({
+    ...structuredClone(defaults().form),
+    week_id: "w-2026-47",
+  });
 
-  it("accepts the defaults", () => {
+  it("accepts the defaults once a week is picked", () => {
     expect(validateFinishForm(valid())).toEqual([]);
   });
 
@@ -174,7 +175,7 @@ describe("validateFinishForm", () => {
 
 describe("finishFormToSave", () => {
   it("builds what save_clock_results takes", () => {
-    const form = defaults().form;
+    const form = { ...defaults().form, week_id: "w-2026-47" };
     form.name = "  Thanksgiving Showdown  ";
     const saved = finishFormToSave(form);
     expect(saved.tournament).toEqual({
@@ -192,6 +193,49 @@ describe("finishFormToSave", () => {
       rebuys: 0,
       cash_out: 118.8,
       place: 1,
+    });
+  });
+});
+
+describe("finishFormFromSaved", () => {
+  it("prefills from saved results, numeric columns as numbers", () => {
+    const form = finishFormFromSaved({
+      tournament: {
+        name: "Thanksgiving Showdown",
+        date: "2026-11-27",
+        week_id: "w-2026-46",
+        places_paid: 4,
+        buy_in_amount: "40",
+        rebuy_amount: "40.00",
+        player_count: 11,
+        total_rebuys: 2,
+      },
+      sessions: [
+        { member_id: "m-3", rebuys: 0, cash_out: "59.40", place: 2 },
+        { member_id: "m-2", rebuys: 1, cash_out: "120", place: 1 },
+      ],
+      memberNames: new Map([
+        ["m-2", "A P."],
+        ["m-3", "B P."],
+      ]),
+      weeks: WEEKS,
+    });
+    expect(form).toEqual({
+      name: "Thanksgiving Showdown",
+      date: "2026-11-27",
+      season_id: "s-2026",
+      week_id: "w-2026-46",
+      tournament: {
+        places_paid: 4,
+        buy_in_amount: 40,
+        rebuy_amount: 40,
+        player_count: 11,
+        total_rebuys: 2,
+      },
+      sessions: [
+        { member_id: "m-2", name: "A P.", rebuys: 1, cash_out: 120, place: 1 },
+        { member_id: "m-3", name: "B P.", rebuys: 0, cash_out: 59.4, place: 2 },
+      ],
     });
   });
 });
