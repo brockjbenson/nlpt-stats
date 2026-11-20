@@ -22,6 +22,13 @@ function statusText({ detail, time }: LiveClockText): string {
   return time === null ? detail : `${detail} · ${time}`;
 }
 
+// What a screen reader announces: "Tournament live: Thanksgiving
+// Showdown, Level 5, 12:34 left".
+function bannerLabel({ name, detail, time }: LiveClockText): string {
+  const timeLeft = time === null ? "" : `, ${time} left`;
+  return `Tournament live: ${name}, ${detail}${timeLeft}`;
+}
+
 // A pulsing red dot: the "live" sign. Still when motion is reduced.
 function LiveDot() {
   return (
@@ -74,16 +81,13 @@ function LiveClockAccessory({ clock }: { clock: TournamentClock }) {
   const [mountedAtMs] = useState(() => Date.now());
   const nowMs = useServerNow(mountedAtMs, offsetMs);
   const text = describeLiveClock(clock, nowMs);
-  const label = `Tournament live: ${text.name}, ${text.detail}${
-    text.time === null ? "" : `, ${text.time} left`
-  }`;
 
   return (
     <BottomTabAccessory className="border-red-500/60">
       {(placement) => (
         <Link
           href={clockDisplayPath(clock.id)}
-          aria-label={label}
+          aria-label={bannerLabel(text)}
           className="flex size-full"
         >
           <BannerContent text={text} placement={placement} />
