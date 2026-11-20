@@ -29,13 +29,16 @@ function bannerLabel({ name, detail, time }: LiveClockText): string {
   return `Tournament live: ${name}, ${detail}${timeLeft}`;
 }
 
-// A pulsing red dot: the "live" sign. Still when motion is reduced.
+// A red dot: the "live" sign. Deliberately still: while an animation runs
+// non-stop on the page, iOS 26 can't see the fixed header when it colors
+// the status bar area, and shows its soft blur there instead (see
+// components/page-transition.tsx).
 function LiveDot() {
   return (
-    <span className="relative flex size-2.5 shrink-0" aria-hidden>
-      <span className="absolute inline-flex size-full animate-ping rounded-full bg-red-500 opacity-75 motion-reduce:animate-none" />
-      <span className="relative inline-flex size-2.5 rounded-full bg-red-500" />
-    </span>
+    <span
+      className="inline-flex size-2.5 shrink-0 rounded-full bg-red-500"
+      aria-hidden
+    />
   );
 }
 
