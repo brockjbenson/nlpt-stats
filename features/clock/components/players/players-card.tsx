@@ -1,40 +1,29 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  bustEntrantAction,
-  rebuyEntrantAction,
-  removeEntrantAction,
-  undoBustAction,
-} from "@/features/clock/actions/entrants";
+import { bustEntrantAction } from "@/features/clock/actions/entrants";
 import type { MemberOption } from "@/features/clock/data/entrants";
 import AddPlayersDrawer from "@/features/clock/components/players/add-players-drawer";
 import BustDialog from "@/features/clock/components/players/bust-dialog";
+import {
+  InPlayerButtons,
+  OutPlayerButtons,
+} from "@/features/clock/components/players/player-buttons";
 import PlayerRow from "@/features/clock/components/players/player-row";
 import { usePlayerAction } from "@/features/clock/components/players/use-player-action";
 import type { LivePlayers } from "@/features/clock/hooks/use-entrants";
-import { planRebuy } from "@/features/clock/lib/entrants";
 import {
   addRefusalMessage,
   rebuyRefusalMessage,
 } from "@/features/clock/lib/player-messages";
 import {
   addPlayersBlocked,
-  canRemoveEntrant,
   entrantNames,
   listPlayers,
   type PlayerRow as PlayerRowData,
-  planBustPlayer,
-  planUndoPlayer,
 } from "@/features/clock/lib/players";
 import type { ClockKnockout, TournamentClock } from "@/features/clock/types";
-import { Trash2 } from "lucide-react";
 import { useState } from "react";
-
-// planBustPlayer only uses the time for the bust's timestamp; whether a
-// bust is allowed doesn't depend on it.
-const ANY_TIME_MS = 0;
 
 type Props = {
   clock: TournamentClock;
@@ -86,24 +75,7 @@ function PlayersCard({ clock, players, members }: Props) {
   const knockers = latestKnockers(knockouts);
   const blocked = addPlayersBlocked(clock, entrants);
   const note = statusNote(clock, left, entrants.length);
-  const canRebuy = (id: string): boolean => planRebuy(clock, entrants, id).ok;
-
-  const rebuy = (player: PlayerRowData): void =>
-    run("Couldn't rebuy", () =>
-      rebuyEntrantAction(clock.id, player.entrant.id),
-    );
-
-  const rebuyButton = (player: PlayerRowData) =>
-    canRebuy(player.entrant.id) && (
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={isPending}
-        onClick={() => rebuy(player)}
-      >
-        Rebuy
-      </Button>
-    );
+  const buttonProps = { clock, entrants, run, isPending };
 
   return (
     <Card className="py-4">
@@ -139,52 +111,16 @@ function PlayersCard({ clock, players, members }: Props) {
 
         {left.length > 0 && (
           <ul className="divide-y">
-            {left.map((player) => {
-              const { entrant, name } = player;
-              const canBust = planBustPlayer(
-                clock,
-                entrants,
-                entrant.id,
-                null,
-                ANY_TIME_MS,
-              ).ok;
-              const canRemove =
-                clock.status !== "finished" &&
-                canRemoveEntrant(entrant, knockouts);
-              return (
-                <PlayerRow key={entrant.id} player={player}>
-                  {rebuyButton(player)}
-                  {canBust && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-red-600/60 text-red-500"
-                      disabled={isPending}
-                      onClick={() => setBusting(player)}
-                    >
-                      Bust
-                    </Button>
-                  )}
-                  {canRemove && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="size-9"
-                      disabled={isPending}
-                      aria-label={`Remove ${name}`}
-                      title={`Remove ${name}`}
-                      onClick={() =>
-                        run("Couldn't remove", () =>
-                          removeEntrantAction(clock.id, entrant.id),
-                        )
-                      }
-                    >
-                      <Trash2 size={16} className="text-red-600" />
-                    </Button>
-                  )}
-                </PlayerRow>
-              );
-            })}
+            {left.map((player) => (
+              <PlayerRow key={player.entrant.id} player={player}>
+                <InPlayerButtons
+                  {...buttonProps}
+                  player={player}
+                  knockouts={knockouts}
+                  onBust={() => setBusting(player)}
+                />
+              </PlayerRow>
+            ))}
           </ul>
         )}
 
@@ -195,30 +131,14 @@ function PlayersCard({ clock, players, members }: Props) {
             </p>
             <ul className="divide-y">
               {out.map((player) => {
-                const { entrant } = player;
-                const knocker = knockers.get(entrant.id);
-                const canUndo = planUndoPlayer(clock, entrants, entrant.id).ok;
+                const knocker = knockers.get(player.entrant.id);
                 return (
                   <PlayerRow
-                    key={entrant.id}
+                    key={player.entrant.id}
                     player={player}
                     knockedOutBy={knocker ? names.get(knocker) : null}
                   >
-                    {rebuyButton(player)}
-                    {canUndo && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={isPending}
-                        onClick={() =>
-                          run("Couldn't undo the bust", () =>
-                            undoBustAction(clock.id, entrant.id),
-                          )
-                        }
-                      >
-                        Undo
-                      </Button>
-                    )}
+                    <OutPlayerButtons {...buttonProps} player={player} />
                   </PlayerRow>
                 );
               })}
