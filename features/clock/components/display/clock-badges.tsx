@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 // The display's badges scale with the screen like the rest of it.
 const BADGE_SIZES: Record<ClockFaceSize, string> = {
   display: "text-[length:clamp(0.75rem,min(2vw,2.5dvh),1.5rem)]",
+  "beside-panel": "text-[length:clamp(0.75rem,min(2vw,2.5dvh),1.5rem)]",
   compact: "text-xs",
 };
 

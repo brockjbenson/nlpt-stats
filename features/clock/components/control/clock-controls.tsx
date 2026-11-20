@@ -10,7 +10,14 @@ import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
 import { useClockControl } from "@/features/clock/components/control/use-clock-control";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
+import PayoutsCard from "@/features/clock/components/control/payouts-card";
+import PlayersCard from "@/features/clock/components/players/players-card";
+import type {
+  ClockPlayers,
+  MemberOption,
+} from "@/features/clock/data/entrants";
 import { useClock } from "@/features/clock/hooks/use-clock";
+import { useEntrants } from "@/features/clock/hooks/use-entrants";
 import { CLOCKS_PATH, clockDisplayPath } from "@/features/clock/lib/paths";
 import type { TournamentClock } from "@/features/clock/types";
 import { useToast } from "@/hooks/use-toast";
@@ -77,12 +84,18 @@ function DisplayLinks({ id }: { id: string }) {
 function ClockControls({
   initialClock,
   initialNowMs,
+  initialPlayers,
+  members,
 }: {
   initialClock: TournamentClock;
   // The database time the page was rendered at.
   initialNowMs: number;
+  initialPlayers: ClockPlayers;
+  // Visible members and any hidden member already playing.
+  members: MemberOption[];
 }) {
   const live = useClock(initialClock, initialNowMs);
+  const players = useEntrants(initialClock.id, initialPlayers);
   const { clock, view, connection, isDeleted, applyRow } = live;
   useCatchUp(clock, view.position.levelIndex, applyRow);
   const control = useClockControl(live);
@@ -136,6 +149,12 @@ function ClockControls({
               </ClockFace>
             </CardContent>
           </Card>
+          <PlayersCard clock={clock} players={players} members={members} />
+          <PayoutsCard
+            clock={clock}
+            entrants={players.entrants}
+            applyRow={applyRow}
+          />
         </>
       )}
     </div>

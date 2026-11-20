@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { describeClock } from "@/features/clock/lib/display";
+import { describeClock, describeField } from "@/features/clock/lib/display";
 import {
   makeClock,
+  makeEntrant,
   NLPT_STANDARD_LEVELS,
 } from "@/features/clock/lib/test-fixtures";
-import type { BlindLevel, TournamentClock } from "@/features/clock/types";
+import type {
+  BlindLevel,
+  ClockEntrant,
+  TournamentClock,
+} from "@/features/clock/types";
 
 const MINUTE = 60_000;
 const START_MS = Date.parse("2026-11-27T19:00:00.000Z");
@@ -176,6 +181,91 @@ describe("describeClock", () => {
       status: "finished",
       title: "Level 6",
       timeText: "4:00",
+    });
+  });
+});
+
+// count players; the first `out` have busted, and rebuys are spread one
+// each over the first `rebuys` players.
+function field({
+  count,
+  out = 0,
+  rebuys = 0,
+}: {
+  count: number;
+  out?: number;
+  rebuys?: number;
+}): ClockEntrant[] {
+  return Array.from({ length: count }, (_, index) =>
+    makeEntrant({
+      rebuys: index < rebuys ? 1 : 0,
+      ...(index < out && {
+        busted_at: "2026-11-27T20:00:00.000Z",
+        finish_place: count - index,
+      }),
+    }),
+  );
+}
+
+describe("describeField", () => {
+  const clock = makeClock();
+
+  it("pays the design's example: 11 players, no rebuys", () => {
+    const view = describeField(clock, field({ count: 11 }));
+    expect(view.poolText).toBe("$440");
+    expect(view.payouts).toEqual([
+      { place: 1, label: "1st", amountText: "$217.80" },
+      { place: 2, label: "2nd", amountText: "$118.80" },
+      { place: 3, label: "3rd", amountText: "$59.40" },
+      { place: 4, label: "4th", amountText: "$44" },
+    ]);
+  });
+
+  it("grows every payout with rebuys", () => {
+    // 11 × $40 + 4 rebuys × $40 = $600.
+    const view = describeField(clock, field({ count: 11, rebuys: 4 }));
+    expect(view.pool).toBe(600);
+    expect(view.payouts.map(({ amountText }) => amountText)).toEqual([
+      "$297",
+      "$162",
+      "$81",
+      "$60",
+    ]);
+  });
+
+  it("pays only as many places as there are players", () => {
+    const view = describeField(clock, field({ count: 3 }));
+    expect(view.payouts.map(({ label }) => label)).toEqual([
+      "1st",
+      "2nd",
+      "3rd",
+    ]);
+  });
+
+  it("counts players and works out the average stack", () => {
+    // (10 × 20,000 + 2 × 20,000) chips over 6 players left.
+    const view = describeField(clock, field({ count: 10, out: 4, rebuys: 2 }));
+    expect(view).toMatchObject({
+      playersLeft: 6,
+      entrantCount: 10,
+      avgStackText: "40,000",
+    });
+  });
+
+  it("rounds the average stack to a whole chip", () => {
+    // 7 × 20,000 chips over 3 players left.
+    const view = describeField(clock, field({ count: 7, out: 4 }));
+    expect(view.avgStackText).toBe("46,667");
+  });
+
+  it("is empty with no players", () => {
+    expect(describeField(clock, [])).toEqual({
+      playersLeft: 0,
+      entrantCount: 0,
+      pool: 0,
+      poolText: "$0",
+      avgStackText: null,
+      payouts: [],
     });
   });
 });

@@ -5,6 +5,7 @@ import {
   getClock,
   mergeClockRow,
 } from "@/features/clock/data/clocks";
+import { useOnVisible } from "@/features/clock/hooks/use-on-visible";
 import { useServerOffset } from "@/features/clock/hooks/use-server-offset";
 import { applyUpdate } from "@/features/clock/lib/controls";
 import { type ClockView, describeClock } from "@/features/clock/lib/display";
@@ -87,18 +88,6 @@ function subscribeToClock(
   return () => {
     void db.removeChannel(channel);
   };
-}
-
-// Calls callback whenever the tab becomes visible again, such as a phone
-// waking up.
-function useOnVisible(callback: () => void): void {
-  useEffect(() => {
-    const onChange = (): void => {
-      if (document.visibilityState === "visible") callback();
-    };
-    document.addEventListener("visibilitychange", onChange);
-    return () => document.removeEventListener("visibilitychange", onChange);
-  }, [callback]);
 }
 
 // A clock kept live: Realtime updates, the server time offset, and a

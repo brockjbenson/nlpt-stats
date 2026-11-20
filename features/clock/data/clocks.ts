@@ -64,6 +64,11 @@ export async function getClocks(
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Whether id looks like a database id; anything else can't match a row.
+export function isUuid(id: string): boolean {
+  return UUID_PATTERN.test(id);
+}
+
 // One clock, or data null when it doesn't exist (including a link whose id
 // isn't a uuid, which the database would report as an error).
 export async function getClock(
@@ -73,7 +78,7 @@ export async function getClock(
   | { data: TournamentClock | null; error: null }
   | { data: null; error: PostgrestError }
 > {
-  if (!UUID_PATTERN.test(id)) return { data: null, error: null };
+  if (!isUuid(id)) return { data: null, error: null };
   const { data, error } = await db
     .from("_tournament_clocks")
     .select("*")
