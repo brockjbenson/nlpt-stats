@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phase 1 (schema) is built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-1-schema.md`.
+- **Status:** Approved. Phases 1–4 are built on dev; phase 4 still needs its on-device check and the prod rollout (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
 
 ## Goal
 
@@ -169,8 +169,9 @@ The calculations are in `features/clock/lib/timing.ts`. Each control returns the
 
 | Route | Who | Purpose |
 |---|---|---|
-| `/clock/[id]` | Public | Display: level, countdown, current/next blinds & ante, next break, players left (names), avg stack, prize pool & payouts. "TV mode" toggle → fullscreen + Wake Lock. |
-| `/admin/clock` | Admin | List clocks; create a clock from a template (pick template, optional tournament link, adjust money/chips/payouts). |
+| `/clock/[id]` | Public | Display: level, countdown, current/next blinds & ante, next break, players left (names), avg stack, prize pool & payouts. "TV mode" toggle → fullscreen + Wake Lock. Outside the `(home)` route group, so no header or tab bar. |
+| `/admin/clock` | Admin | List clocks: name, status, created date, Control and Display links, delete. |
+| `/admin/clock/new` | Admin | Create a clock from a template: pick the template, adjust money/chips/payouts. No tournament link here; the finish flow picks or creates the tournament. |
 | `/admin/clock/[id]` | Admin | Control: start/pause/resume, prev/next level, ±1 min, add entrants (member picker + guest name), rebuy, bust, undo bust, edit payouts. Includes a live mini-display. |
 | `/admin/clock/[id]/finish` | Admin | Review & save results (see Finish flow). |
 | `/admin/clock/structures` | Admin | CRUD templates and their levels (add/remove/reorder levels and breaks). |
@@ -180,12 +181,16 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - `features/clock/lib/` — pure functions, no React/Supabase imports, so they're easy to test:
   - `levels.ts`: `parseLevels` (checks a clock's `levels` with the `_blind_levels` rules), level lengths, `levelNumber`.
   - `timing.ts`: `getClockPosition`, the clock controls, `catchUpUpdate`, `nextPlayingLevel`, `timeToNextBreakMs`, `serverOffsetMs`.
-  - `format.ts`: `formatClockTime` (`15:00`, `1:01:01`; rounds up to the second), `formatBlinds` (`1,000 / 2,000`).
+  - `format.ts`: `formatClockTime` (`15:00`, `1:01:01`; rounds up to the second), `formatBlinds` (`1,000 / 2,000 (ante 200)`), `formatBlindPair` (without the ante), `formatClockDate` (`Nov 27, 2026` in the league's time zone, `America/Chicago`).
+  - `clocks.ts`: `clockSettingsFromStructure`, `validateClockSettings`, `buildClockInsert` (a new clock's row, with a snapshot of the template's levels), `clockStatusLabel`.
+  - `display.ts`: `describeClock`, everything a screen shows at one moment (`ClockView`).
+  - `controls.ts`: `planControl` (each control button → the columns to save, moving levels from where the clock has got to), `controlRefusalMessage`.
   - `money.ts`: `computePool`, `lastPlacePct`, `computePayouts`, `computeChips`.
   - `entrants.ts`: `planBust`, `planUndoBust`, `planRebuy`, `planFinish`.
   - `results.ts`: `buildFinishResults`.
   - `result.ts`: the `{ ok, value } | { ok, reason }` type the rules return when they can refuse.
-- `features/clock/hooks/useClock(id)` — initial fetch + Realtime subscription + server-time offset; returns derived state and a `requestAnimationFrame`/interval-driven remaining time.
+- `features/clock/data/` — Supabase reads: `clocks.ts` (`getClocks`, `getClock`, `getServerNowMs`, `toClock`, `mergeClockRow`) and `structures.ts`.
+- `features/clock/hooks/` — `useClock(initialClock, initialNowMs)`: Realtime subscription, server-time offset (`useServerOffset`), and a `describeClock` view redrawn every 250 ms.
 - `features/clock/actions/` — server actions for every admin mutation; each re-checks admin via `getCurrentUser()` in addition to RLS.
 
 ### Template editor (phase 3)
@@ -198,6 +203,16 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Add level** suggests the next round big blind (1, 1.5, 2, 3, 4, 5, 6, 8 × each power of ten; never doubles), small blind half of it, ante from the level above, the new level length.
 - **Break notes:** optional, breaks only, up to 100 characters.
 - **Saving:** validation matches the database checks and blocks Save with messages by the field or row; "No Changes" compares what would be saved, so undone edits don't count; leaving with unsaved changes asks first.
+
+### Clock core (phase 4)
+
+- **Creating:** `/admin/clock/new` picks a template (NLPT Standard first), fills in its money, chips, payouts and max rebuys, and names the clock "<template> – <today>". The settings and payout fields are the template editor's, shared through `settingsReducer`. Levels can't be changed per clock. A clock starts in setup with no tournament link; until the finish flow (phase 7) it can only be deleted.
+- **Database time:** each control action reads the clock and `server_now()` together and passes that time to the timing rules, so saved times and every screen's countdown use one clock.
+- **Conditional writes:** a control saves only `where status = <old> and level_index = <old>`. If another screen got there first it saves nothing and says "The clock changed on another screen. Try again." Next.js runs one browser's actions one after another, so a double press on one screen is refused by the timing rules instead ("The clock isn't in a state for that."). Two +1 minute presses on the same level from two screens can both apply.
+- **Catch-up:** while the control screen is open, it saves a level that ran out (`catchUpClockAction`), once per saved level, with the same conditional write.
+- **Live screens:** the page renders with the database time, and the client starts from it, so the first paint matches the server's HTML. Realtime updates are merged into the clock (`mergeClockRow`), since Postgres can leave unchanged large values such as `levels` out of an update. Every (re)subscribe and every wake (`visibilitychange`) refetches the row and re-measures the offset.
+- **Display:** sized with `min(vw, dvh)` so it fits a 1080p TV and a phone in either orientation. Shows the clock's name, Level N or Break (with the note), a status pill when not running, the countdown (dimmed when stopped), a progress bar, blinds and ante, and the next blinds and time to the next break, or "Final level". A missing clock or an id that isn't a uuid is not found.
+- **Control screen:** the face in a card, then Start (asks first), Pause/Resume, Previous/Next level, −1/+1 minute, each enabled only when it applies; the row an action returns is shown at once. Links open the display or copy its address (shown in a toast where the clipboard isn't available, such as a LAN address).
 
 ### Entrant actions
 
@@ -226,8 +241,8 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 ## Error handling
 
 - **Realtime disconnect:** show a subtle "reconnecting" badge; on reconnect, refetch the clock + entrants and re-sync server time (Realtime doesn't replay missed events).
-- **Mutation failure:** server actions return `{ success, message }` like existing actions; control screen shows a toast and reverts any optimistic UI.
-- **Concurrent admins:** level advances use conditional updates; bust/rebuy are per-row updates, so last-write-wins is acceptable.
+- **Mutation failure:** server actions return `{ success, message }` like existing actions; the control screen shows a toast. There's no optimistic UI: the saved row an action returns is shown as soon as it arrives.
+- **Concurrent admins:** clock controls and level advances use conditional updates; a screen that acted on a stale clock is told to try again. Bust/rebuy are per-row updates, so last-write-wins is acceptable.
 - **Template edits mid-tournament:** no effect on running clocks (levels are snapshotted).
 - **Clock past final level:** stays on the last level with the countdown at 0:00 (no wrap).
 - **Validation:** `payout_pcts` has one value per place above the last paid place, each > 0, summing to 100; guest name required when no member. Both are also database checks.
@@ -237,6 +252,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 **Vitest** (dev dependency, `vitest.config.mts`) tests the pure functions in `features/clock/lib/`, which carry all the tricky logic. Run `npm test` (or `npm run test:watch`). Tests sit next to the code as `*.test.ts`, with shared builders and the NLPT Standard levels in `test-fixtures.ts`. They cover:
 
 - Effective level / remaining time across pause, resume, adjust, and multi-level catch-up after a sleeping tab; every control's result checked against the database's status rule.
+- What the display shows (`describeClock`) in setup, running, paused, on a break and past the last level; each control button's plan (`planControl`); merging Realtime updates and reading numeric columns (`data/clocks.test.ts`).
 - Pool, avg stack, and payout rule (last-place share rounded up from 1 ÷ players and kept through rebuys, entrants < places paid, and the whole pool always paid out).
 - Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
 - Finish results: guest re-ranking, true-position cash-outs, places actually paid.
@@ -294,7 +310,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 1. **Schema:** clock tables, RLS, Realtime publication, `server_now()` RPC, types, the NLPT Standard template. Done on dev; goes to prod with phase 4.
 2. **Pure logic + tests:** `features/clock/lib` with Vitest. Done; see `docs/plans/2026-11-19-tournament-clock-phase-2-logic.md`.
 3. **Templates:** `/admin/clock/structures` CRUD. Done on dev; see `docs/plans/2026-11-19-tournament-clock-phase-3-templates.md`.
-4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only).
+4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only). Built on dev; the on-device check and the prod rollout are still to do (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
 5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
 6. **TV mode & sounds.**
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.

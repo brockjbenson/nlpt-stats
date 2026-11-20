@@ -4,6 +4,25 @@
 
 **Ticket:** none
 
+**Status (2026-11-19):** Tasks 1–8 and 11 are done on dev, and the R1–R5 refinement pass follows. Task 9 is partly done (see below). Task 10 (prod rollout) is **still pending** and needs the go-ahead in chat.
+
+**Task 9 so far** (in-app browser, control screen and signed-out display side by side, against dev):
+- Create, bad split, template switch (settings refill, break notes copied) and delete.
+- Start, pause, resume, next, previous and ±1 minute: both screens and the saved row agree within a second.
+- A level that ran out was saved once (`level_index` and its effective start). A double press is refused without applying twice.
+- Breaks, refresh mid-level, and fit at 1080p and on a phone in portrait and landscape.
+
+Still to check, on an iPhone: the Reconnecting… badge and catching up after sleep, Safari reading the database's microsecond timestamps, the "changed on another screen" message (needs two devices pressing at once), and the display link's fallback on a LAN address. The test clock "NLPT Standard – Nov 19, 2026" is still on dev for this.
+
+**Changes from this plan:**
+- `useClock(initialClock, initialNowMs)`: the page passes the database time it rendered with, so the first client render matches the server's HTML.
+- `mergeClockRow` applies Realtime updates onto the clock instead of replacing it, since Postgres can leave out unchanged large values (`levels`). The row "is it newer" check was left out: Realtime brings the latest row a moment later anyway.
+- `getClocks` doesn't return a level count (the list cards don't show one). `getClock` treats an id that isn't a uuid as no clock.
+- `formatBlindPair` (blinds without the ante) and `formatClockDate` (dates in `America/Chicago`) were added to `format.ts`; `clockStatusLabel` to `clocks.ts`.
+- The settings and payout fields were generalized for the create form (`settingsReducer`, `SettingsFields`/`PayoutFields` with an id prefix; the template-only new row lengths moved to `NewRowLengthFields`).
+- No haptics: the other admin buttons don't use them.
+- Also fixed on the branch: the lockfile pointed 68 packages at an internal npm proxy (Vercel builds failed), and vitest ran the test suites of worktrees under `.claude/`.
+
 **Goal:** An admin creates a clock from a template, runs it from `/admin/clock/[id]` (start, pause, resume, previous/next level, ±1 minute), and anyone can watch the same clock live at `/clock/[id]` on a TV or phone. Timing only; entrants, money and the finish flow come in phases 5 and 7.
 
 **Architecture:** The clock row holds timestamps, not a ticking value. Every screen loads the row, subscribes to it with Supabase Realtime, measures its offset from the database clock with `server_now()`, and works out the level and time left locally every 250 ms with `getClockPosition`. Each admin control is one server action: it reads the row and the database time, asks the phase 2 control function (`startClock`, `pauseClock`, …) for the columns to save, and writes them with a **conditional update** (`where status = <old> and level_index = <old>`), so two admin screens can't both act on a stale clock. The control screen also saves level changes caused by time running out (`catchUpUpdate`), using the same conditional write.
