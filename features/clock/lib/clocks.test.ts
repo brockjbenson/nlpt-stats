@@ -7,10 +7,7 @@ import {
   type ClockSettings,
 } from "@/features/clock/lib/clocks";
 import { parseLevels } from "@/features/clock/lib/levels";
-import {
-  NAME_MAX_LENGTH,
-  type StructureField,
-} from "@/features/clock/lib/structures";
+import type { StructureField } from "@/features/clock/lib/structures";
 import { NLPT_STANDARD_LEVELS } from "@/features/clock/lib/test-fixtures";
 import type {
   BlindStructure,
@@ -43,13 +40,14 @@ const STORED_LEVELS: BlindStructureLevel[] = NLPT_STANDARD_LEVELS.map(
 ).reverse();
 
 function validSettings(change: Partial<ClockSettings> = {}): ClockSettings {
-  return { ...clockSettingsFromStructure(STRUCTURE, "Nov 27"), ...change };
+  return { ...clockSettingsFromStructure(STRUCTURE), ...change };
 }
 
 describe("clockSettingsFromStructure", () => {
-  it("copies the template's defaults and names the clock by date", () => {
-    expect(clockSettingsFromStructure(STRUCTURE, "Nov 27")).toEqual({
-      name: "NLPT Standard – Nov 27",
+  it("copies the template's defaults and names the clock after it", () => {
+    // No date in the name: the list shows when each clock was created.
+    expect(clockSettingsFromStructure(STRUCTURE)).toEqual({
+      name: "NLPT Standard",
       buy_in: 40,
       rebuy: 40,
       starting_chips: 20000,
@@ -61,15 +59,8 @@ describe("clockSettingsFromStructure", () => {
   });
 
   it("doesn't share the template's payout array", () => {
-    const settings = clockSettingsFromStructure(STRUCTURE, "Nov 27");
+    const settings = clockSettingsFromStructure(STRUCTURE);
     expect(settings.payout_pcts).not.toBe(STRUCTURE.default_payout_pcts);
-  });
-
-  it("keeps the name within the length limit", () => {
-    const longName = { ...STRUCTURE, name: "x".repeat(NAME_MAX_LENGTH) };
-    const { name } = clockSettingsFromStructure(longName, "Nov 27");
-    expect(name.length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
-    expect(name.endsWith(" – Nov 27")).toBe(true);
   });
 });
 

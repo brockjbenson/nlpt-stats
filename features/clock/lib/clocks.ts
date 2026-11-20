@@ -1,5 +1,4 @@
 import {
-  NAME_MAX_LENGTH,
   type SettingsFields,
   type StructureError,
   validateSettings,
@@ -19,18 +18,13 @@ export type ClockSettings = SettingsFields;
 // The _tournament_clocks columns to insert for a new clock.
 export type ClockInsert = Omit<TournamentClock, "id" | "created_at">;
 
-const NAME_SEPARATOR = " – ";
-
-// The template's defaults, with the clock named "<template> – <dateLabel>"
-// (the template part shortened if the whole name would be too long).
+// The template's defaults, with the clock named after the template. The
+// name carries no date: the clock list shows when each was created.
 export function clockSettingsFromStructure(
   structure: BlindStructure,
-  dateLabel: string,
 ): ClockSettings {
-  const suffix = `${NAME_SEPARATOR}${dateLabel}`;
-  const base = structure.name.slice(0, NAME_MAX_LENGTH - suffix.length);
   return {
-    name: `${base}${suffix}`,
+    name: structure.name,
     buy_in: structure.default_buy_in,
     rebuy: structure.default_rebuy,
     starting_chips: structure.default_starting_chips,

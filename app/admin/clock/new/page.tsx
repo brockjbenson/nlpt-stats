@@ -11,22 +11,14 @@ import {
 } from "@/components/ui/empty";
 import CreateClockForm from "@/features/clock/components/clocks/create-clock-form";
 import { getStructures } from "@/features/clock/data/structures";
-import { formatClockDate } from "@/features/clock/lib/format";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
 
 const TITLE = "New Clock";
 
-// Today in the league's time zone, for the default clock name. The page
-// reads the session, so it renders per request and "today" is current.
-function todayLabel(): string {
-  return formatClockDate(Date.now());
-}
-
 async function Page() {
   const db = await createClient();
   const { data: structures, error } = await getStructures(db);
-  const dateLabel = todayLabel();
 
   if (error) {
     return (
@@ -60,7 +52,7 @@ async function Page() {
           </EmptyContent>
         </Empty>
       ) : (
-        <CreateClockForm structures={structures} dateLabel={dateLabel} />
+        <CreateClockForm structures={structures} />
       )}
     </>
   );
