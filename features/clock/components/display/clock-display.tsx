@@ -9,6 +9,8 @@ import type {
 } from "@/features/clock/data/entrants";
 import { useClock } from "@/features/clock/hooks/use-clock";
 import { useEntrants } from "@/features/clock/hooks/use-entrants";
+import { useSound } from "@/features/clock/hooks/use-sound";
+import { useSoundCues } from "@/features/clock/hooks/use-sound-cues";
 import { describeField } from "@/features/clock/lib/display";
 import { entrantNames, listPlayers } from "@/features/clock/lib/players";
 import type { TournamentClock } from "@/features/clock/types";
@@ -30,11 +32,13 @@ function ClockDisplay({
   // Members to name the players by and show the photos of.
   members: MemberOption[];
 }) {
-  const { clock, view, connection, isDeleted } = useClock(
+  const { clock, view, nowMs, connection, isDeleted } = useClock(
     initialClock,
     initialNowMs,
   );
   const { entrants, knockouts } = useEntrants(initialClock.id, initialPlayers);
+  const sound = useSound();
+  useSoundCues(view, nowMs, sound.play);
 
   if (isDeleted) {
     return (
