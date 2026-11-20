@@ -8,8 +8,9 @@ import {
 } from "@/components/ui/accordion";
 import { getVisitedRoutes } from "@/lib/route-visited-wrapper";
 import Link from "next/link";
+import { ADMIN_LINKS } from "@/components/admin-nav/admin-links";
 import { useEffect, useState } from "react";
-import { FaList, FaMoneyBill, FaPlus, FaTrophy, FaUsers } from "react-icons/fa";
+import { FaMoneyBill, FaTrophy, FaUsers } from "react-icons/fa";
 import {
   FaBookBookmark,
   FaGlobe,
@@ -63,34 +64,6 @@ const navLinks = (year: number): NavLink[] => [
   },
 ];
 
-const ADMIN_LINKS: NavLink[] = [
-  {
-    href: "/admin/seasons",
-    label: "Seasons",
-    icon: <FaList className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/stats/tournaments",
-    label: "Tournaments List",
-    icon: <FaTrophy className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/stats/cash",
-    label: "Cash Sessions List",
-    icon: <FaMoneyBill className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/stats/tournaments/new",
-    label: "Add Tournament",
-    icon: <FaPlus className="w-5 h-5" />,
-  },
-  {
-    href: "/admin/stats/cash/new",
-    label: "Add Cash Session",
-    icon: <FaPlus className="w-5 h-5" />,
-  },
-];
-
 // Add routes here that you want to track with NEW badges
 const ROUTES_TO_TRACK: string[] = [];
 const STORAGE_KEY = "nlpt-visited-routes";
@@ -134,7 +107,8 @@ export function NavLinks({
           <li key={link.href}>
             <Link
               className="flex items-center gap-4 text-lg font-medium relative"
-              href={link.href}>
+              href={link.href}
+            >
               {link.icon}
               {link.label}
               {shouldShowBadge(link.href) && (
@@ -161,7 +135,8 @@ export function NavLinks({
                       <li key={link.href}>
                         <Link
                           className="flex items-center gap-4"
-                          href={link.href}>
+                          href={link.href}
+                        >
                           {link.icon} {link.label}
                           {shouldShowBadge(link.href) && (
                             <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-primary text-primary-foreground rounded-full">

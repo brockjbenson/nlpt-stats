@@ -13,6 +13,12 @@ import {
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import TournamentsMain from "@/features/tournaments/components/tournaments-main";
+import DesktopPageHeader from "@/components/page-header/desktop-page-header";
+import SeasonTabs, {
+  SeasonTabsSkeleton,
+} from "@/components/page-header/season-tabs";
+import { ADMIN_ACTION_CLASS } from "@/components/admin-nav/admin-action";
+import { Suspense } from "react";
 
 async function Page({
   searchParams,
@@ -91,7 +97,29 @@ async function Page({
           </DropdownMenuContent>
         </DropdownMenu>
       </PageHeader>
-      <TournamentsMain members={members} tournamentsData={tournamentsData} />
+      <DesktopPageHeader title="Tournaments">
+        <Suspense fallback={<SeasonTabsSkeleton />}>
+          <SeasonTabs
+            activeYear={String(activeSeason.year)}
+            hrefFor={(seasonYear) =>
+              `/admin/stats/tournaments?year=${seasonYear}`
+            }
+          />
+        </Suspense>
+      </DesktopPageHeader>
+      <div className="flex justify-end px-2 mb-4">
+        <Link
+          className={ADMIN_ACTION_CLASS}
+          href="/admin/stats/tournaments/new"
+        >
+          Add Tournament
+        </Link>
+      </div>
+      <TournamentsMain
+        isAdmin
+        members={members}
+        tournamentsData={tournamentsData}
+      />
     </>
   );
 }
