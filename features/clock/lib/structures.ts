@@ -231,7 +231,7 @@ export function isCompleteSplit(pcts: number[]): boolean {
 function payoutError({
   payout_pcts: pcts,
   places_paid: places,
-}: SettingsFields): string | null {
+}: PayoutSettings): string | null {
   if (pcts.length !== places - 1)
     return `Enter a percentage for each of the ${places - 1} places above the last paid place.`;
   if (pcts.some((pct) => !(pct > 0)))
@@ -252,6 +252,30 @@ function levelErrors(levels: DraftLevel[]): StructureError[] {
     return [{ field: "levels", message: "Add at least one level." }];
   }
   return [];
+}
+
+// Places paid and the split above the last paid place.
+export type PayoutSettings = Pick<
+  SettingsFields,
+  "places_paid" | "payout_pcts"
+>;
+
+// What's wrong with places paid and the split (same rules as the
+// database). The split is only checked once places paid is valid.
+export function validatePayouts(settings: PayoutSettings): StructureError[] {
+  const isValidPlaces =
+    Number.isInteger(settings.places_paid) &&
+    settings.places_paid >= MIN_PLACES_PAID;
+  if (!isValidPlaces) {
+    return [
+      {
+        field: "places_paid",
+        message: `Pay at least ${MIN_PLACES_PAID} places.`,
+      },
+    ];
+  }
+  const message = payoutError(settings);
+  return message ? [{ field: "payout_pcts", message }] : [];
 }
 
 // Everything wrong with a template's or clock's settings, in form order.
@@ -279,17 +303,7 @@ export function validateSettings(
       ? null
       : "Chip counts must be whole numbers above 0.",
   );
-  add(
-    "places_paid",
-    Number.isInteger(settings.places_paid) &&
-      settings.places_paid >= MIN_PLACES_PAID
-      ? null
-      : `Pay at least ${MIN_PLACES_PAID} places.`,
-  );
-  // Payout percentages only make sense once places paid is valid.
-  if (!errors.some(({ field }) => field === "places_paid")) {
-    add("payout_pcts", payoutError(settings));
-  }
+  errors.push(...validatePayouts(settings));
   add(
     "max_rebuys",
     Number.isInteger(settings.max_rebuys) && settings.max_rebuys >= 0

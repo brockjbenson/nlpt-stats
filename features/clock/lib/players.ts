@@ -1,4 +1,10 @@
-import { playersLeft } from "@/features/clock/lib/entrants";
+import {
+  type BustRefusal,
+  planBust,
+  planUndoBust,
+  playersLeft,
+  type UndoBustRefusal,
+} from "@/features/clock/lib/entrants";
 import { fail, ok, type Result } from "@/features/clock/lib/result";
 import type {
   ClockEntrant,
@@ -193,4 +199,50 @@ export function canRemoveEntrant(
         entrant_id === entrant.id || knocked_out_by === entrant.id,
     )
   );
+}
+
+// Busts and their undo happen while the clock is in play; before it
+// starts nobody can be out, and a finished clock's places are final.
+function isInPlay(clock: Pick<TournamentClock, "status">): boolean {
+  return clock.status === "running" || clock.status === "paused";
+}
+
+export type BustPlayerRefusal = BustRefusal | "wrong_status" | "bad_knocker";
+
+export type PlannedBust = {
+  finish_place: number;
+  busted_at: string;
+  knocked_out_by: string | null;
+};
+
+// A bust with who knocked the player out (null: not recorded), which must
+// be another player still in this clock.
+export function planBustPlayer(
+  clock: Pick<TournamentClock, "status">,
+  entrants: ClockEntrant[],
+  entrantId: string,
+  knockedOutBy: string | null,
+  nowMs: number,
+): Result<PlannedBust, BustPlayerRefusal> {
+  if (!isInPlay(clock)) return fail("wrong_status");
+  const bust = planBust(entrants, entrantId, nowMs);
+  if (!bust.ok) return bust;
+
+  const knockerIsIn = playersLeft(entrants).some(
+    ({ id }) => id === knockedOutBy && id !== entrantId,
+  );
+  if (knockedOutBy !== null && !knockerIsIn) return fail("bad_knocker");
+  return ok({ ...bust.value, knocked_out_by: knockedOutBy });
+}
+
+export type UndoPlayerRefusal = UndoBustRefusal | "wrong_status";
+
+// Undoing the most recent bust, while the clock is in play.
+export function planUndoPlayer(
+  clock: Pick<TournamentClock, "status">,
+  entrants: ClockEntrant[],
+  entrantId: string,
+): Result<{ busted_at: null; finish_place: null }, UndoPlayerRefusal> {
+  if (!isInPlay(clock)) return fail("wrong_status");
+  return planUndoBust(entrants, entrantId);
 }

@@ -7,6 +7,8 @@ import {
   listPlayers,
   type MemberName,
   planAddEntrants,
+  planBustPlayer,
+  planUndoPlayer,
 } from "@/features/clock/lib/players";
 import { makeClock, makeEntrant } from "@/features/clock/lib/test-fixtures";
 import type { ClockEntrant, ClockKnockout } from "@/features/clock/types";
@@ -251,5 +253,124 @@ describe("canRemoveEntrant", () => {
   it("refuses a player who rebought after a knockout", () => {
     const back = member(ALEX_STONE.id, { rebuys: 1 });
     expect(canRemoveEntrant(back, [knockout(back.id, null)])).toBe(false);
+  });
+});
+
+describe("planBustPlayer", () => {
+  const NOW_MS = Date.parse("2026-11-27T02:00:00.000Z");
+  const running = makeClock({
+    status: "running",
+    level_started_at: "2026-11-27T01:00:00.000Z",
+  });
+  const smith = member(ALEX_SMITH.id);
+  const jones = member(SAM_JONES.id);
+  const rob = guest("Uncle Rob");
+  const gone = guest("Bea", busted(4));
+  const entrants = [smith, jones, rob, gone];
+
+  it("busts into the next place, with who knocked them out", () => {
+    expect(
+      planBustPlayer(running, entrants, jones.id, smith.id, NOW_MS),
+    ).toEqual({
+      ok: true,
+      value: {
+        finish_place: 3,
+        busted_at: "2026-11-27T02:00:00.000Z",
+        knocked_out_by: smith.id,
+      },
+    });
+  });
+
+  it("allows no knockout to be recorded", () => {
+    const plan = planBustPlayer(running, entrants, jones.id, null, NOW_MS);
+    expect(plan.ok && plan.value.knocked_out_by).toBeNull();
+  });
+
+  it("works while paused", () => {
+    const paused = makeClock({ status: "paused", paused_remaining_ms: 1000 });
+    expect(planBustPlayer(paused, entrants, jones.id, null, NOW_MS).ok).toBe(
+      true,
+    );
+  });
+
+  it.each<[string, Parameters<typeof planBustPlayer>, string]>([
+    [
+      "before the clock starts",
+      [makeClock(), entrants, jones.id, null, NOW_MS],
+      "wrong_status",
+    ],
+    [
+      "once the clock is finished",
+      [
+        makeClock({ status: "finished", paused_remaining_ms: 0 }),
+        entrants,
+        jones.id,
+        null,
+        NOW_MS,
+      ],
+      "wrong_status",
+    ],
+    [
+      "a knockout by themselves",
+      [running, entrants, jones.id, jones.id, NOW_MS],
+      "bad_knocker",
+    ],
+    [
+      "a knockout by a player who is out",
+      [running, entrants, jones.id, gone.id, NOW_MS],
+      "bad_knocker",
+    ],
+    [
+      "a knockout by someone not in this clock",
+      [running, entrants, jones.id, "nobody", NOW_MS],
+      "bad_knocker",
+    ],
+    [
+      "a player already out",
+      [running, entrants, gone.id, null, NOW_MS],
+      "already_busted",
+    ],
+    [
+      "the last player left",
+      [running, [smith, gone], smith.id, null, NOW_MS],
+      "last_player",
+    ],
+  ])("refuses %s", (_name, args, reason) => {
+    expect(planBustPlayer(...args)).toEqual({ ok: false, reason });
+  });
+});
+
+describe("planUndoPlayer", () => {
+  const running = makeClock({
+    status: "running",
+    level_started_at: "2026-11-27T01:00:00.000Z",
+  });
+  const fourth = guest("Bea", busted(4));
+  const fifth = guest("Cy", busted(5));
+  const entrants = [
+    member(ALEX_SMITH.id),
+    member(SAM_JONES.id),
+    guest("Rob"),
+    fourth,
+    fifth,
+  ];
+
+  it("undoes the most recent bust", () => {
+    expect(planUndoPlayer(running, entrants, fourth.id).ok).toBe(true);
+  });
+
+  it("refuses an earlier bust", () => {
+    expect(planUndoPlayer(running, entrants, fifth.id)).toEqual({
+      ok: false,
+      reason: "not_most_recent",
+    });
+  });
+
+  it("refuses once the clock is finished", () => {
+    const finished = makeClock({ status: "finished", paused_remaining_ms: 0 });
+    expect(planUndoPlayer(finished, entrants, fourth.id)).toEqual({
+      ok: false,
+      reason: "wrong_status",
+    });
   });
 });
