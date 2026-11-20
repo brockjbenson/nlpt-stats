@@ -6,6 +6,7 @@ import Link from "next/link";
 import MemberImage from "@/components/members/member-image";
 import { Button } from "@/components/ui/button";
 import { clockDisplayPath } from "@/features/clock/lib/paths";
+import { parseDateOnly } from "@/lib/dates";
 
 interface Props {
   isAdmin?: boolean;
@@ -85,7 +86,7 @@ function TournamentInfo({ data, clockId = null }: Props) {
             <div className="flex flex-col gap-1 items-end md:items-center justify-center">
               <p className="text-sm text-muted md:text-base">Date</p>
               <p className="text-lg font-semibold md:text-xl">
-                {new Date(data.date).toLocaleDateString("en-US", {
+                {parseDateOnly(data.date).toLocaleDateString("en-US", {
                   month: "numeric",
                   day: "numeric",
                   year: "2-digit",

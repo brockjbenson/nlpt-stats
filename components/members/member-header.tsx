@@ -2,6 +2,7 @@ import { Member } from "@/utils/types";
 import Image from "next/image";
 import { UserRound } from "lucide-react";
 import React from "react";
+import { parseDateOnly } from "@/lib/dates";
 
 function MemberHeader({
   member,
@@ -33,7 +34,7 @@ function MemberHeader({
         <p className="absolute bottom-4 font-medium z-20 text-white">
           Joined:{" "}
           {joinDate
-            ? new Date(joinDate).toLocaleDateString("en-US", {
+            ? parseDateOnly(joinDate).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",

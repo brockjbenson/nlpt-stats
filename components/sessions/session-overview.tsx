@@ -4,6 +4,7 @@ import { formatMoney, getProfitTextColor } from "@/utils/utils";
 import { Card, CardTitle } from "../ui/card";
 import MemberImage from "../members/member-image";
 import Link from "next/link";
+import { parseDateOnly } from "@/lib/dates";
 
 interface Props {
   data: CashSessionWeekData;
@@ -13,7 +14,7 @@ function SessionOverview({ data }: Props) {
   const sessions = data.sessions;
   const topEarner = sessions[0];
   const biggestLoser = sessions[sessions.length - 1];
-  const sessionDate = new Date(data.date);
+  const sessionDate = parseDateOnly(data.date);
   return (
     <div className="grid mt-4 mb-4 grid-cols-1 w-full max-w-(--breakpoint-xl) px-2 mx-auto md:grid-cols-3 gap-4">
       <Card>
