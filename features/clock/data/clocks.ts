@@ -61,7 +61,11 @@ export async function getClocks(
   return { data: data as ClockSummary[], error: null };
 }
 
-// One clock, or data null when it doesn't exist.
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// One clock, or data null when it doesn't exist (including a link whose id
+// isn't a uuid, which the database would report as an error).
 export async function getClock(
   db: SupabaseClient,
   id: string,
@@ -69,6 +73,7 @@ export async function getClock(
   | { data: TournamentClock | null; error: null }
   | { data: null; error: PostgrestError }
 > {
+  if (!UUID_PATTERN.test(id)) return { data: null, error: null };
   const { data, error } = await db
     .from("_tournament_clocks")
     .select("*")

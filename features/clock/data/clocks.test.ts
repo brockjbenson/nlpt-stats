@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   type ClockRow,
+  getClock,
   mergeClockRow,
   toClock,
 } from "@/features/clock/data/clocks";
@@ -63,5 +65,15 @@ describe("mergeClockRow", () => {
       paused_remaining_ms: 60_000,
     });
     expect(merged.level_started_at).toBeNull();
+  });
+});
+
+describe("getClock", () => {
+  it("treats an id that isn't a uuid as no clock, without asking the database", async () => {
+    const db = {} as SupabaseClient;
+    await expect(getClock(db, "not-a-clock")).resolves.toEqual({
+      data: null,
+      error: null,
+    });
   });
 });
