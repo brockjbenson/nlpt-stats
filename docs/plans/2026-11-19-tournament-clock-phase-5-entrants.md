@@ -14,6 +14,19 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Entrant actions, Rebuy rules, Payout rule). Phase 4: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`. Branch: `feat/tournament-shot-clock`.
 
+**Status (2026-11-20):** Tasks 1–11 are done on dev; the R1–R5 refinement pass is next. The knockouts migration goes to prod with phase 4's Task 10 (needs the go-ahead in chat).
+
+**Changes from this plan:**
+- **Adding players is blocked while anyone is out**, not "after the first bust" (decision 2). That was always the actual rule: once a re-entry brings everyone back in, adding is safe again, and the click-through showed the Add button coming back. The refusal is `player_out` ("Players can't be added while anyone is out.").
+- **Bust and undo also need the clock running or paused** (`planBustPlayer`, `planUndoPlayer` in `players.ts`, wrapping the phase 2 rules), like rebuys. A knockout must name another player still in.
+- **Player messages** live in `lib/player-messages.ts`; `validatePayouts` was split out of the template rules for the payouts action.
+- **`useEntrants` also refetches a second after changes stop arriving.** On dev, one knockout insert was dropped just after subscribing; this heals a missed event. `useOnVisible` moved to its own file, shared with `useClock`.
+- **Buttons show only when their action is allowed**, with one note for the common reasons, rather than disabled buttons with a tooltip (tooltips don't show on a phone).
+- **Payouts are a card** on the control screen (pool, what each place pays, Edit), not just a button; the edit form remounts on every open so cancelled edits don't come back.
+- **The display's countdown has a beside-panel size**: with the panel beside it in landscape, the full-width size ran off the screen.
+- **No summary line on the control screen's face** (Task 9's optional item): the Players and Payouts cards already show it.
+- **Not checked in the browser:** offline/online, two admins pressing at once, and phone width.
+
 ---
 
 ## Decisions made in this plan (confirm before starting)

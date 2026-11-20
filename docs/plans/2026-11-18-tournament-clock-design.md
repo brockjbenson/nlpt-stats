@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–4 are built on dev; phase 4 still needs its on-device check and the prod rollout (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
+- **Status:** Approved. Phases 1–5 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`.
 
 ## Goal
 
@@ -28,6 +28,8 @@ A live blinds/level clock for NLPT tournaments. An admin runs it from their phon
 | Player phone view | None in v1; the shared display is enough |
 | Tests | Vitest for the pure logic (`npm test`) |
 | Guests in results | Counted in the pool and live placing; excluded from saved sessions; members re-ranked |
+| Knockouts | Each bust can record who knocked the player out (optional); kept in `_clock_knockouts` for later use (results, trinkets) |
+| Adding players | Any time before the clock finishes, except while anyone is out |
 
 ### Sync approach (chosen: A)
 
@@ -103,7 +105,29 @@ A check keeps status and timestamps consistent: `setup` has neither `level_start
 | `busted_at` | timestamptz, nullable | null = still in |
 | `finish_place` | int, nullable | assigned at bust (players remaining at time of bust) |
 
-Constraints: exactly one of `member_id` / `guest_name` is set (a guest name can't be blank); a member appears at most once per clock; `busted_at` and `finish_place` are set together; no two entrants in a clock share a `finish_place`.
+Constraints: exactly one of `member_id` / `guest_name` is set (a guest name can't be blank, and is at most 40 characters); a member appears at most once per clock; `busted_at` and `finish_place` are set together; no two entrants in a clock share a `finish_place`; `(clock_id, id)` is unique so knockouts can point at a player in the same clock.
+
+### `_clock_knockouts`
+
+Migration: `supabase/migrations/20261120043702_tournament_clock_knockouts.sql` (phase 5).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid pk | |
+| `clock_id` | uuid fk → `_tournament_clocks` | cascade delete |
+| `entrant_id` | uuid | the player who went out; fk `(clock_id, entrant_id)` → `_clock_entrants` |
+| `knocked_out_by` | uuid, nullable | who knocked them out; null = not recorded; same-clock fk; never the player themselves |
+| `busted_at` | timestamptz | the bust's time |
+| `created_at` | timestamptz | |
+
+One row per bust. It stays when the player rebuys back in (the knockout still happened); undoing the bust deletes it. A player in any knockout can't be deleted (no cascade from players); deleting the clock removes both.
+
+Two `security invoker` functions keep a player's place and their knockout row together:
+
+- `bust_clock_entrant(p_entrant_id, p_finish_place, p_busted_at, p_knocked_out_by)`: sets the place and adds the knockout row. A player already out raises `no_data_found`; another screen's bust into the same place raises `unique_violation`.
+- `undo_clock_bust(p_entrant_id)`: clears the place and deletes the player's newest knockout row; `no_data_found` when they aren't out.
+
+Both are executable by `authenticated` only; RLS decides who can write (a non-admin's bust finds no row it may update, so it also reports `no_data_found`).
 
 ### Derived values (computed, not stored)
 
@@ -140,13 +164,13 @@ Suggested splits for the places above the last (the editor fills these in):
 - Only while the clock is running or paused.
 - A busted player can rebuy (re-enter) only as the **most recent bust**, the same rule as undo. Otherwise the next bust would get a place someone already has.
 
-`planRebuy` in `features/clock/lib/entrants.ts` applies all four; the rebuy action uses it in phase 5. The in-the-money cutoff changes as players bust, so it can't be a table check.
+`planRebuy` in `features/clock/lib/entrants.ts` applies all four, on the control screen (which buttons show) and in `rebuyEntrantAction`. The in-the-money cutoff changes as players bust, so it can't be a table check.
 
 ### Permissions (RLS)
 
-- `select` open to `anon` and `authenticated` on all four tables (TV and player phones need no login).
+- `select` open to `anon` and `authenticated` on all five tables (TV and player phones need no login).
 - `insert`/`update`/`delete` only when `is_league_admin()` (checks `profiles.role`), the same five policies as `_tournaments`. Server actions also check the app's admin gate.
-- Realtime publication enabled for `_tournament_clocks` and `_clock_entrants`. `_clock_entrants` has `replica identity full`, so a delete event carries the old row's `clock_id`. Realtime filters don't apply to deletes, so the client checks `clock_id` itself.
+- Realtime publication enabled for `_tournament_clocks`, `_clock_entrants` and `_clock_knockouts`. The last two have `replica identity full`, so a delete event carries the old row's `clock_id`; the client checks `clock_id` on deletes itself (`applyRowChange`).
 
 ## Clock timing
 
@@ -172,7 +196,7 @@ The calculations are in `features/clock/lib/timing.ts`. Each control returns the
 | `/clock/[id]` | Public | Display: level, countdown, current/next blinds & ante, next break, players left (names), avg stack, prize pool & payouts. "TV mode" toggle → fullscreen + Wake Lock. Outside the `(home)` route group, so no header or tab bar. |
 | `/admin/clock` | Admin | List clocks: name, status, created date, Control and Display links, delete. |
 | `/admin/clock/new` | Admin | Create a clock from a template: pick the template, adjust money/chips/payouts. No tournament link here; the finish flow picks or creates the tournament. |
-| `/admin/clock/[id]` | Admin | Control: start/pause/resume, prev/next level, ±1 min, add entrants (member picker + guest name), rebuy, bust, undo bust, edit payouts. Includes a live mini-display. |
+| `/admin/clock/[id]` | Admin | Control: start/pause/resume, prev/next level, ±1 min; a Players card (add members and guests, bust with an optional knockout, undo, rebuy, remove); a Payouts card (what each place pays now, edit places paid and the split). |
 | `/admin/clock/[id]/finish` | Admin | Review & save results (see Finish flow). |
 | `/admin/clock/structures` | Admin | CRUD templates and their levels (add/remove/reorder levels and breaks). |
 
@@ -183,14 +207,16 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
   - `timing.ts`: `getClockPosition`, the clock controls, `catchUpUpdate`, `nextPlayingLevel`, `timeToNextBreakMs`, `serverOffsetMs`.
   - `format.ts`: `formatClockTime` (`15:00`, `1:01:01`; rounds up to the second), `formatBlinds` (`1,000 / 2,000 (ante 200)`), `formatBlindPair` (without the ante), `formatClockDate` (`Nov 27, 2026` in the league's time zone, `America/Chicago`).
   - `clocks.ts`: `clockSettingsFromStructure`, `validateClockSettings`, `buildClockInsert` (a new clock's row, with a snapshot of the template's levels), `clockStatusLabel`.
-  - `display.ts`: `describeClock`, everything a screen shows at one moment (`ClockView`).
+  - `display.ts`: `describeClock`, everything a screen shows at one moment (`ClockView`); `describeField`, the players and money (`FieldView`).
   - `controls.ts`: `planControl` (each control button → the columns to save, moving levels from where the clock has got to), `controlRefusalMessage`.
   - `money.ts`: `computePool`, `lastPlacePct`, `computePayouts`, `computeChips`.
   - `entrants.ts`: `planBust`, `planUndoBust`, `planRebuy`, `planFinish`.
+  - `players.ts`: `entrantNames` (on-screen names), `listPlayers` (in by name, out by place, knockout counts), `planAddEntrants`, `addPlayersBlocked`, `canRemoveEntrant`, `planBustPlayer`, `planUndoPlayer` (the phase 2 rules plus clock status and the knockout check).
+  - `player-messages.ts`: a sentence for every player refusal.
   - `results.ts`: `buildFinishResults`.
   - `result.ts`: the `{ ok, value } | { ok, reason }` type the rules return when they can refuse.
-- `features/clock/data/` — Supabase reads: `clocks.ts` (`getClocks`, `getClock`, `getServerNowMs`, `toClock`, `mergeClockRow`) and `structures.ts`.
-- `features/clock/hooks/` — `useClock(initialClock, initialNowMs)`: Realtime subscription, server-time offset (`useServerOffset`), and a `describeClock` view redrawn every 250 ms.
+- `features/clock/data/` — Supabase reads: `clocks.ts` (`getClocks`, `getClock`, `getServerNowMs`, `toClock`, `mergeClockRow`), `entrants.ts` (`getEntrants`, `getKnockouts`, `getMemberNames`, `applyRowChange`) and `structures.ts`.
+- `features/clock/hooks/` — `useClock(initialClock, initialNowMs)`: Realtime subscription, server-time offset (`useServerOffset`), and a `describeClock` view redrawn every 250 ms. `useEntrants(clockId, initial)`: a clock's players and knockouts kept live. `useOnVisible`: shared by both.
 - `features/clock/actions/` — server actions for every admin mutation; each re-checks admin via `getCurrentUser()` in addition to RLS.
 
 ### Template editor (phase 3)
@@ -214,10 +240,22 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - **Display:** sized with `min(vw, dvh)` so it fits a 1080p TV and a phone in either orientation. Shows the clock's name, Level N or Break (with the note), the countdown (dimmed when stopped), a progress bar, blinds and ante, and the next blinds and time to the next break, or "Final level". The top-left corner shows the status while the clock isn't running (Paused in red; Not started and Finished in grey) and Reconnecting… while Realtime is down, in the display's top-left corner and the control card's header. A missing clock or an id that isn't a uuid is not found.
 - **Control screen:** everything is in the clock's card. Its header (aligned to the top) has the status tag on the left, the clock's name in the middle (centred, up to two lines), and round icon buttons on the right that open the display or copy its address. Below it: round − and + buttons either side of the countdown, and under the details a big round play/pause button (solid Tabler player icons; Start asks first) between round previous/next level arrows. Each is enabled only when it applies. Presses are optimistic: the screen applies the planned columns at once (`planControl` with the screen's server-corrected time, layered with React's `useOptimistic` over Realtime updates) and the buttons never wait, so presses can follow each other; the saved row replaces the plan when the action returns (usually the same second), and a refusal reverts it. Other screens follow when the save lands. Copying the display link shows it in a toast where the clipboard isn't available, such as a LAN address.
 
+### Entrants (phase 5)
+
+- **Names:** members show as first name and last initial ("Alex S."), or their full name when that would match another player (members or guests, ignoring case). Guests show their name as typed (up to 40 characters) and get a "Guest" tag on the control screen.
+- **Adding players:** a drawer with a searchable member checklist (anyone playing is ticked and disabled) and a guest name field that lists guests as removable chips; one save adds them all. Allowed in any status but finished, **while nobody is out**: a bust's place is the number of players left, so a player added while someone is out would give the next bust a taken place. A re-entry that brings everyone back in allows adding again.
+- **Removing** (a sign-up mistake): only a player who has never busted and isn't in any knockout.
+- **Players card:** players still in by name, with rebuys, a KO count, and Rebuy / Bust (and remove); players out by place with "KO by …", the most recent bust with Undo and Rebuy. A button shows only when its action is allowed; one note covers the common reasons (clock not started; everyone left in the money; adding while someone is out).
+- **Bust dialog:** "Bust Alex S.? They finish 7th." with **Knocked out by** (the other players still in, or Not recorded, the default).
+- **Payouts card:** the pool and what each place pays now; **Edit** opens the payout fields with a live preview for the current field. Editable until the clock finishes.
+- **Display:** once there are players, a panel beside the clock (landscape) or under it (portrait): Players left/entrants, Avg stack, Pool, the names still in (breaking only between names; three lines at most in portrait), and the payouts. The countdown uses a smaller width-based size beside the panel so it fits.
+- **Actions** (`features/clock/actions/entrants.ts`): each checks for an admin, reads the clock, players and knockouts, applies the pure rule, writes, and returns the saved lists so the pressing screen updates before Realtime. Busts use the database time.
+- **Live players:** `useEntrants` applies each Realtime change and refetches both lists on every (re)subscribe, on wake, and a second after changes stop arriving. On dev, one knockout insert was dropped just after subscribing; the delayed refetch heals a missed event within a moment.
+
 ### Entrant actions
 
-- **Bust:** sets `busted_at=now` and `finish_place = players left before the bust`. Refused for the last player left.
-- **Undo bust:** clears both (only for the most recent bust, to keep places consistent).
+- **Bust:** sets `busted_at=now` and `finish_place = players left before the bust`, and adds a knockout row (`bust_clock_entrant`). Only while the clock is running or paused; refused for the last player left; "knocked out by" must be another player still in.
+- **Undo bust:** clears both and deletes the knockout row (`undo_clock_bust`); only for the most recent bust, to keep places consistent, and only while running or paused.
 - **Rebuy:** increments `rebuys`; if the player is busted, also clears `busted_at`/`finish_place` (re-entry, most recent bust only). See Rebuy rules.
 - The last remaining player gets `finish_place=1` when the admin finishes the clock; refused while more than one player is left.
 
@@ -242,7 +280,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 
 - **Realtime disconnect:** show a subtle "reconnecting" badge; on reconnect, refetch the clock + entrants and re-sync server time (Realtime doesn't replay missed events).
 - **Mutation failure:** server actions return `{ success, message }` like existing actions. The control screen shows each press at once (optimistic), so on a refusal it goes back to the saved clock and shows a toast.
-- **Concurrent admins:** clock controls and level advances use conditional updates; a screen that acted on a stale clock is told to try again. Bust/rebuy are per-row updates, so last-write-wins is acceptable.
+- **Concurrent admins:** clock controls and level advances use conditional updates; a screen that acted on a stale clock is told to try again. Player actions read fresh rows before planning, so a stale screen can't cause a wrong place; a bust into a place another screen just took (the unique place), a bust of a player already out, and a rebuy where `rebuys` changed are refused with "The players changed on another screen. Try again."
 - **Template edits mid-tournament:** no effect on running clocks (levels are snapshotted).
 - **Clock past final level:** stays on the last level with the countdown at 0:00 (no wrap).
 - **Validation:** `payout_pcts` has one value per place above the last paid place, each > 0, summing to 100; guest name required when no member. Both are also database checks.
@@ -256,8 +294,9 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - Pool, avg stack, and payout rule (last-place share rounded up from 1 ÷ players and kept through rebuys, entrants < places paid, and the whole pool always paid out).
 - Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
 - Finish results: guest re-ranking, true-position cash-outs, places actually paid.
+- Players (phase 5): names, list order and knockout counts, adding (status, while anyone is out, duplicates, guest name length), removing, bust and undo checks, refusal messages, the display's players and money (`describeField`), and applying Realtime changes (`data/entrants.test.ts`).
 
-Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs.
+Realtime/UI verified manually: two browsers (admin + display), pause/skip/bust propagate within ~1s; refresh mid-level shows correct time; phone sleep/wake resyncs. Phase 5 was clicked through on dev (add, bust with and without a knockout, undo, rebuy limit, re-entry, the in-the-money cutoff, payout edits); offline/online, two admins pressing at once, and phone width weren't checked in the browser.
 
 ## Phase 0: Cut tournaments over to the v2 tables
 
@@ -311,7 +350,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 2. **Pure logic + tests:** `features/clock/lib` with Vitest. Done; see `docs/plans/2026-11-19-tournament-clock-phase-2-logic.md`.
 3. **Templates:** `/admin/clock/structures` CRUD. Done on dev; see `docs/plans/2026-11-19-tournament-clock-phase-3-templates.md`.
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only). Built on dev; the on-device check and the prod rollout are still to do (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
-5. **Entrants:** add members/guests, rebuy, bust/undo, players left, avg stack, pool & payouts on display.
+5. **Entrants:** add members/guests, rebuy, bust/undo with knockouts, players left, avg stack, pool & payouts on display. Built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-5-entrants.md`. Its migration goes to prod with phase 4's rollout.
 6. **TV mode & sounds.**
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.
 8. **Nav:** admin nav link; "Tournament live" banner while a clock is running; link from tournament page when a clock is attached.
