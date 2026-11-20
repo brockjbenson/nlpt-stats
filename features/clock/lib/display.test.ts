@@ -25,6 +25,7 @@ describe("describeClock", () => {
     expect(view).toMatchObject({
       status: "setup",
       title: "Level 1",
+      isBreak: false,
       note: null,
       blinds: "100 / 200",
       ante: null,
@@ -77,6 +78,7 @@ describe("describeClock", () => {
     );
     expect(view).toMatchObject({
       title: "Break",
+      isBreak: true,
       note: "Color up the 25s",
       blinds: null,
       ante: null,

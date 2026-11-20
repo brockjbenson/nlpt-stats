@@ -30,6 +30,7 @@ export type ClockView = {
   position: ClockPosition;
   // "Level 5" or "Break".
   title: string;
+  isBreak: boolean;
   // The break's note, or null.
   note: string | null;
   // The current level's blinds and ante; null on a break.
@@ -80,6 +81,7 @@ export function describeClock(
     status: clock.status,
     position,
     title: levelTitle(levels, position.levelIndex),
+    isBreak,
     note: isBreak ? (level.note ?? null) : null,
     blinds: isBreak ? null : formatBlindPair(level),
     ante: isBreak ? null : anteText(level),

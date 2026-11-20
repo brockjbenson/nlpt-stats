@@ -33,10 +33,9 @@ function nextText(next: BlindsText): string {
 }
 
 function Title({ view }: { view: ClockView }) {
-  const isBreak = view.blinds === null;
   return (
     <p className="flex items-center justify-center gap-[0.4em] font-semibold uppercase tracking-wider text-muted">
-      {isBreak && <Coffee className="size-[1em]" aria-hidden />}
+      {view.isBreak && <Coffee className="size-[1em]" aria-hidden />}
       {view.title}
     </p>
   );
@@ -44,7 +43,7 @@ function Title({ view }: { view: ClockView }) {
 
 // The blinds and ante, or the break's note.
 function Blinds({ view }: { view: ClockView }) {
-  if (view.blinds === null) {
+  if (view.isBreak) {
     return view.note ? <p className="font-semibold">{view.note}</p> : null;
   }
   return (
