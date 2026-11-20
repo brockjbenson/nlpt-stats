@@ -15,6 +15,15 @@ const dollarsAndCents = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
+// Where the league plays. Servers run in UTC, so dates are read in this
+// zone: a 7 pm game is still that day, not the next.
+const LEAGUE_TIME_ZONE = "America/Chicago";
+const leagueDate = new Intl.DateTimeFormat("en-US", {
+  timeZone: LEAGUE_TIME_ZONE,
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
 
 // "1 level", "3 levels".
 export function plural(count: number, word: string): string {
@@ -31,6 +40,11 @@ export function formatDollars(amount: number): string {
   return Number.isInteger(amount)
     ? wholeDollars.format(amount)
     : dollarsAndCents.format(amount);
+}
+
+// A day in the league's time zone: "Nov 27, 2026".
+export function formatClockDate(ms: number): string {
+  return leagueDate.format(ms);
 }
 
 // A schedule length: "5h 50m", "20m", "1h". Rounds to the nearest minute.

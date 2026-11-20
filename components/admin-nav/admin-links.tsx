@@ -4,6 +4,7 @@ import {
   FaList,
   FaMoneyBill,
   FaPlus,
+  FaStopwatch,
   FaTrophy,
   FaUserPlus,
   FaUsers,
@@ -58,6 +59,11 @@ export const ADMIN_LINK_GROUPS: AdminLinkGroup[] = [
   {
     title: "Clock",
     links: [
+      {
+        href: "/admin/clock",
+        label: "Clocks",
+        icon: <FaStopwatch className="w-5 h-5" />,
+      },
       {
         href: "/admin/clock/structures",
         label: "Blind Structures",

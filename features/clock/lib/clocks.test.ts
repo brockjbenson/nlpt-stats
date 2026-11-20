@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildClockInsert,
+  clockStatusLabel,
   clockSettingsFromStructure,
   validateClockSettings,
   type ClockSettings,
@@ -153,5 +154,16 @@ describe("validateClockSettings", () => {
     expect(errors).toHaveLength(1);
     expect(errors[0].field).toBe(field);
     expect(errors[0].message).toContain(message);
+  });
+});
+
+describe("clockStatusLabel", () => {
+  it.each([
+    ["setup", "Not started"],
+    ["running", "Running"],
+    ["paused", "Paused"],
+    ["finished", "Finished"],
+  ] as const)("%s reads %s", (status, label) => {
+    expect(clockStatusLabel(status)).toBe(label);
   });
 });

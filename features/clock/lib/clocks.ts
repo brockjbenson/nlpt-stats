@@ -8,6 +8,7 @@ import type {
   BlindLevel,
   BlindStructure,
   BlindStructureLevel,
+  ClockStatus,
   TournamentClock,
 } from "@/features/clock/types";
 
@@ -87,4 +88,16 @@ export function buildClockInsert(
     payout_pcts: [...settings.payout_pcts],
     max_rebuys: settings.max_rebuys,
   };
+}
+
+const STATUS_LABELS: Record<ClockStatus, string> = {
+  setup: "Not started",
+  running: "Running",
+  paused: "Paused",
+  finished: "Finished",
+};
+
+// What a clock's status reads as on screen.
+export function clockStatusLabel(status: ClockStatus): string {
+  return STATUS_LABELS[status];
 }

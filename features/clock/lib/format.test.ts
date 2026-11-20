@@ -3,6 +3,7 @@ import {
   formatBlindPair,
   formatBlinds,
   formatChips,
+  formatClockDate,
   formatClockTime,
   formatDollars,
   formatDuration,
@@ -123,5 +124,19 @@ describe("plural", () => {
     [16, "16 levels"],
   ])("%i reads %s", (count, expected) => {
     expect(plural(count, "level")).toBe(expected);
+  });
+});
+
+describe("formatClockDate", () => {
+  it("uses the league's time zone, so an evening game keeps its date", () => {
+    expect(formatClockDate(Date.parse("2026-11-28T01:30:00.000Z"))).toBe(
+      "Nov 27, 2026",
+    );
+  });
+
+  it("reads a midday time as that day", () => {
+    expect(formatClockDate(Date.parse("2026-07-04T18:00:00.000Z"))).toBe(
+      "Jul 4, 2026",
+    );
   });
 });
