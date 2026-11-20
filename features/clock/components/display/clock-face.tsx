@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Coffee } from "lucide-react";
 import type React from "react";
 
-export type ClockFaceSize = "display" | "compact";
+export type ClockFaceSize = "display" | "beside-panel" | "compact";
 
 // Text sizes per face. The display scales with the screen (the smaller of
 // width and height), so it reads across a room on a TV in landscape and
@@ -19,6 +19,19 @@ const SIZES: Record<
     time: "text-[length:clamp(4.5rem,min(25vw,33dvh),24rem)]",
     blinds: "text-[length:clamp(2rem,min(10vw,12dvh),9rem)] leading-tight",
     detail: "text-[length:clamp(1rem,min(3.5vw,4dvh),2.5rem)]",
+  },
+  // The display with the players panel beside it in landscape: the face
+  // gets about two thirds of the width, so the width-based sizes shrink to
+  // match. In portrait the panel sits below and the full sizes apply.
+  "beside-panel": {
+    root: "gap-[1.5dvh]",
+    title:
+      "text-[length:clamp(1.5rem,min(6vw,7dvh),4.5rem)] landscape:text-[length:clamp(1.25rem,min(4vw,7dvh),4rem)] leading-tight",
+    time: "text-[length:clamp(4.5rem,min(25vw,33dvh),24rem)] landscape:text-[length:clamp(3.5rem,min(15vw,33dvh),20rem)]",
+    blinds:
+      "text-[length:clamp(2rem,min(10vw,12dvh),9rem)] landscape:text-[length:clamp(1.75rem,min(6.5vw,12dvh),7.5rem)] leading-tight",
+    detail:
+      "text-[length:clamp(1rem,min(3.5vw,4dvh),2.5rem)] landscape:text-[length:clamp(0.9rem,min(2.3vw,4dvh),2rem)]",
   },
   compact: {
     root: "gap-2",

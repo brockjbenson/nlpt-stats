@@ -65,7 +65,10 @@ function ClockDisplay({
         )}
       >
         <div className="flex min-w-0 flex-1 justify-center">
-          <ClockFace view={view} />
+          <ClockFace
+            view={view}
+            size={hasPlayers ? "beside-panel" : "display"}
+          />
         </div>
         {hasPlayers && (
           <FieldPanel

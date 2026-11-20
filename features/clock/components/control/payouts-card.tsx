@@ -47,9 +47,9 @@ function settingsOf(clock: TournamentClock): ClockSettings {
 // "1st $217.80", one place per line.
 function PayoutList({ payouts }: { payouts: PayoutText[] }) {
   return (
-    <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+    <ul className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
       {payouts.map(({ place, label, amountText }) => (
-        <li key={place} className="flex justify-between gap-2 tabular-nums">
+        <li key={place} className="flex gap-1.5 tabular-nums">
           <span className="text-muted">{label}</span>
           <span className="font-semibold">{amountText}</span>
         </li>

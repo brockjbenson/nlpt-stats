@@ -28,7 +28,7 @@ function PlayerRow({ player, knockedOutBy, children }: Props) {
         </span>
       )}
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-1.5 font-medium">
+        <div className="flex items-center gap-1.5 font-medium">
           <span className="truncate">{name}</span>
           {isGuest && (
             <Badge variant="outline" className="shrink-0 px-1.5 py-0 text-xs">
@@ -44,7 +44,7 @@ function PlayerRow({ player, knockedOutBy, children }: Props) {
               {knockouts} KO
             </Badge>
           )}
-        </p>
+        </div>
         {details.length > 0 && (
           <p className="truncate text-xs text-muted">{details.join(" · ")}</p>
         )}

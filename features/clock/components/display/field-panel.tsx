@@ -1,5 +1,6 @@
 import type { FieldView } from "@/features/clock/lib/display";
 import { cn } from "@/lib/utils";
+import { Fragment } from "react";
 
 // Text sizes that scale with the screen, like the clock face's.
 const LABEL_SIZE = "text-[length:clamp(0.7rem,min(1.6vw,2.2dvh),1.25rem)]";
@@ -53,7 +54,7 @@ function FieldPanel({ field, namesLeft, className }: Props) {
         className,
       )}
     >
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-x-[2vw] gap-y-2">
         <Stat
           label="Players"
           value={`${field.playersLeft}/${field.entrantCount}`}
@@ -68,7 +69,13 @@ function FieldPanel({ field, namesLeft, className }: Props) {
           {/* Wraps; in portrait it stops after a few lines and the count
               above says how many. */}
           <p className={cn("leading-snug portrait:line-clamp-3", BODY_SIZE)}>
-            {namesLeft.join(" · ")}
+            {/* Each name stays on one line; lines break between names. */}
+            {namesLeft.map((name, index) => (
+              <Fragment key={index}>
+                {index > 0 && " · "}
+                <span className="whitespace-nowrap">{name}</span>
+              </Fragment>
+            ))}
           </p>
         </div>
       )}
