@@ -1,8 +1,11 @@
-import { MS_PER_SECOND, SECONDS_PER_MINUTE } from "@/features/clock/lib/levels";
+import {
+  MS_PER_MINUTE,
+  MS_PER_SECOND,
+  SECONDS_PER_MINUTE,
+} from "@/features/clock/lib/levels";
 import type { BlindLevel } from "@/features/clock/types";
 
 const SECONDS_PER_HOUR = 3600;
-const MS_PER_MINUTE = SECONDS_PER_MINUTE * MS_PER_SECOND;
 const MINUTES_PER_HOUR = 60;
 
 const chipCount = new Intl.NumberFormat("en-US");

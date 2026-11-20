@@ -1,4 +1,4 @@
-import { MS_PER_SECOND, SECONDS_PER_MINUTE } from "@/features/clock/lib/levels";
+import { MS_PER_MINUTE } from "@/features/clock/lib/levels";
 import type { Result } from "@/features/clock/lib/result";
 import {
   adjustTime,
@@ -11,8 +11,6 @@ import {
   startClock,
 } from "@/features/clock/lib/timing";
 import type { TournamentClock } from "@/features/clock/types";
-
-const MS_PER_MINUTE = SECONDS_PER_MINUTE * MS_PER_SECOND;
 
 // A button on the admin control screen.
 export type ClockControl =
