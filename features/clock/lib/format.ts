@@ -50,6 +50,20 @@ export function formatClockDate(ms: number): string {
   return leagueDate.format(ms);
 }
 
+// en-CA writes dates as yyyy-mm-dd.
+const leagueIsoDate = new Intl.DateTimeFormat("en-CA", {
+  timeZone: LEAGUE_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+// The calendar day in the league's time zone, as yyyy-mm-dd: a game at
+// 7:30 pm Central on Nov 27 is Nov 27, though it's Nov 28 in UTC.
+export function formatLeagueIsoDate(ms: number): string {
+  return leagueIsoDate.format(ms);
+}
+
 // A schedule length: "5h 50m", "20m", "1h". Rounds to the nearest minute.
 export function formatDuration(ms: number): string {
   const totalMinutes = Math.round(ms / MS_PER_MINUTE);

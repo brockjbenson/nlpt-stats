@@ -10,6 +10,7 @@ import { useCatchUp } from "@/features/clock/components/control/use-catch-up";
 import { useClockControl } from "@/features/clock/components/control/use-clock-control";
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
+import FinishPanel from "@/features/clock/components/control/finish-panel";
 import PayoutsCard from "@/features/clock/components/control/payouts-card";
 import PlayersCard from "@/features/clock/components/players/players-card";
 import type {
@@ -149,6 +150,13 @@ function ClockControls({
               </ClockFace>
             </CardContent>
           </Card>
+          <FinishPanel
+            clock={clock}
+            players={players}
+            members={members}
+            nowMs={live.nowMs}
+            applyRow={applyRow}
+          />
           <PlayersCard clock={clock} players={players} members={members} />
           <PayoutsCard
             clock={clock}

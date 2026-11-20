@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–6 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`.
+- **Status:** Approved. Phases 1–7 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`.
 
 ## Goal
 
@@ -269,14 +269,17 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 
 ## Finish flow
 
-1. Admin taps **Finish** → `status=finished`; remaining player gets place 1.
-2. Review screen builds results from entrants:
-   - **Payouts** use true finishing positions (guests included), via the payout rule.
-   - **Members only** are kept; places are **re-ranked** among members (1, 2, 3…). Each member's `cash_out` is the payout of their **true** position. E.g. guest wins 1st → member who finished 2nd is saved as place 1 with the 2nd-place payout.
-   - Per member: `rebuys` (count), `cash_out`, `place`. Buy-in total, net profit, and points are derived by `_tournament_session_points` (Phase 0), not written.
-   - Tournament fields prefilled: `name`, `date`, `week_id` (admin confirms), `places_paid` (the places actually paid: fewer than the clock's when fewer played), `buy_in_amount`, `rebuy_amount`, `player_count` (all entrants incl. guests), `total_rebuys` (incl. guests).
-   - `buildFinishResults` builds everything except name, date and week. It refuses with no entrants or while anyone has no finishing place.
-3. Admin edits anything, then confirms → creates (or updates the linked) `_tournaments` row and inserts `_tournament_sessions` for members who played only (no filler rows), then runs the same ranking recalculation, `updateTag(LEAGUE_DATA_TAG)`, and revalidation as today's tournament save.
+Built in phase 7. Migration: `supabase/migrations/20261120162924_tournament_clock_finish.sql`.
+
+1. **End tournament** is a button on the control screen, never automatic. It's shown while the clock is running or paused, enabled once one player is left (otherwise it says to bust players down to one), and asks first: "End the tournament? Alex S. wins." `finish_tournament_clock` then sets the clock `finished` with the level and time left it had got to, and places the last player 1st (`busted_at` = the finish time), in one transaction; another screen finishing first, or the players changing, is refused.
+2. **Reopen** (`reopen_tournament_clock`) undoes a finish pressed by mistake: the clock goes back to paused with the same time left and the winner back in. Only until results are saved.
+3. **Review** at `/admin/clock/[id]/finish` (a clock that isn't finished goes back to its control screen). The form is prefilled by `finishFormDefaults` (`lib/finish-form.ts`) and everything is editable:
+   - **Name:** the clock's name. **Date:** the day the clock was created, in `America/Chicago` (a late game saved the next morning keeps its date). **Season:** the newest. **Week:** left empty and required (seasons are created with all their weeks and weeks have no dates, so there's no safe default; decided 2026-11-20).
+   - **Tournament numbers** from `buildFinishResults`: places actually paid, buy-in, rebuy, player count and total rebuys (guests included).
+   - **Members**, re-ranked 1, 2, 3… among themselves, each with the payout of their **true** place (to the cent): if a guest wins, the member who came 2nd is saved 1st with the 2nd-place payout. Rebuys and cash-out are editable. **Guests** are listed underneath for reference and not saved.
+   - `validateFinishForm` matches the tables' checks, with messages by the field or row.
+4. **Save** (`saveClockResultsAction` → `save_clock_results`) inserts `_tournaments` and the members' `_tournament_sessions` (no filler rows; buy-in, net profit and points come from `_tournament_session_points`) and links the clock (`tournament_id`), in one transaction. **Saving again** updates that tournament and replaces its sessions, prefilled from what was saved (`finishFormFromSaved`). Afterwards `refreshAfterTournamentSave` (shared with manual entry) recalculates NLPI rankings for the tournament's week (and the week it was in before, if a re-save moved it), clears the league cache and revalidates the league pages.
+5. **Status:** the clock list shows "Results saved" (linking to the tournament page) or "Results not saved · Review"; the control screen shows "Finished · <winner> wins" with Review results and Reopen, or Results saved and Edit results.
 
 ## Error handling
 
@@ -296,6 +299,7 @@ Code layout follows the repo's convention: `features/clock/{components,hooks,lib
 - Pool, avg stack, and payout rule (last-place share rounded up from 1 ÷ players and kept through rebuys, entrants < places paid, and the whole pool always paid out).
 - Bust order, undo, and the rebuy rules (limit, in-the-money cutoff, re-entry).
 - Finish results: guest re-ranking, true-position cash-outs, places actually paid.
+- Finishing (phase 7): ending (status, players left, the stopping point) and reopening (`lib/finish.test.ts`); the review form's defaults (re-ranking with true-place payouts, the game's date in the league's time zone, guests), checks and save payload, and prefilling from saved results (`lib/finish-form.test.ts`).
 - Chimes (phase 6): when the warning, level and break chimes play and every case that stays silent (`lib/sounds.test.ts`); the chime note lists (`sounds/chimes.test.ts`).
 - Players (phase 5): names, list order and knockout counts, adding (status, while anyone is out, duplicates, guest name length), removing, bust and undo checks, refusal messages, the display's players and money (`describeField`), and applying Realtime changes (`data/entrants.test.ts`).
 
@@ -355,7 +359,7 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 4. **Clock core:** create clock, `useClock` hook, public display, admin control (timing only). Built on dev; the on-device check and the prod rollout are still to do (see `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`).
 5. **Entrants:** add members/guests, rebuy, bust/undo with knockouts, players left, avg stack, pool & payouts on display. Built on dev; see `docs/plans/2026-11-19-tournament-clock-phase-5-entrants.md`. Its migration goes to prod with phase 4's rollout.
 6. **TV mode & sounds.** Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`. No database changes. Fullscreen still needs checking on a real screen (it didn't go fullscreen under browser automation).
-7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`.
+7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`. Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`.
 8. **Nav:** admin nav link; "Tournament live" banner while a clock is running; link from tournament page when a clock is attached.
 
 ## Out of scope for v1

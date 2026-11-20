@@ -4,12 +4,17 @@ import { revalidatePath, updateTag } from "next/cache";
 import { LEAGUE_DATA_TAG } from "@/lib/data/cache";
 import { createClient } from "@/utils/supabase/server";
 import { getCurrentUser } from "@/utils/supabase/user";
+import { refreshAfterTournamentSave } from "@/lib/data/refresh-after-tournament-save";
 import { CashSessionNoId, TournamentSessionInput } from "@/utils/types";
 
 // Postgres error code for a unique constraint violation.
 const UNIQUE_VIOLATION = "23505";
 
-export const addSessionAction = async (sessions: CashSessionNoId[]) => {
+type SessionActionResult = { success: boolean; message: string };
+
+export const addSessionAction = async (
+  sessions: CashSessionNoId[],
+): Promise<SessionActionResult> => {
   const db = await createClient();
 
   const { error } = await db.from("cash_session").insert(sessions);
@@ -50,7 +55,7 @@ export const addSessionAction = async (sessions: CashSessionNoId[]) => {
 // calculated by the database.
 export const addTournamentSessionAction = async (
   sessions: TournamentSessionInput[],
-) => {
+): Promise<SessionActionResult> => {
   const user = await getCurrentUser();
   if (!user?.isAdmin) {
     return { success: false, message: "Only admins can add sessions" };
@@ -75,30 +80,10 @@ export const addTournamentSessionAction = async (
     .from("_tournaments")
     .select("week_id")
     .in("id", tournamentIds);
-
-  const weekIds = Array.from(
-    new Set((tournaments ?? []).map((tournament) => tournament.week_id)),
+  await refreshAfterTournamentSave(
+    db,
+    (tournaments ?? []).map((tournament) => tournament.week_id),
   );
-  for (const weekId of weekIds) {
-    const { error: rankingError } = await db.rpc(
-      "insert_weekly_nlpi_rankings",
-      { target_week_id: weekId },
-    );
-    if (rankingError) {
-      // Sessions are saved; rankings catch up on the next save for the week.
-      console.error(
-        `Failed to update rankings for week ${weekId}:`,
-        rankingError,
-      );
-    }
-  }
-
-  // Clear cached league data, then revalidate specific pages
-  updateTag(LEAGUE_DATA_TAG);
-  revalidatePath("/nlpi");
-  revalidatePath("/poy/[year]", "page");
-  revalidatePath("/members/[id]", "page");
-  revalidatePath("/tournaments", "layout");
 
   return { success: true, message: "Sessions added successfully" };
 };
