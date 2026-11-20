@@ -2,6 +2,7 @@
 
 import ClockBadges from "@/features/clock/components/display/clock-badges";
 import ClockFace from "@/features/clock/components/display/clock-face";
+import DisplayControls from "@/features/clock/components/display/display-controls";
 import FieldPanel from "@/features/clock/components/display/field-panel";
 import type {
   ClockPlayers,
@@ -9,6 +10,10 @@ import type {
 } from "@/features/clock/data/entrants";
 import { useClock } from "@/features/clock/hooks/use-clock";
 import { useEntrants } from "@/features/clock/hooks/use-entrants";
+import { useSound } from "@/features/clock/hooks/use-sound";
+import { useSoundCues } from "@/features/clock/hooks/use-sound-cues";
+import { useIdle } from "@/features/clock/hooks/use-idle";
+import { useTvMode } from "@/features/clock/hooks/use-tv-mode";
 import { describeField } from "@/features/clock/lib/display";
 import { entrantNames, listPlayers } from "@/features/clock/lib/players";
 import type { TournamentClock } from "@/features/clock/types";
@@ -30,11 +35,16 @@ function ClockDisplay({
   // Members to name the players by and show the photos of.
   members: MemberOption[];
 }) {
-  const { clock, view, connection, isDeleted } = useClock(
+  const { clock, view, nowMs, connection, isDeleted } = useClock(
     initialClock,
     initialNowMs,
   );
   const { entrants, knockouts } = useEntrants(initialClock.id, initialPlayers);
+  const sound = useSound();
+  useSoundCues(view, nowMs, sound.play);
+  const tv = useTvMode();
+  // In TV mode, the corner controls and the cursor hide when idle.
+  const isIdle = useIdle(tv.isTvMode);
 
   if (isDeleted) {
     return (
@@ -52,7 +62,14 @@ function ClockDisplay({
   );
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center gap-[3dvh] px-4 py-[4dvh]">
+    <main
+      className={cn(
+        "relative flex min-h-dvh flex-col items-center justify-center gap-[3dvh] px-4 py-[4dvh]",
+        isIdle && "cursor-none",
+      )}
+      // While sound waits for a tap, any tap on the page allows it.
+      onClick={sound.needsTap ? sound.unlockFromTap : undefined}
+    >
       <h1 className="text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
         {clock.name}
       </h1>
@@ -60,6 +77,12 @@ function ClockDisplay({
         status={view.status}
         connection={connection}
         className="absolute left-3 top-3"
+      />
+      <DisplayControls
+        sound={sound}
+        tv={tv}
+        isHidden={isIdle}
+        className="absolute right-3 top-3"
       />
       <div
         className={cn(
