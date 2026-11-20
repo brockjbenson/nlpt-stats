@@ -7,6 +7,7 @@ import {
   getServerNowMs,
   toClock,
 } from "@/features/clock/data/clocks";
+import { getClockPlayers } from "@/features/clock/data/entrants";
 import { getStructure } from "@/features/clock/data/structures";
 import {
   buildClockInsert,
@@ -18,10 +19,15 @@ import {
   controlRefusalMessage,
   planControl,
 } from "@/features/clock/lib/controls";
+import {
+  finishRefusalMessage,
+  planFinishClock,
+} from "@/features/clock/lib/finish";
 import { CLOCKS_PATH } from "@/features/clock/lib/paths";
 import type { StructureError } from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
-import type { TournamentClock } from "@/features/clock/types";
+import type { ClockEntrant, TournamentClock } from "@/features/clock/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
 
@@ -218,5 +224,101 @@ export async function catchUpClockAction(
   } catch (error) {
     console.error("Error saving tournament clock level:", error);
     return { success: false, message: "Couldn't save the clock's level." };
+  }
+}
+
+// Finishing or reopening: the saved clock and its players, so the screen
+// shows both before their Realtime events arrive.
+export type ClockFinishResult = ClockControlResult & {
+  entrants?: ClockEntrant[];
+};
+
+// Postgres error code the finish functions raise when the clock or its
+// players changed first.
+const NO_DATA_FOUND = "P0002";
+
+async function savedClockAndPlayers(
+  db: SupabaseClient,
+  row: ClockRow,
+  message: string,
+): Promise<ClockFinishResult> {
+  revalidatePath(CLOCKS_PATH);
+  const { data } = await getClockPlayers(db, row.id);
+  return {
+    success: true,
+    message,
+    clock: toClock(row),
+    entrants: data?.entrants,
+  };
+}
+
+async function finishClock(id: string): Promise<ClockFinishResult> {
+  const db = await createClient();
+  const [{ data: clock, error }, players, nowMs] = await Promise.all([
+    getClock(db, id),
+    getClockPlayers(db, id),
+    getServerNowMs(db),
+  ]);
+  const loadError = error ?? players.error;
+  if (loadError) return { success: false, message: loadError.message };
+  if (!clock || !players.data) return { success: false, message: CLOCK_GONE };
+
+  const plan = planFinishClock(clock, players.data.entrants, nowMs);
+  if (!plan.ok) {
+    return { success: false, message: finishRefusalMessage(plan.reason) };
+  }
+
+  const { data, error: finishError } = await db.rpc("finish_tournament_clock", {
+    p_clock_id: id,
+    p_winner_id: plan.value.winnerId,
+    p_finished_at: plan.value.finishedAt,
+    p_level_index: plan.value.levelIndex,
+    p_remaining_ms: plan.value.remainingMs,
+  });
+  if (finishError) {
+    const message =
+      finishError.code === NO_DATA_FOUND
+        ? CHANGED_ELSEWHERE
+        : finishError.message;
+    return { success: false, message };
+  }
+  return savedClockAndPlayers(db, data as ClockRow, "Tournament ended.");
+}
+
+// Ends the tournament: the one player left wins, and the clock stops.
+export async function finishClockAction(
+  id: string,
+): Promise<ClockFinishResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    return await finishClock(id);
+  } catch (error) {
+    console.error("Error finishing tournament clock:", error);
+    return { success: false, message: "Couldn't end the tournament." };
+  }
+}
+
+// Undoes a finish pressed by mistake, until the results are saved: the
+// clock is paused again and the winner back in.
+export async function reopenClockAction(
+  id: string,
+): Promise<ClockFinishResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    const db = await createClient();
+    const { data, error } = await db.rpc("reopen_tournament_clock", {
+      p_clock_id: id,
+    });
+    if (error) {
+      const message =
+        error.code === NO_DATA_FOUND
+          ? "This clock's results are saved, or it isn't finished."
+          : error.message;
+      return { success: false, message };
+    }
+    return savedClockAndPlayers(db, data as ClockRow, "Tournament reopened.");
+  } catch (error) {
+    console.error("Error reopening tournament clock:", error);
+    return { success: false, message: "Couldn't reopen the tournament." };
   }
 }

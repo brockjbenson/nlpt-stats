@@ -11,3 +11,8 @@ export function clockControlPath(id: string): string {
 export function clockDisplayPath(id: string): string {
   return `/clock/${id}`;
 }
+
+// Where a finished clock's results are reviewed and saved.
+export function clockFinishPath(id: string): string {
+  return `${CLOCKS_PATH}/${id}/finish`;
+}
