@@ -17,8 +17,8 @@ import type { ClockView } from "@/features/clock/lib/display";
 import type { ClockStatus } from "@/features/clock/types";
 import { Minus, Pause, Play, Plus, SkipBack, SkipForward } from "lucide-react";
 
-const MAIN_BUTTON = "h-14 w-full text-base";
-const STEP_BUTTON = "h-12 flex-1";
+const MAIN_BUTTON_CLASS = "h-14 w-full text-base";
+const STEP_BUTTON_CLASS = "h-12 flex-1";
 
 type Props = {
   // The clock as shown, with any press still being saved already applied,
@@ -32,7 +32,7 @@ function StartButton({ onStart }: { onStart: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button className={MAIN_BUTTON}>
+        <Button className={MAIN_BUTTON_CLASS}>
           <Play /> Start
         </Button>
       </AlertDialogTrigger>
@@ -67,7 +67,7 @@ function MainButton({
     case "running":
       return (
         <Button
-          className={MAIN_BUTTON}
+          className={MAIN_BUTTON_CLASS}
           variant="neutral"
           onClick={() => onControl({ type: "pause" })}
         >
@@ -77,7 +77,7 @@ function MainButton({
     case "paused":
       return (
         <Button
-          className={MAIN_BUTTON}
+          className={MAIN_BUTTON_CLASS}
           onClick={() => onControl({ type: "resume" })}
         >
           <Play /> Resume
@@ -99,7 +99,7 @@ function ControlButtons({ view, onControl }: Props) {
       <MainButton status={status} onControl={onControl} />
       <div className="flex gap-2">
         <Button
-          className={STEP_BUTTON}
+          className={STEP_BUTTON_CLASS}
           variant="outline"
           disabled={!canStep || position.levelIndex === 0}
           onClick={() => onControl({ type: "previous" })}
@@ -107,7 +107,7 @@ function ControlButtons({ view, onControl }: Props) {
           <SkipBack /> Previous level
         </Button>
         <Button
-          className={STEP_BUTTON}
+          className={STEP_BUTTON_CLASS}
           variant="outline"
           disabled={!canStep || position.isLastLevel}
           onClick={() => onControl({ type: "next" })}
@@ -117,7 +117,7 @@ function ControlButtons({ view, onControl }: Props) {
       </div>
       <div className="flex gap-2">
         <Button
-          className={STEP_BUTTON}
+          className={STEP_BUTTON_CLASS}
           variant="outline"
           disabled={!canStep}
           aria-label="Remove 1 minute"
@@ -126,7 +126,7 @@ function ControlButtons({ view, onControl }: Props) {
           <Minus /> 1 min
         </Button>
         <Button
-          className={STEP_BUTTON}
+          className={STEP_BUTTON_CLASS}
           variant="outline"
           disabled={!canStep}
           aria-label="Add 1 minute"

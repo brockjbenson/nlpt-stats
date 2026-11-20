@@ -44,6 +44,9 @@ export type ClockControlResult = {
 const CLOCKS_PATH = "/admin/clock";
 const CLOCK_GONE = "This clock no longer exists.";
 const CHANGED_ELSEWHERE = "The clock changed on another screen. Try again.";
+// A catch-up with nothing to do: another screen saved it, or the clock
+// was paused or moved first. Not an error.
+const NOTHING_TO_SAVE: ClockControlResult = { success: true, message: "" };
 const NOT_ADMIN: ClockActionResult = {
   success: false,
   message: "Only admins can change tournament clocks.",
@@ -187,12 +190,9 @@ async function saveCatchUp(
   if (error) return { success: false, message: error.message };
   if (!clock) return { success: false, message: CLOCK_GONE };
 
-  // Another screen already saved it, or the clock was paused or moved.
-  if (clock.level_index !== expectedLevelIndex) {
-    return { success: true, message: "" };
-  }
+  if (clock.level_index !== expectedLevelIndex) return NOTHING_TO_SAVE;
   const update = catchUpUpdate(clock, nowMs);
-  if (!update) return { success: true, message: "" };
+  if (!update) return NOTHING_TO_SAVE;
 
   const { data, error: saveError } = await db
     .from("_tournament_clocks")

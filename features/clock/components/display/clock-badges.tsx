@@ -10,7 +10,8 @@ const BADGE_SIZES: Record<ClockFaceSize, string> = {
   compact: "text-xs",
 };
 
-const BADGE = "rounded-full px-[0.75em] py-[0.25em] font-semibold text-muted";
+const BADGE_CLASS =
+  "rounded-full px-[0.75em] py-[0.25em] font-semibold text-muted";
 
 // The top-right corner of a clock screen: the status while the clock isn't
 // running (Not started, Paused, Finished), and Reconnecting… while
@@ -38,7 +39,7 @@ function ClockBadges({
       {showStatus && (
         <p
           className={cn(
-            BADGE,
+            BADGE_CLASS,
             "border border-card-border uppercase tracking-wider",
           )}
         >
@@ -46,7 +47,7 @@ function ClockBadges({
         </p>
       )}
       {showReconnecting && (
-        <p role="status" className={cn(BADGE, "bg-foreground/10")}>
+        <p role="status" className={cn(BADGE_CLASS, "bg-foreground/10")}>
           Reconnecting…
         </p>
       )}

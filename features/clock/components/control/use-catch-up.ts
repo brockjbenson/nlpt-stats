@@ -14,13 +14,13 @@ export function useCatchUp(
   effectiveLevelIndex: number,
   applyRow: (clock: TournamentClock) => void,
 ): void {
-  const lastSentFor = useRef<number | null>(null);
+  const catchUpSentFor = useRef<number | null>(null);
   const { id, status, level_index: savedLevelIndex } = clock;
 
   useEffect(() => {
     if (status !== "running" || effectiveLevelIndex <= savedLevelIndex) return;
-    if (lastSentFor.current === savedLevelIndex) return;
-    lastSentFor.current = savedLevelIndex;
+    if (catchUpSentFor.current === savedLevelIndex) return;
+    catchUpSentFor.current = savedLevelIndex;
 
     void catchUpClockAction(id, savedLevelIndex).then((result) => {
       if (result.clock) applyRow(result.clock);
