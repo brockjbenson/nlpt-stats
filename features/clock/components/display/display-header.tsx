@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 const HEADER_HEIGHT = "h-[3.9em]";
 
 type Props = {
-  name: string;
   status: ClockStatus;
   connection: ClockConnection;
   sound: ClockSound;
@@ -25,16 +24,16 @@ type Props = {
   isIdle: boolean;
 };
 
-// The display's header: the status badges, the clock's name, and the sound
-// and TV mode controls. Solid and fixed to the top like the app's other
+// The display's header: the status badges, and the sound and TV mode
+// controls. Solid and fixed to the top like the app's other
 // page headers, so iOS 26 colors the status bar area from it instead of
 // showing its soft blur there. No bottom border: it blends into the page.
-function DisplayHeader({ name, status, connection, sound, tv, isIdle }: Props) {
+function DisplayHeader({ status, connection, sound, tv, isIdle }: Props) {
   return (
     <>
       <header
         className={cn(
-          "fixed inset-x-0 top-0 z-20 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-3 bg-background px-3 pt-[env(safe-area-inset-top)]",
+          "fixed inset-x-0 top-0 z-20 flex items-center justify-between gap-3 bg-background px-3 pt-[env(safe-area-inset-top)]",
           CONTROLS_SIZE,
         )}
       >
@@ -45,15 +44,7 @@ function DisplayHeader({ name, status, connection, sound, tv, isIdle }: Props) {
             className="flex-row items-center"
           />
         </div>
-        <h1 className="truncate text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
-          {name}
-        </h1>
-        <DisplayControls
-          sound={sound}
-          tv={tv}
-          isHidden={isIdle}
-          className="justify-self-end"
-        />
+        <DisplayControls sound={sound} tv={tv} isHidden={isIdle} />
       </header>
       {/* Holds the header's space in the page, which scrolls under it. */}
       <div

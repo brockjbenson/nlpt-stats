@@ -19,7 +19,7 @@ import type { TournamentClock } from "@/features/clock/types";
 import { cn } from "@/lib/utils";
 
 // The public, full-screen clock for a TV or phone: its own slim header
-// (status, name, controls) instead of the app's header and tab bar, big
+// (status and controls) instead of the app's header and tab bar, big
 // text, kept live over Realtime. Once there are players, a panel
 // beside (landscape) or under (portrait) the clock shows them and the money.
 function ClockDisplay({
@@ -68,14 +68,16 @@ function ClockDisplay({
       onClick={sound.needsTap ? sound.unlockFromTap : undefined}
     >
       <DisplayHeader
-        name={clock.name}
         status={view.status}
         connection={connection}
         sound={sound}
         tv={tv}
         isIdle={isIdle}
       />
-      <main className="flex flex-1 flex-col items-center justify-center px-4 pb-[4dvh] pt-[2dvh]">
+      <main className="flex flex-1 flex-col items-center justify-center gap-[3dvh] px-4 pb-[4dvh] pt-[2dvh]">
+        <h1 className="text-[length:clamp(0.875rem,min(2.5vw,3dvh),1.75rem)] font-semibold text-muted">
+          {clock.name}
+        </h1>
         <div
           className={cn(
             "flex w-full flex-col items-center gap-[3dvh]",
