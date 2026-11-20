@@ -5,9 +5,14 @@ import DeleteClockButton from "@/features/clock/components/clocks/delete-clock-b
 import type { ClockSummary } from "@/features/clock/data/clocks";
 import { clockStatusLabel } from "@/features/clock/lib/clocks";
 import { formatClockDate } from "@/features/clock/lib/format";
-import { clockControlPath, clockDisplayPath } from "@/features/clock/lib/paths";
+import {
+  clockControlPath,
+  clockDisplayPath,
+  clockFinishPath,
+  tournamentPath,
+} from "@/features/clock/lib/paths";
 import type { ClockStatus } from "@/features/clock/types";
-import { MonitorPlay, SlidersHorizontal } from "lucide-react";
+import { CheckCircle2, MonitorPlay, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_BADGES: Record<ClockStatus, BadgeProps["variant"]> = {
@@ -16,6 +21,33 @@ const STATUS_BADGES: Record<ClockStatus, BadgeProps["variant"]> = {
   paused: "secondary",
   finished: "outline",
 };
+
+// A finished clock's results: saved (with a link to the tournament) or
+// waiting to be reviewed and saved.
+function ResultsStatus({ clock }: { clock: ClockSummary }) {
+  if (clock.status !== "finished") return null;
+  const { tournament } = clock;
+  if (tournament) {
+    // The tournament page reads only the id; the year is for the address.
+    const year = Number(tournament.date.slice(0, 4));
+    return (
+      <Link
+        href={tournamentPath(year, tournament.id)}
+        className="inline-flex items-center gap-1.5 text-foreground hover:underline"
+      >
+        <CheckCircle2 size={16} className="text-primary" /> Results saved
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href={clockFinishPath(clock.id)}
+      className="font-semibold text-primary hover:underline"
+    >
+      Results not saved · Review
+    </Link>
+  );
+}
 
 function ClockCard({ clock }: { clock: ClockSummary }) {
   const controlHref = clockControlPath(clock.id);
@@ -38,6 +70,7 @@ function ClockCard({ clock }: { clock: ClockSummary }) {
           </Badge>
           <span>Created {formatClockDate(Date.parse(clock.created_at))}</span>
         </div>
+        <ResultsStatus clock={clock} />
         <div className="flex gap-2">
           <Button size="sm" asChild>
             <Link href={controlHref}>

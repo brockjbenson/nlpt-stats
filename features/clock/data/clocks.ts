@@ -2,12 +2,15 @@ import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { parseLevels } from "@/features/clock/lib/levels";
 import type { ClockStatus, TournamentClock } from "@/features/clock/types";
 
-// A clock as the list shows it: no levels or settings.
+// A clock as the list shows it: no levels or settings, and its saved
+// tournament, if any.
 export type ClockSummary = {
   id: string;
   name: string;
   status: ClockStatus;
   created_at: string;
+  // The tournament its results were saved as, if any.
+  tournament: { id: string; date: string } | null;
 };
 
 // A _tournament_clocks row as Supabase returns it (from a query or a
@@ -55,10 +58,12 @@ export async function getClocks(
 > {
   const { data, error } = await db
     .from("_tournament_clocks")
-    .select("id, name, status, created_at")
+    .select("id, name, status, created_at, tournament:_tournaments(id, date)")
     .order("created_at", { ascending: false });
   if (error) return { data: null, error };
-  return { data: data as ClockSummary[], error: null };
+  // Without generated types, Supabase guesses the embedded tournament is a
+  // list; it's one row (or null), since a clock links to one tournament.
+  return { data: data as unknown as ClockSummary[], error: null };
 }
 
 const UUID_PATTERN =
