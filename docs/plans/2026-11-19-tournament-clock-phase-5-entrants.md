@@ -14,7 +14,7 @@
 
 **Design:** `docs/plans/2026-11-18-tournament-clock-design.md` (Entrant actions, Rebuy rules, Payout rule). Phase 4: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`. Branch: `feat/tournament-shot-clock`.
 
-**Status (2026-11-20):** Tasks 1–11 are done on dev; the R1–R5 refinement pass is next. The knockouts migration goes to prod with phase 4's Task 10 (needs the go-ahead in chat).
+**Status (2026-11-20):** Tasks 1–11 and the R1–R5 refinement pass are done on dev (R1 and R5 found nothing to change; R5's return-type check only flags React components, which the repo leaves untyped). The knockouts migration goes to prod with phase 4's Task 10 (needs the go-ahead in chat).
 
 **Changes from this plan:**
 - **Adding players is blocked while anyone is out**, not "after the first bust" (decision 2). That was always the actual rule: once a re-entry brings everyone back in, adding is safe again, and the click-through showed the Add button coming back. The refusal is `player_out` ("Players can't be added while anyone is out.").
