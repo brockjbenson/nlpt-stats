@@ -104,7 +104,7 @@ function EditDetailsDrawer(props: Props) {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" aria-label="Edit details">
           <Pencil size={14} /> Edit
         </Button>
       </DrawerTrigger>
@@ -167,10 +167,12 @@ function DetailsCard({ clock, applyRow }: Props) {
         </dl>
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <p className="text-muted">{levelsSummary(clock.levels)}</p>
+          {/* Padding for a comfortable tap target, taken back by the
+              negative margins so the link sits where its text does. */}
           {clock.status !== "finished" && (
             <Link
               href={clockLevelsPath(clock.id)}
-              className="inline-flex items-center gap-0.5 font-semibold text-primary hover:underline"
+              className="-mx-2 -my-3 inline-flex items-center gap-0.5 rounded px-2 py-3 font-semibold text-primary hover:underline"
             >
               Edit levels <ChevronRight size={14} />
             </Link>

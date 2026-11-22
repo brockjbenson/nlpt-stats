@@ -72,7 +72,12 @@ function EditPlayerForm({
   const [knocker, setKnocker] = useState(current);
   // Which button was pressed, so only that one shows the spinner.
   const [pressed, setPressed] = useState<"rebuy" | "knocker" | null>(null);
-  const choices = knockerChoices(entrants, id);
+  // By name, as the player list shows them.
+  const choices = knockerChoices(entrants, id)
+    .map((choice) => ({ id: choice.id, name: names.get(choice.id) ?? "" }))
+    .sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
   const isOut = entrant.busted_at !== null;
   const canTakeAway = planTakeAwayRebuy(clock, entrants, id).ok;
 
@@ -114,7 +119,7 @@ function EditPlayerForm({
                 <SelectItem value={NOT_RECORDED}>Not recorded</SelectItem>
                 {choices.map((choice) => (
                   <SelectItem key={choice.id} value={choice.id}>
-                    {names.get(choice.id) ?? ""}
+                    {choice.name}
                   </SelectItem>
                 ))}
               </SelectContent>
