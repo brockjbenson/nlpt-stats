@@ -1,12 +1,7 @@
 "use server";
 
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
-import {
-  type ClockRow,
-  getClock,
-  getServerNowMs,
-  toClock,
-} from "@/features/clock/data/clocks";
+import { getClock, getServerNowMs } from "@/features/clock/data/clocks";
 import { getClockPlayers } from "@/features/clock/data/entrants";
 import { planRebuy } from "@/features/clock/lib/entrants";
 import {
@@ -26,11 +21,6 @@ import {
   planTakeAwayRebuy,
   planUndoPlayer,
 } from "@/features/clock/lib/players";
-import {
-  type PayoutSettings,
-  type StructureError,
-  validatePayouts,
-} from "@/features/clock/lib/structures";
 import type {
   ClockEntrant,
   ClockKnockout,
@@ -47,14 +37,6 @@ export type PlayersActionResult = {
   message: string;
   entrants?: ClockEntrant[];
   knockouts?: ClockKnockout[];
-};
-
-// A payouts change's outcome: the saved clock, or the field problems.
-export type PayoutsActionResult = {
-  success: boolean;
-  message: string;
-  clock?: TournamentClock;
-  errors?: StructureError[];
 };
 
 const NOT_ADMIN = {
@@ -338,45 +320,4 @@ export async function changeKnockerAction(
     if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
     return savedPlayers(loaded.db, clockId, "");
   });
-}
-
-// Changes places paid and the split while the clock isn't finished.
-export async function updatePayoutsAction(
-  clockId: string,
-  payouts: PayoutSettings,
-): Promise<PayoutsActionResult> {
-  if (!(await isAdmin())) return NOT_ADMIN;
-  try {
-    const errors = validatePayouts(payouts);
-    if (errors.length > 0) {
-      return { success: false, message: "Fix the payouts.", errors };
-    }
-
-    const db = await createClient();
-    const { data, error } = await db
-      .from("_tournament_clocks")
-      .update({
-        places_paid: payouts.places_paid,
-        payout_pcts: payouts.payout_pcts,
-      })
-      .eq("id", clockId)
-      .neq("status", "finished")
-      .select()
-      .maybeSingle();
-    if (error) return { success: false, message: error.message };
-    if (!data) {
-      return {
-        success: false,
-        message: "This clock is finished or no longer exists.",
-      };
-    }
-    return {
-      success: true,
-      message: "Payouts saved.",
-      clock: toClock(data as ClockRow),
-    };
-  } catch (error) {
-    console.error("Error saving clock payouts:", error);
-    return { success: false, message: "Couldn't save the payouts." };
-  }
 }

@@ -19,10 +19,9 @@ import {
   clockSettingsFromStructure,
   validateClockSettings,
 } from "@/features/clock/lib/clocks";
-import { formatDuration, plural } from "@/features/clock/lib/format";
+import { formatLevelsSummary } from "@/features/clock/lib/format";
 import { CLOCKS_PATH, clockControlPath } from "@/features/clock/lib/paths";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
-import { summarizeLevels } from "@/features/clock/lib/structures";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
@@ -49,10 +48,6 @@ function TemplatePicker({
   structure: StructureWithLevels;
   onChange: (id: string) => void;
 }) {
-  const { levelCount, breakCount, lengthMs } = summarizeLevels(
-    structure.levels,
-  );
-
   return (
     <Card className="gap-2">
       <CardHeader>
@@ -76,9 +71,8 @@ function TemplatePicker({
           </SelectContent>
         </Select>
         <p className="text-xs text-muted">
-          {plural(levelCount, "level")} · {plural(breakCount, "break")} ·{" "}
-          {formatDuration(lengthMs)}. The levels come from the template; edit it
-          to change them.
+          {formatLevelsSummary(structure.levels)}. The levels come from the
+          template; edit it to change them.
         </p>
       </CardContent>
     </Card>

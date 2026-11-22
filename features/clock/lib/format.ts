@@ -3,6 +3,7 @@ import {
   MS_PER_SECOND,
   SECONDS_PER_MINUTE,
 } from "@/features/clock/lib/levels";
+import { summarizeLevels } from "@/features/clock/lib/structures";
 import type { BlindLevel } from "@/features/clock/types";
 
 const SECONDS_PER_HOUR = 3600;
@@ -71,6 +72,14 @@ export function formatDuration(ms: number): string {
   const minutes = totalMinutes % MINUTES_PER_HOUR;
   if (hours === 0) return `${minutes}m`;
   return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
+}
+
+// "18 levels · 3 breaks · 5h 20m". A length that isn't a number (a row being
+// typed) shows as a dash.
+export function formatLevelsSummary(levels: BlindLevel[]): string {
+  const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
+  const length = Number.isFinite(lengthMs) ? formatDuration(lengthMs) : "—";
+  return `${plural(levelCount, "level")} · ${plural(breakCount, "break")} · ${length}`;
 }
 
 function twoDigits(value: number): string {

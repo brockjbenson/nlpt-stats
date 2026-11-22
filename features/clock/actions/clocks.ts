@@ -31,7 +31,11 @@ import {
   planLevelEdit,
 } from "@/features/clock/lib/level-edits";
 import { CLOCKS_PATH } from "@/features/clock/lib/paths";
-import type { StructureError } from "@/features/clock/lib/structures";
+import {
+  type PayoutSettings,
+  type StructureError,
+  validatePayouts,
+} from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
 import type {
   BlindLevel,
@@ -59,8 +63,8 @@ export type ClockControlResult = {
   clock?: TournamentClock;
 };
 
-// The outcome of saving a clock's details. clock is the saved row, so the
-// screen can show it before the Realtime event arrives.
+// The outcome of saving a clock's details or payouts. clock is the saved
+// row, so the screen can show it before the Realtime event arrives.
 export type ClockSettingsActionResult = {
   success: boolean;
   message: string;
@@ -345,6 +349,37 @@ export async function reopenClockAction(
   }
 }
 
+// Writes new values to a clock that isn't finished and returns the saved
+// row. The caller has already checked the values.
+async function updateUnfinishedClock(
+  clockId: string,
+  columns: Partial<ClockRow>,
+  savedMessage: string,
+): Promise<ClockSettingsActionResult> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from("_tournament_clocks")
+    .update(columns)
+    .eq("id", clockId)
+    .neq("status", "finished")
+    .select()
+    .maybeSingle();
+  if (error) return { success: false, message: error.message };
+  if (!data) {
+    return {
+      success: false,
+      message: "This clock is finished or no longer exists.",
+    };
+  }
+
+  revalidatePath(CLOCKS_PATH);
+  return {
+    success: true,
+    message: savedMessage,
+    clock: toClock(data as ClockRow),
+  };
+}
+
 // Changes a clock's name, money, chips and max rebuys while it isn't
 // finished. Lowering max rebuys below what a player already has is allowed.
 export async function updateClockSettingsAction(
@@ -358,38 +393,47 @@ export async function updateClockSettingsAction(
       return { success: false, message: "Fix the settings.", errors };
     }
 
-    const db = await createClient();
-    const { data, error } = await db
-      .from("_tournament_clocks")
-      .update({
+    return await updateUnfinishedClock(
+      clockId,
+      {
         name: details.name.trim(),
         buy_in: details.buy_in,
         rebuy: details.rebuy,
         starting_chips: details.starting_chips,
         rebuy_chips: details.rebuy_chips,
         max_rebuys: details.max_rebuys,
-      })
-      .eq("id", clockId)
-      .neq("status", "finished")
-      .select()
-      .maybeSingle();
-    if (error) return { success: false, message: error.message };
-    if (!data) {
-      return {
-        success: false,
-        message: "This clock is finished or no longer exists.",
-      };
-    }
-
-    revalidatePath(CLOCKS_PATH);
-    return {
-      success: true,
-      message: "Settings saved.",
-      clock: toClock(data as ClockRow),
-    };
+      },
+      "Settings saved.",
+    );
   } catch (error) {
     console.error("Error saving clock settings:", error);
     return { success: false, message: "Couldn't save the settings." };
+  }
+}
+
+// Changes places paid and the split while the clock isn't finished.
+export async function updatePayoutsAction(
+  clockId: string,
+  payouts: PayoutSettings,
+): Promise<ClockSettingsActionResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    const errors = validatePayouts(payouts);
+    if (errors.length > 0) {
+      return { success: false, message: "Fix the payouts.", errors };
+    }
+
+    return await updateUnfinishedClock(
+      clockId,
+      {
+        places_paid: payouts.places_paid,
+        payout_pcts: payouts.payout_pcts,
+      },
+      "Payouts saved.",
+    );
+  } catch (error) {
+    console.error("Error saving clock payouts:", error);
+    return { success: false, message: "Couldn't save the payouts." };
   }
 }
 

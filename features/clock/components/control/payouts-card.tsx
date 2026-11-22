@@ -14,9 +14,9 @@ import {
 } from "@/components/ui/drawer";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  type PayoutsActionResult,
+  type ClockSettingsActionResult,
   updatePayoutsAction,
-} from "@/features/clock/actions/entrants";
+} from "@/features/clock/actions/clocks";
 import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
 import {
@@ -56,7 +56,7 @@ type FormProps = Props & { onSaved: () => void };
 // Places paid and the split, with what they'd pay the current field.
 // Mounted each time the drawer opens, so it starts from what's saved.
 function EditPayoutsForm({ clock, entrants, applyRow, onSaved }: FormProps) {
-  const { run, isPending } = useActionWithToast<PayoutsActionResult>(
+  const { run, isPending } = useActionWithToast<ClockSettingsActionResult>(
     (result) => result.clock && applyRow(result.clock),
   );
   const [settings, dispatch] = useReducer(

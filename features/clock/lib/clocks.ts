@@ -63,6 +63,18 @@ export function clockSettingsOf(clock: TournamentClock): ClockSettings {
   };
 }
 
+// Just the details of a clock's settings, for saving them without the payouts.
+export function clockDetailsOf(settings: ClockSettings): ClockDetails {
+  return {
+    name: settings.name,
+    buy_in: settings.buy_in,
+    rebuy: settings.rebuy,
+    starting_chips: settings.starting_chips,
+    rebuy_chips: settings.rebuy_chips,
+    max_rebuys: settings.max_rebuys,
+  };
+}
+
 // Everything wrong with a running clock's edited details (no payouts); empty
 // means they can be saved. The screen and the action share this check.
 export function validateClockDetails(details: ClockDetails): StructureError[] {

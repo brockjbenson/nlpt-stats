@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import LevelRow from "@/features/clock/components/structures/level-row";
-import { formatDuration, plural } from "@/features/clock/lib/format";
+import { formatLevelsSummary } from "@/features/clock/lib/format";
 import { levelNumber } from "@/features/clock/lib/levels";
 import type { LevelLocks } from "@/features/clock/lib/level-edits";
 import type {
@@ -14,7 +14,6 @@ import type {
 import {
   levelStartTimes,
   type StructureError,
-  summarizeLevels,
 } from "@/features/clock/lib/structures";
 import {
   closestCenter,
@@ -56,7 +55,6 @@ function LevelsFields({
   currentIndex,
 }: Props) {
   const { levels } = draft;
-  const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
   const levelErrors = errors.filter(({ field }) => field === "levels");
   const keys = levels.map(({ key }) => key);
   const startTimes = levelStartTimes(levels);
@@ -93,10 +91,7 @@ function LevelsFields({
     <Card className="gap-2">
       <CardHeader className="flex flex-row items-baseline justify-between gap-2 space-y-0">
         <CardTitle className="text-base">Levels</CardTitle>
-        <p className="text-xs text-muted">
-          {plural(levelCount, "level")} · {plural(breakCount, "break")} ·{" "}
-          {Number.isFinite(lengthMs) ? formatDuration(lengthMs) : "—"}
-        </p>
+        <p className="text-xs text-muted">{formatLevelsSummary(levels)}</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <DndContext

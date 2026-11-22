@@ -20,20 +20,18 @@ import {
 import SettingsFields from "@/features/clock/components/structures/settings-fields";
 import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import {
-  type ClockDetails,
   type ClockSettings,
+  clockDetailsOf,
   clockSettingsOf,
   validateClockDetails,
 } from "@/features/clock/lib/clocks";
 import {
   formatChips,
   formatDollars,
-  formatDuration,
-  plural,
+  formatLevelsSummary,
 } from "@/features/clock/lib/format";
 import { clockLevelsPath } from "@/features/clock/lib/paths";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
-import { summarizeLevels } from "@/features/clock/lib/structures";
 import type { TournamentClock } from "@/features/clock/types";
 import { ChevronRight, Pencil } from "lucide-react";
 import Link from "next/link";
@@ -61,17 +59,9 @@ function EditDetailsForm({ clock, applyRow, onSaved }: FormProps) {
   const errors = validateClockDetails(settings);
 
   const save = (): void => {
-    const details: ClockDetails = {
-      name: settings.name,
-      buy_in: settings.buy_in,
-      rebuy: settings.rebuy,
-      starting_chips: settings.starting_chips,
-      rebuy_chips: settings.rebuy_chips,
-      max_rebuys: settings.max_rebuys,
-    };
     run(
       "Couldn't save the details",
-      () => updateClockSettingsAction(clock.id, details),
+      () => updateClockSettingsAction(clock.id, clockDetailsOf(settings)),
       onSaved,
     );
   };
@@ -133,14 +123,6 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
-// "18 levels · 3 breaks · 5h 20m", as in the template editor.
-function levelsSummary(levels: TournamentClock["levels"]): string {
-  const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
-  return `${plural(levelCount, "level")} · ${plural(breakCount, "break")} · ${
-    Number.isFinite(lengthMs) ? formatDuration(lengthMs) : "—"
-  }`;
-}
-
 // The control screen's clock details: buy-in, chips, rebuy limit and a
 // levels summary, with (until the clock finishes) an Edit button and an
 // Edit levels link.
@@ -166,7 +148,7 @@ function DetailsCard({ clock, applyRow }: Props) {
           <Detail label="Max rebuys" value={String(clock.max_rebuys)} />
         </dl>
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <p className="text-muted">{levelsSummary(clock.levels)}</p>
+          <p className="text-muted">{formatLevelsSummary(clock.levels)}</p>
           {/* Padding for a comfortable tap target, taken back by the
               negative margins so the link sits where its text does. */}
           {clock.status !== "finished" && (
