@@ -42,7 +42,7 @@ import type {
   ClockEntrant,
   TournamentClock,
 } from "@/features/clock/types";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
 
@@ -153,7 +153,12 @@ export async function deleteClockAction(
 
 // The clock and the database's time, read together so the control works
 // from the same moment every screen counts from.
-async function loadClockAndTime(id: string) {
+async function loadClockAndTime(id: string): Promise<{
+  db: SupabaseClient;
+  clock: TournamentClock | null;
+  error: PostgrestError | null;
+  nowMs: number;
+}> {
   const db = await createClient();
   const [{ data: clock, error }, nowMs] = await Promise.all([
     getClock(db, id),
