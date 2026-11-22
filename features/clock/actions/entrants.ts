@@ -1,31 +1,26 @@
 "use server";
 
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
-import {
-  type ClockRow,
-  getClock,
-  getServerNowMs,
-  toClock,
-} from "@/features/clock/data/clocks";
+import { getClock, getServerNowMs } from "@/features/clock/data/clocks";
 import { getClockPlayers } from "@/features/clock/data/entrants";
 import { planRebuy } from "@/features/clock/lib/entrants";
 import {
   addRefusalMessage,
   bustRefusalMessage,
+  changeKnockerRefusalMessage,
+  PLAYERS_CHANGED_ELSEWHERE,
   rebuyRefusalMessage,
+  takeAwayRebuyRefusalMessage,
   undoRefusalMessage,
 } from "@/features/clock/lib/player-messages";
 import {
   canRemoveEntrant,
   planAddEntrants,
   planBustPlayer,
+  planChangeKnocker,
+  planTakeAwayRebuy,
   planUndoPlayer,
 } from "@/features/clock/lib/players";
-import {
-  type PayoutSettings,
-  type StructureError,
-  validatePayouts,
-} from "@/features/clock/lib/structures";
 import type {
   ClockEntrant,
   ClockKnockout,
@@ -44,20 +39,12 @@ export type PlayersActionResult = {
   knockouts?: ClockKnockout[];
 };
 
-// A payouts change's outcome: the saved clock, or the field problems.
-export type PayoutsActionResult = {
-  success: boolean;
-  message: string;
-  clock?: TournamentClock;
-  errors?: StructureError[];
-};
-
 const NOT_ADMIN = {
   success: false,
   message: "Only admins can change tournament clocks.",
 } as const;
 const CLOCK_GONE = "This clock no longer exists.";
-const CHANGED_ELSEWHERE = "The players changed on another screen. Try again.";
+const CHANGED_ELSEWHERE = PLAYERS_CHANGED_ELSEWHERE;
 const CANT_REMOVE = "This player can't be removed now.";
 
 // Postgres error codes the player functions and tables raise.
@@ -268,43 +255,69 @@ export async function rebuyEntrantAction(
   });
 }
 
-// Changes places paid and the split while the clock isn't finished.
-export async function updatePayoutsAction(
+// Takes one rebuy back from a player, for a rebuy given by mistake. Saved
+// only if their rebuys haven't changed since they were read.
+export async function takeAwayRebuyAction(
   clockId: string,
-  payouts: PayoutSettings,
-): Promise<PayoutsActionResult> {
-  if (!(await isAdmin())) return NOT_ADMIN;
-  try {
-    const errors = validatePayouts(payouts);
-    if (errors.length > 0) {
-      return { success: false, message: "Fix the payouts.", errors };
-    }
+  entrantId: string,
+): Promise<PlayersActionResult> {
+  return changePlayers(clockId, "take away the rebuy", async (loaded) => {
+    const entrant = loaded.entrants.find(({ id }) => id === entrantId);
+    const plan = planTakeAwayRebuy(loaded.clock, loaded.entrants, entrantId);
+    if (!plan.ok) return failed(takeAwayRebuyRefusalMessage(plan.reason));
+    if (!entrant) return failed(CHANGED_ELSEWHERE);
 
-    const db = await createClient();
-    const { data, error } = await db
-      .from("_tournament_clocks")
-      .update({
-        places_paid: payouts.places_paid,
-        payout_pcts: payouts.payout_pcts,
-      })
-      .eq("id", clockId)
-      .neq("status", "finished")
-      .select()
-      .maybeSingle();
-    if (error) return { success: false, message: error.message };
-    if (!data) {
-      return {
-        success: false,
-        message: "This clock is finished or no longer exists.",
-      };
+    const { data, error } = await loaded.db
+      .from("_clock_entrants")
+      .update(plan.value)
+      .eq("id", entrantId)
+      .eq("clock_id", clockId)
+      .eq("rebuys", entrant.rebuys)
+      .select("id");
+    if (error) return writeFailure(error);
+    if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
+    return savedPlayers(loaded.db, clockId, "");
+  });
+}
+
+// Fixes who knocked a busted player out (null: not recorded). Saved only if
+// the knockout still has the knocker it was read with.
+export async function changeKnockerAction(
+  clockId: string,
+  entrantId: string,
+  knockedOutBy: string | null,
+): Promise<PlayersActionResult> {
+  return changePlayers(clockId, "change the knockout", async (loaded) => {
+    const plan = planChangeKnocker(
+      loaded.clock,
+      loaded.entrants,
+      loaded.knockouts,
+      entrantId,
+      knockedOutBy,
+    );
+    if (!plan.ok) return failed(changeKnockerRefusalMessage(plan.reason));
+    const knockout = loaded.knockouts.find(
+      ({ id }) => id === plan.value.knockoutId,
+    );
+    if (!knockout) return failed(CHANGED_ELSEWHERE);
+
+    const update = loaded.db
+      .from("_clock_knockouts")
+      .update({ knocked_out_by: plan.value.knocked_out_by })
+      .eq("id", plan.value.knockoutId)
+      .eq("clock_id", clockId);
+    const unchanged =
+      knockout.knocked_out_by === null
+        ? update.is("knocked_out_by", null)
+        : update.eq("knocked_out_by", knockout.knocked_out_by);
+    const { data, error } = await unchanged.select("id");
+    if (error) {
+      // The chosen knocker was removed on another screen.
+      return error.code === FOREIGN_KEY_VIOLATION
+        ? failed(CHANGED_ELSEWHERE)
+        : writeFailure(error);
     }
-    return {
-      success: true,
-      message: "Payouts saved.",
-      clock: toClock(data as ClockRow),
-    };
-  } catch (error) {
-    console.error("Error saving clock payouts:", error);
-    return { success: false, message: "Couldn't save the payouts." };
-  }
+    if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
+    return savedPlayers(loaded.db, clockId, "");
+  });
 }

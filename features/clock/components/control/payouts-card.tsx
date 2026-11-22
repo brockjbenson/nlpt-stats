@@ -14,12 +14,15 @@ import {
 } from "@/components/ui/drawer";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  type PayoutsActionResult,
+  type ClockSettingsActionResult,
   updatePayoutsAction,
-} from "@/features/clock/actions/entrants";
+} from "@/features/clock/actions/clocks";
 import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
-import type { ClockSettings } from "@/features/clock/lib/clocks";
+import {
+  type ClockSettings,
+  clockSettingsOf,
+} from "@/features/clock/lib/clocks";
 import { describeField, type PayoutText } from "@/features/clock/lib/display";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
 import { validatePayouts } from "@/features/clock/lib/structures";
@@ -33,19 +36,6 @@ type Props = {
   // Shows the saved clock at once, before its Realtime event.
   applyRow: (clock: TournamentClock) => void;
 };
-
-function settingsOf(clock: TournamentClock): ClockSettings {
-  return {
-    name: clock.name,
-    buy_in: clock.buy_in,
-    rebuy: clock.rebuy,
-    starting_chips: clock.starting_chips,
-    rebuy_chips: clock.rebuy_chips,
-    places_paid: clock.places_paid,
-    payout_pcts: [...clock.payout_pcts],
-    max_rebuys: clock.max_rebuys,
-  };
-}
 
 // "1st $217.80", one place per line.
 function PayoutList({ payouts }: { payouts: PayoutText[] }) {
@@ -66,13 +56,13 @@ type FormProps = Props & { onSaved: () => void };
 // Places paid and the split, with what they'd pay the current field.
 // Mounted each time the drawer opens, so it starts from what's saved.
 function EditPayoutsForm({ clock, entrants, applyRow, onSaved }: FormProps) {
-  const { run, isPending } = useActionWithToast<PayoutsActionResult>(
+  const { run, isPending } = useActionWithToast<ClockSettingsActionResult>(
     (result) => result.clock && applyRow(result.clock),
   );
   const [settings, dispatch] = useReducer(
     settingsReducer<ClockSettings>,
     clock,
-    settingsOf,
+    clockSettingsOf,
   );
   const errors = validatePayouts(settings);
   const preview =
@@ -126,7 +116,7 @@ function EditPayoutsDrawer(props: Props) {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" aria-label="Edit payouts">
           <Pencil size={14} /> Edit
         </Button>
       </DrawerTrigger>

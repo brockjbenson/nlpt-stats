@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { ClockSettings } from "@/features/clock/lib/clocks";
 import {
+  type LevelsDraft,
+  levelsReducer,
   nextBigBlind,
   type SettingsAction,
   settingsReducer,
@@ -386,5 +388,81 @@ describe("settingsReducer", () => {
     const changed = settingsReducer(draft, { type: "setPlacesPaid", value: 5 });
     expect(changed.levels).toBe(draft.levels);
     expect(changed.payout_pcts).toEqual([45, 28, 17, 10]);
+  });
+});
+
+describe("levelsReducer", () => {
+  const bare: LevelsDraft = {
+    levels: [level("a", 100, 200), level("b", 200, 400), breakRow("c")],
+    new_level_seconds: 15 * 60,
+    new_break_seconds: 5 * 60,
+  };
+  const keysOf = (draft: LevelsDraft): string[] =>
+    draft.levels.map(({ key }) => key);
+
+  it("adds a suggested level with the new level length and the given key", () => {
+    const next = levelsReducer(bare, { type: "addLevel", key: "d" });
+    expect(next.levels).toHaveLength(4);
+    expect(next.levels[3]).toMatchObject({
+      key: "d",
+      kind: "level",
+      big_blind: 500,
+      duration_seconds: 15 * 60,
+    });
+  });
+
+  it("adds a break with the new break length", () => {
+    const next = levelsReducer(bare, { type: "addBreak", key: "d" });
+    expect(next.levels[3]).toMatchObject({
+      key: "d",
+      kind: "break",
+      duration_seconds: 5 * 60,
+    });
+  });
+
+  it("changes one row", () => {
+    const next = levelsReducer(bare, {
+      type: "updateLevel",
+      index: 1,
+      change: { ante: 50 },
+    });
+    expect(next.levels[1].ante).toBe(50);
+    expect(next.levels[0]).toBe(bare.levels[0]);
+  });
+
+  it("moves a row", () => {
+    const next = levelsReducer(bare, { type: "reorderLevel", from: 0, to: 2 });
+    expect(keysOf(next)).toEqual(["b", "c", "a"]);
+  });
+
+  it("removes a row", () => {
+    const next = levelsReducer(bare, { type: "removeLevel", index: 1 });
+    expect(keysOf(next)).toEqual(["a", "c"]);
+  });
+
+  it("sets the new row lengths", () => {
+    const next = levelsReducer(bare, {
+      type: "setField",
+      field: "new_level_seconds",
+      value: 1800,
+    });
+    expect(next.new_level_seconds).toBe(1800);
+    expect(next.new_break_seconds).toBe(5 * 60);
+  });
+
+  it("replaces every row at once", () => {
+    const levels = [bare.levels[2], level("d", 300, 600)];
+    const next = levelsReducer(bare, { type: "setLevels", levels });
+    expect(next.levels).toBe(levels);
+    expect(next.new_level_seconds).toBe(15 * 60);
+  });
+
+  it("keeps only the level fields", () => {
+    const next = levelsReducer(bare, { type: "addLevel", key: "d" });
+    expect(Object.keys(next).sort()).toEqual([
+      "levels",
+      "new_break_seconds",
+      "new_level_seconds",
+    ]);
   });
 });

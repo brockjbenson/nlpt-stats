@@ -9,6 +9,7 @@ import {
   InPlayerButtons,
   OutPlayerButtons,
 } from "@/features/clock/components/players/player-buttons";
+import EditPlayerDrawer from "@/features/clock/components/players/edit-player-drawer";
 import PlayerRow from "@/features/clock/components/players/player-row";
 import { usePlayerAction } from "@/features/clock/components/players/use-player-action";
 import type { LivePlayers } from "@/features/clock/hooks/use-entrants";
@@ -19,6 +20,7 @@ import {
 import {
   addPlayersBlocked,
   entrantNames,
+  latestKnockouts,
   listPlayers,
   type PlayerRow as PlayerRowData,
 } from "@/features/clock/lib/players";
@@ -34,15 +36,8 @@ type Props = {
 
 // Who knocked each player out in their latest bust, by entrant id.
 function latestKnockers(knockouts: ClockKnockout[]): Map<string, string> {
-  const latest = new Map<string, ClockKnockout>();
-  knockouts.forEach((knockout) => {
-    const current = latest.get(knockout.entrant_id);
-    if (!current || knockout.busted_at >= current.busted_at) {
-      latest.set(knockout.entrant_id, knockout);
-    }
-  });
   const knockers = new Map<string, string>();
-  latest.forEach(({ entrant_id, knocked_out_by }) => {
+  latestKnockouts(knockouts).forEach(({ entrant_id, knocked_out_by }) => {
     if (knocked_out_by) knockers.set(entrant_id, knocked_out_by);
   });
   return knockers;
@@ -71,12 +66,22 @@ function PlayersCard({ clock, players, members }: Props) {
   const { entrants, knockouts, applyResult } = players;
   const { run, isPending } = usePlayerAction(applyResult);
   const [busting, setBusting] = useState<PlayerRowData | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const names = entrantNames(entrants, members);
   const { left, out } = listPlayers(entrants, knockouts, names);
   const knockers = latestKnockers(knockouts);
   const addBlockedReason = addPlayersBlocked(clock, entrants);
   const note = buttonsNote(clock, left, entrants.length);
+  const canEdit = clock.status !== "finished";
+  // The drawer closes if its player is removed or the clock finishes.
+  const openId =
+    canEdit && entrants.some(({ id }) => id === editingId) ? editingId : null;
+  // Forget a closed drawer's player, so it can't pop open again if the
+  // clock is reopened on another screen.
+  if (editingId !== null && openId === null) setEditingId(null);
+  const editHandler = (id: string) =>
+    canEdit ? () => setEditingId(id) : undefined;
   const buttonProps = { clock, entrants, run, isPending };
 
   return (
@@ -116,7 +121,11 @@ function PlayersCard({ clock, players, members }: Props) {
         {left.length > 0 && (
           <ul className="divide-y">
             {left.map((player) => (
-              <PlayerRow key={player.entrant.id} player={player}>
+              <PlayerRow
+                key={player.entrant.id}
+                player={player}
+                onEdit={editHandler(player.entrant.id)}
+              >
                 <InPlayerButtons
                   {...buttonProps}
                   player={player}
@@ -141,6 +150,7 @@ function PlayersCard({ clock, players, members }: Props) {
                     key={player.entrant.id}
                     player={player}
                     knockedOutBy={knocker ? names.get(knocker) : null}
+                    onEdit={editHandler(player.entrant.id)}
                   >
                     <OutPlayerButtons {...buttonProps} player={player} />
                   </PlayerRow>
@@ -150,6 +160,17 @@ function PlayersCard({ clock, players, members }: Props) {
           </>
         )}
       </CardContent>
+
+      <EditPlayerDrawer
+        clock={clock}
+        entrants={entrants}
+        knockouts={knockouts}
+        names={names}
+        entrantId={openId}
+        onClose={() => setEditingId(null)}
+        run={run}
+        isPending={isPending}
+      />
 
       <BustDialog
         key={busting?.entrant.id ?? "closed"}

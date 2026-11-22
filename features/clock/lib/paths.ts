@@ -12,6 +12,11 @@ export function clockDisplayPath(id: string): string {
   return `/clock/${id}`;
 }
 
+// Where a clock's current and upcoming levels are edited.
+export function clockLevelsPath(id: string): string {
+  return `${CLOCKS_PATH}/${id}/levels`;
+}
+
 // Where a finished clock's results are reviewed and saved.
 export function clockFinishPath(id: string): string {
   return `${CLOCKS_PATH}/${id}/finish`;

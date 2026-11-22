@@ -3,6 +3,7 @@ import type { Result } from "@/features/clock/lib/result";
 import {
   makeClock,
   NLPT_STANDARD_LEVELS,
+  satisfiesStatusRule,
 } from "@/features/clock/lib/test-fixtures";
 import {
   adjustTime,
@@ -138,24 +139,6 @@ describe("getClockPosition", () => {
     });
   });
 });
-
-// The phase 1 database rule (tournament_clocks_status_fields_check).
-function satisfiesStatusRule(clock: TournamentClock): boolean {
-  switch (clock.status) {
-    case "setup":
-      return (
-        clock.level_started_at === null && clock.paused_remaining_ms === null
-      );
-    case "running":
-      return (
-        clock.level_started_at !== null && clock.paused_remaining_ms === null
-      );
-    case "paused":
-      return clock.paused_remaining_ms !== null;
-    case "finished":
-      return true;
-  }
-}
 
 // Applies a control's update, failing the test if it was refused or would
 // break the database rule.

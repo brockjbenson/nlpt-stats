@@ -22,6 +22,20 @@ export function cleanNote(note: unknown): string | null {
   return trimmed === "" ? null : trimmed;
 }
 
+// A level as it's stored: the playing fields, and the note only on a break
+// that has one. Drops editor-only fields such as `key`.
+export function toStoredLevel(level: BlindLevel): BlindLevel {
+  const note = level.kind === "break" ? cleanNote(level.note) : null;
+  return {
+    kind: level.kind,
+    small_blind: level.small_blind ?? null,
+    big_blind: level.big_blind ?? null,
+    ante: level.ante,
+    duration_seconds: level.duration_seconds,
+    ...(note && { note }),
+  };
+}
+
 // Why a row's note breaks the rules (breaks only, up to 100 characters),
 // or null when it's fine.
 function noteProblem(row: LevelRow): string | null {

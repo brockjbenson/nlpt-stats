@@ -1,11 +1,12 @@
 "use client";
 
+import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import LevelEditFields from "@/features/clock/components/structures/level-edit-fields";
 import TimelineMarker from "@/features/clock/components/structures/timeline-marker";
 import { formatChips, formatElapsed } from "@/features/clock/lib/format";
-import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
+import type { LevelsAction } from "@/features/clock/lib/structure-editor";
 import type {
   DraftLevel,
   StructureError,
@@ -52,8 +53,15 @@ type Props = {
   isExpanded: boolean;
   onToggle: () => void;
   canRemove: boolean;
+  // A played row: greyed and closed, with no editing.
+  isLocked?: boolean;
+  // False for rows that can't move (played or current): no drag handle, not
+  // a drop target, and no remove button.
+  canDrag?: boolean;
+  // The level being played right now.
+  isCurrent?: boolean;
   errors: StructureError[];
-  dispatch: React.Dispatch<StructureEditorAction>;
+  dispatch: React.Dispatch<LevelsAction>;
 };
 
 // One stop on the levels timeline: its start time, a summary line, and (when
@@ -68,6 +76,9 @@ function LevelRow({
   isExpanded,
   onToggle,
   canRemove,
+  isLocked = false,
+  canDrag = true,
+  isCurrent = false,
   errors,
   dispatch,
 }: Props) {
@@ -84,7 +95,12 @@ function LevelRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: level.key });
+  } = useSortable({
+    id: level.key,
+    // A row that can't move isn't a drop target either, so a drag stops at
+    // the first upcoming row instead of sliding past the played ones.
+    disabled: { draggable: !canDrag, droppable: !canDrag },
+  });
 
   return (
     <li
@@ -103,24 +119,30 @@ function LevelRow({
             isBreak ? BREAK_CARD_CLASS : "border-neutral-800 bg-card",
             hasErrors && "border-destructive",
             isDragging && "shadow-lg ring-2 ring-primary",
+            isLocked && "opacity-60",
           )}
         >
           <div className="flex items-center gap-1">
-            <button
-              type="button"
-              ref={setActivatorNodeRef}
-              className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted hover:text-white active:cursor-grabbing"
-              aria-label={`Drag ${label} to reorder`}
-              {...attributes}
-              {...listeners}
-            >
-              <GripVertical size={16} />
-            </button>
+            {canDrag ? (
+              <button
+                type="button"
+                ref={setActivatorNodeRef}
+                className="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center rounded text-muted hover:text-white active:cursor-grabbing"
+                aria-label={`Drag ${label} to reorder`}
+                {...attributes}
+                {...listeners}
+              >
+                <GripVertical size={16} />
+              </button>
+            ) : (
+              <span className="size-8 shrink-0" aria-hidden />
+            )}
             <button
               type="button"
               onClick={onToggle}
-              aria-expanded={isExpanded}
-              aria-controls={id("fields")}
+              disabled={isLocked}
+              aria-expanded={isLocked ? undefined : isExpanded}
+              aria-controls={isLocked ? undefined : id("fields")}
               className="flex min-w-0 flex-1 items-center gap-3 rounded py-1 text-left text-sm"
             >
               <span
@@ -145,29 +167,45 @@ function LevelRow({
               >
                 {isBreak ? (level.note ?? "") : blindsText(level)}
               </span>
+              {/* A span, not Badge's div: a button only holds inline content.
+                  Short so the blinds still fit at phone width. */}
+              {isCurrent && (
+                <span
+                  className={cn(badgeVariants(), "shrink-0 px-1.5 py-0")}
+                  title="Now playing"
+                >
+                  Now<span className="sr-only"> playing</span>
+                </span>
+              )}
+              {isLocked && <span className="sr-only">, played</span>}
               <span className="shrink-0 text-xs tabular-nums text-muted">
                 {minutesText(level)}
               </span>
-              <ChevronDown
-                size={14}
-                className={cn(
-                  "shrink-0 text-muted transition-transform",
-                  isExpanded && "rotate-180",
-                )}
-              />
+              {!isLocked && (
+                <ChevronDown
+                  size={14}
+                  className={cn(
+                    "shrink-0 text-muted transition-transform",
+                    isExpanded && "rotate-180",
+                  )}
+                />
+              )}
             </button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-8 shrink-0"
-              disabled={!canRemove}
-              aria-label={`Remove ${label}`}
-              onClick={() => dispatch({ type: "removeLevel", index })}
-            >
-              <Trash2 className="text-red-600" size={14} />
-            </Button>
+            {/* Played and current rows can't be removed: no button at all. */}
+            {canDrag && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 shrink-0"
+                disabled={!canRemove}
+                aria-label={`Remove ${label}`}
+                onClick={() => dispatch({ type: "removeLevel", index })}
+              >
+                <Trash2 className="text-red-600" size={14} />
+              </Button>
+            )}
           </div>
-          {isExpanded && (
+          {isExpanded && !isLocked && (
             <LevelEditFields level={level} id={id} update={update} />
           )}
           <div className="px-1">

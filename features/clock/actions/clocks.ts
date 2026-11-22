@@ -12,7 +12,9 @@ import { getClockPlayers } from "@/features/clock/data/entrants";
 import { getStructure } from "@/features/clock/data/structures";
 import {
   buildClockInsert,
+  type ClockDetails,
   type ClockSettings,
+  validateClockDetails,
   validateClockSettings,
 } from "@/features/clock/lib/clocks";
 import {
@@ -24,11 +26,24 @@ import {
   finishRefusalMessage,
   planFinishClock,
 } from "@/features/clock/lib/finish";
+import {
+  type LevelEditRefusal,
+  planLevelEdit,
+} from "@/features/clock/lib/level-edits";
 import { CLOCKS_PATH } from "@/features/clock/lib/paths";
-import type { StructureError } from "@/features/clock/lib/structures";
+import { CLOCK_FINISHED } from "@/features/clock/lib/player-messages";
+import {
+  type PayoutSettings,
+  type StructureError,
+  validatePayouts,
+} from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
-import type { ClockEntrant, TournamentClock } from "@/features/clock/types";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type {
+  BlindLevel,
+  ClockEntrant,
+  TournamentClock,
+} from "@/features/clock/types";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
 
@@ -47,6 +62,15 @@ export type ClockControlResult = {
   success: boolean;
   message: string;
   clock?: TournamentClock;
+};
+
+// The outcome of saving a clock's details or payouts. clock is the saved
+// row, so the screen can show it before the Realtime event arrives.
+export type ClockSettingsActionResult = {
+  success: boolean;
+  message: string;
+  clock?: TournamentClock;
+  errors?: StructureError[];
 };
 
 const CLOCK_GONE = "This clock no longer exists.";
@@ -130,7 +154,12 @@ export async function deleteClockAction(
 
 // The clock and the database's time, read together so the control works
 // from the same moment every screen counts from.
-async function loadClockAndTime(id: string) {
+async function loadClockAndTime(id: string): Promise<{
+  db: SupabaseClient;
+  clock: TournamentClock | null;
+  error: PostgrestError | null;
+  nowMs: number;
+}> {
   const db = await createClient();
   const [{ data: clock, error }, nowMs] = await Promise.all([
     getClock(db, id),
@@ -323,5 +352,158 @@ export async function reopenClockAction(
   } catch (error) {
     console.error("Error reopening tournament clock:", error);
     return { success: false, message: "Couldn't reopen the tournament." };
+  }
+}
+
+// Writes new values to a clock that isn't finished and returns the saved
+// row. The caller has already checked the values.
+async function updateUnfinishedClock(
+  clockId: string,
+  columns: Partial<ClockRow>,
+  savedMessage: string,
+): Promise<ClockSettingsActionResult> {
+  const db = await createClient();
+  const { data, error } = await db
+    .from("_tournament_clocks")
+    .update(columns)
+    .eq("id", clockId)
+    .neq("status", "finished")
+    .select()
+    .maybeSingle();
+  if (error) return { success: false, message: error.message };
+  if (!data) {
+    return {
+      success: false,
+      message: "This clock is finished or no longer exists.",
+    };
+  }
+
+  revalidatePath(CLOCKS_PATH);
+  return {
+    success: true,
+    message: savedMessage,
+    clock: toClock(data as ClockRow),
+  };
+}
+
+// Changes a clock's name, money, chips and max rebuys while it isn't
+// finished. Lowering max rebuys below what a player already has is allowed.
+export async function updateClockSettingsAction(
+  clockId: string,
+  details: ClockDetails,
+): Promise<ClockSettingsActionResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    const errors = validateClockDetails(details);
+    if (errors.length > 0) {
+      return { success: false, message: "Fix the settings.", errors };
+    }
+
+    return await updateUnfinishedClock(
+      clockId,
+      {
+        name: details.name.trim(),
+        buy_in: details.buy_in,
+        rebuy: details.rebuy,
+        starting_chips: details.starting_chips,
+        rebuy_chips: details.rebuy_chips,
+        max_rebuys: details.max_rebuys,
+      },
+      "Settings saved.",
+    );
+  } catch (error) {
+    console.error("Error saving clock settings:", error);
+    return { success: false, message: "Couldn't save the settings." };
+  }
+}
+
+// Changes places paid and the split while the clock isn't finished.
+export async function updatePayoutsAction(
+  clockId: string,
+  payouts: PayoutSettings,
+): Promise<ClockSettingsActionResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    const errors = validatePayouts(payouts);
+    if (errors.length > 0) {
+      return { success: false, message: "Fix the payouts.", errors };
+    }
+
+    return await updateUnfinishedClock(
+      clockId,
+      {
+        places_paid: payouts.places_paid,
+        payout_pcts: payouts.payout_pcts,
+      },
+      "Payouts saved.",
+    );
+  } catch (error) {
+    console.error("Error saving clock payouts:", error);
+    return { success: false, message: "Couldn't save the payouts." };
+  }
+}
+
+// What to tell the admin when an edited list of levels can't be saved.
+function levelEditRefusalMessage(reason: LevelEditRefusal): string {
+  switch (reason) {
+    case "finished":
+      return CLOCK_FINISHED;
+    case "invalid_levels":
+      return "Fix the levels.";
+    case "clock_moved":
+      return CHANGED_ELSEWHERE;
+  }
+}
+
+async function saveLevels(
+  clockId: string,
+  levels: BlindLevel[],
+): Promise<ClockControlResult> {
+  const { db, clock, error, nowMs } = await loadClockAndTime(clockId);
+  if (error) return { success: false, message: error.message };
+  if (!clock) return { success: false, message: CLOCK_GONE };
+
+  const plan = planLevelEdit(clock, levels, nowMs);
+  if (!plan.ok) {
+    return { success: false, message: levelEditRefusalMessage(plan.reason) };
+  }
+
+  let query = db
+    .from("_tournament_clocks")
+    .update(plan.value)
+    .eq("id", clockId)
+    .eq("status", clock.status)
+    .eq("level_index", clock.level_index);
+  // Also guards against a +1 min or -1 min pressed on another screen, which
+  // moves the timing without changing the status or level.
+  if (clock.status === "running") {
+    query = query.eq("level_started_at", clock.level_started_at);
+  } else if (clock.status === "paused") {
+    query = query.eq("paused_remaining_ms", clock.paused_remaining_ms);
+  }
+
+  const { data, error: saveError } = await query.select().maybeSingle();
+  if (saveError) return { success: false, message: saveError.message };
+  if (!data) return { success: false, message: CHANGED_ELSEWHERE };
+
+  return {
+    success: true,
+    message: "Levels saved.",
+    clock: toClock(data as ClockRow),
+  };
+}
+
+// Saves an edited list of levels while the clock isn't finished. The server
+// re-checks every row, so the page's list is never trusted.
+export async function updateClockLevelsAction(
+  clockId: string,
+  levels: BlindLevel[],
+): Promise<ClockControlResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    return await saveLevels(clockId, levels);
+  } catch (error) {
+    console.error("Error saving clock levels:", error);
+    return { success: false, message: "Couldn't save the levels." };
   }
 }

@@ -120,7 +120,8 @@ export type ClockControlRefusal = "wrong_status" | "level_out_of_range";
 
 type ControlResult = Result<ClockUpdate, ClockControlRefusal>;
 
-function toIso(ms: number): string {
+// A time in ms as the timestamp text the database stores.
+export function toIso(ms: number): string {
   return new Date(ms).toISOString();
 }
 

@@ -2,7 +2,7 @@
 
 - **Date:** 2026-11-18
 - **Branch:** `feat/tournament-shot-clock`
-- **Status:** Approved. Phases 1–8 are built on dev. Still to do: phase 4's on-device check, and the prod rollout of every clock migration (phase 4's Task 10, now including phase 5's knockouts). Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`, `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`.
+- **Status:** Approved. Phases 1–8 are built on dev. All 13 clock migrations were applied to prod on 2026-11-20 (phase 4's Task 10). Still to do: merge PR #28 and smoke-test on prod. Plans: `docs/plans/2026-11-19-tournament-clock-phase-4-clock-core.md`, `...-phase-5-entrants.md`, `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`, `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`, `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`.
 
 ## Goal
 
@@ -196,7 +196,8 @@ The calculations are in `features/clock/lib/timing.ts`. Each control returns the
 | `/clock/[id]` | Public | Display: level, countdown, current/next blinds & ante, next break, players left (names), avg stack, prize pool & payouts. "TV mode" toggle → fullscreen + Wake Lock. Outside the `(home)` route group, so no header or tab bar. |
 | `/admin/clock` | Admin | List clocks: name, status, created date, Control and Display links, delete. |
 | `/admin/clock/new` | Admin | Create a clock from a template: pick the template, adjust money/chips/payouts. No tournament link here; the finish flow picks or creates the tournament. |
-| `/admin/clock/[id]` | Admin | Control: start/pause/resume, prev/next level, ±1 min; a Players card (add members and guests, bust with an optional knockout, undo, rebuy, remove); a Payouts card (what each place pays now, edit places paid and the split). |
+| `/admin/clock/[id]` | Admin | Control: start/pause/resume, prev/next level, ±1 min; a Players card (add members and guests, bust with an optional knockout, undo, rebuy, remove; tap a name to take away a rebuy or change the knocker); a Details card (money, chips, max rebuys and a levels summary; edit them and the name until finished); a Payouts card (what each place pays now, edit places paid and the split). See `docs/plans/2026-11-22-tournament-clock-live-edits-design.md`. |
+| `/admin/clock/[id]/levels` | Admin | Edit the current and upcoming levels while the clock runs (played levels locked); the template is never touched. |
 | `/admin/clock/[id]/finish` | Admin | Review & save results (see Finish flow). |
 | `/admin/clock/structures` | Admin | CRUD templates and their levels (add/remove/reorder levels and breaks). |
 
@@ -361,6 +362,8 @@ The `league_v2_*` migrations (Aug 2026) created `_tournaments`, `_tournament_ses
 6. **TV mode & sounds.** Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-6-tv-mode-sounds.md`. No database changes. Fullscreen still needs checking on a real screen (it didn't go fullscreen under browser automation).
 7. **Finish flow:** review screen → `_tournaments` + `_tournament_sessions`. Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-7-finish-flow.md`.
 8. **Nav:** admin nav link (done in phases 3–4); "Tournament live" banner while a clock is running or paused (league pages, above the tab bar); link from tournament page when a clock is attached. Built on dev; see `docs/plans/2026-11-20-tournament-clock-phase-8-nav.md`. No database changes.
+
+**After v1 — live edits (2026-11-22):** edit a running clock's settings, take away a rebuy, change a knocker, and edit the current and upcoming levels. Design `docs/plans/2026-11-22-tournament-clock-live-edits-design.md`, plan `docs/plans/2026-11-22-tournament-clock-live-edits.md`, PR #31. No database changes.
 
 ## Out of scope for v1
 
