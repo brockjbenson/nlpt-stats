@@ -14,6 +14,49 @@
 
 **Design:** `docs/plans/2026-11-22-tournament-clock-live-edits-design.md`. Clock reference: `docs/plans/2026-11-18-tournament-clock-design.md`. Branch: `feat/clock-live-edits`.
 
+**Status (2026-11-22):** Tasks 1–11 and the refinement pass are done on dev and in PR #31 (into `staging`). 553 tests pass (473 before). No migration. Built with a fresh implementer per task, each reviewed for spec and then code quality, and every review note was fixed.
+
+**Changes from this plan:**
+- **Lint:** the repo has no `npm run lint` script, so lint was `npx eslint` on the changed files.
+- **Validation (Task 3):** `validateSettings` is now `validateDetails` (name, money, chips, max rebuys) plus `validatePayouts`. Nothing depended on the old order.
+- **One stored-level mapper:** `toStoredLevel` in `lib/levels.ts` is used by both the template save and `planLevelEdit`.
+- **Shared messages:** "The players changed on another screen. Try again." lives in one place (`PLAYERS_CHANGED_ELSEWHERE`).
+- **Removed knocker:** `changeKnockerAction` treats a removed knocker (foreign-key error) as "changed on another screen", not "can't be removed".
+- **Locked rows (Task 8):** they aren't drop targets either, so a drag stops at the first upcoming row instead of being thrown away. The current row's marker is a short "Now" so the blinds still fit at phone width. Played rows read ", played" to screen readers.
+- **Edit player (Task 7):**
+  - The drawer always has a way out: Done, or Cancel next to Save.
+  - The name button holds only inline elements and keeps the row's details for screen readers.
+  - Knocker choices are in name order.
+  - It closes if the player goes or the clock finishes.
+- **Edit levels (Task 9), from review:**
+  - **Rows realign when the clock moves on.** Rows locked by position kept the draft's content, so after two or more level changes during an edit a save could duplicate or drop a level. Now, when the live level changes, the rows realign by identity (`alignDraftToClock`, `savedRowKey`): played rows show what was actually played, the current row is the level really being played (with any edits to it), and the rest keep the admin's order.
+  - **A fresh draft per visit.** Cache Components keeps a page you leave mounted, so an abandoned draft came back. The editor is now keyed by the page's server time.
+  - **Back link confirms.** It asks before discarding edits, through a shared `BackLink` that replaces `BackToStructuresLink`.
+  - `NewRowLengthFields` isn't shown: new rows open expanded, with the clock's most common lengths.
+  - `useLeaveWarning` was extracted for both editors.
+- **Concurrent saves (decision 3):** the server reads the clock when Save is pressed. A ±1 min or pause pressed earlier is kept (checked: a +1 min from another screen survived a levels save). The "changed on another screen" refusal covers only the moment between that read and the write.
+- **Task 10 in automation:** keyboard drag-and-drop needs a short pause between key presses.
+- **Refinement:**
+  - R1: found nothing.
+  - R2: a shared knocker lookup in the drawer. The editor still re-renders every 250 ms through `useClock`; leaving it saved changing a shared hook.
+  - R3: a clearer save label and up-to-date comments.
+  - R4:
+    - `formatLevelsSummary` replaces four copies.
+    - Added `clockDetailsOf`.
+    - `updatePayoutsAction` moved to `actions/clocks.ts` and shares `updateUnfinishedClock` and one result type with the settings save.
+    - Skipped: merging `toClockLevel` (different rules) and a shared drawer footer (the three differ).
+  - R5: one missing return type.
+- **Outside the plan:**
+  - Bottom sheets now stay above the on-screen keyboard app-wide (`components/ui/drawer.tsx`, `hooks/use-keyboard-inset.ts`, `lib/keyboard-inset.ts`). vaul's own `repositionInputs` is off because it misplaces the sheet on iOS. Checked with a simulated keyboard and on the iPhone.
+  - vaul 1.1.2 is its newest release, and the project is unmaintained.
+
+**Known limits:**
+- Two screens saving levels at the same moment: the last save wins. A levels page left open while another screen saves levels lines rows up against the old list.
+- Taking away a re-entry rebuy doesn't put the player back out (see the design).
+- The display's browser tab keeps the old name until it reloads.
+
+**Test clocks on dev:** "Live Edit Renamed" (finished) and "Keyboard Test" (not started). Delete them once phone testing is done.
+
 ---
 
 ## Decisions made in this plan (confirm before starting)

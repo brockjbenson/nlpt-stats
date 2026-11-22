@@ -3,6 +3,7 @@
 **Ticket:** none
 **Date:** 2026-11-22
 **Branch:** `feat/clock-live-edits` (from `master` after the clock shipped in #28)
+**Status:** Built on dev and in PR #31 (into `staging`), 2026-11-22. What changed during the build is listed in the plan's "Changes from this plan".
 **Builds on:** `docs/plans/2026-11-18-tournament-clock-design.md` (data model, timing, permissions)
 
 ## Goal
@@ -47,11 +48,12 @@ Fix mistakes and change plans while a tournament clock is running, without start
 - **Top:** a back link to the control screen and a live line with the current level and time left (`useClock`).
 - **List:** the template editor's levels timeline, with three kinds of rows:
   - **Played** (before the current level): greyed, no drag handle, can't be opened or removed.
-  - **Current**: marked "Now playing"; its fields can be edited; no drag handle, can't be removed, and drops above it are refused.
+  - **Current**: marked "Now" (read as "Now playing"); its fields can be edited; no drag handle, can't be removed, and drops above it are refused.
   - **Upcoming**: everything the template editor does: edit, drag, remove, add level, add break.
 - A clock that hasn't started has no played or current rows: everything is editable.
-- The page follows the clock live. When a level ends during editing, its row locks; whatever was typed into it no longer matters, since played rows are never saved.
-- Leaving with unsaved changes warns first (`beforeunload`, as the template editor does).
+- The page follows the clock live. When a level ends during editing, the rows realign by identity: played rows show what was actually played (whatever was typed into them is dropped), the current row is the level really being played, and the upcoming rows keep the admin's order. So however many levels pass, nothing is duplicated or lost.
+- Each visit starts a fresh draft (the editor is keyed by the page's server time, since Cache Components keeps a page you leave mounted).
+- Leaving with unsaved changes warns first: `beforeunload` for a reload or close, and a confirm on the back link, as the template editor does.
 - **Save** sends the whole list. The page keeps its edits when a save is refused.
 
 ### What a save does
