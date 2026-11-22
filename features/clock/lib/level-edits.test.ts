@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  clockLevelsDraft,
   levelEditLocks,
   type LevelEdit,
+  levelsChanged,
   planLevelEdit,
 } from "@/features/clock/lib/level-edits";
-import type { DraftLevel } from "@/features/clock/lib/structures";
+import { levelsReducer } from "@/features/clock/lib/structure-editor";
+import {
+  DEFAULT_BREAK_SECONDS,
+  type DraftLevel,
+} from "@/features/clock/lib/structures";
 import { getClockPosition } from "@/features/clock/lib/timing";
 import {
   makeClock,
@@ -54,6 +60,15 @@ function planned(
 
 function minutesLeft(clock: TournamentClock, nowMs: number): number {
   return getClockPosition(clock, nowMs).remainingMs / MINUTE;
+}
+
+// Keys "row-1", "row-2", … in order, like the editor's counter.
+function counterKeys(): () => string {
+  let count = 0;
+  return () => {
+    count += 1;
+    return `row-${count}`;
+  };
 }
 
 describe("levelEditLocks", () => {
@@ -256,5 +271,93 @@ describe("planLevelEdit when finished", () => {
       ok: false,
       reason: "finished",
     });
+  });
+});
+
+describe("clockLevelsDraft", () => {
+  it("keys every row from nextKey and keeps its fields", () => {
+    const draft = clockLevelsDraft(makeClock(), counterKeys());
+    expect(draft.levels).toEqual(
+      NLPT_STANDARD_LEVELS.map((level, index) => ({
+        ...level,
+        key: `row-${index + 1}`,
+      })),
+    );
+  });
+
+  it("gives new rows the clock's most common level and break lengths", () => {
+    const level = (minutes: number): BlindLevel => ({
+      ...NLPT_STANDARD_LEVELS[0],
+      duration_seconds: minutes * 60,
+    });
+    const breakOf = (minutes: number): BlindLevel => ({
+      ...NLPT_STANDARD_LEVELS[4],
+      duration_seconds: minutes * 60,
+    });
+    const levels = [
+      level(15),
+      level(15),
+      breakOf(5),
+      level(30),
+      breakOf(5),
+      level(15),
+      breakOf(20),
+    ];
+    const draft = clockLevelsDraft(makeClock({ levels }), counterKeys());
+    expect(draft.new_level_seconds).toBe(15 * 60);
+    expect(draft.new_break_seconds).toBe(5 * 60);
+  });
+
+  it("falls back to the default break length with no breaks", () => {
+    const levels = NLPT_STANDARD_LEVELS.slice(0, 4);
+    const draft = clockLevelsDraft(makeClock({ levels }), counterKeys());
+    expect(draft.new_level_seconds).toBe(20 * 60);
+    expect(draft.new_break_seconds).toBe(DEFAULT_BREAK_SECONDS);
+  });
+});
+
+describe("levelsChanged", () => {
+  function draftLevels(): DraftLevel[] {
+    return clockLevelsDraft(makeClock(), counterKeys()).levels;
+  }
+
+  it("is false for the same levels with new keys", () => {
+    expect(levelsChanged(NLPT_STANDARD_LEVELS, draftLevels())).toBe(false);
+  });
+
+  it("is true after an edit", () => {
+    const edited = draftLevels().map((row, index) =>
+      index === 3 ? { ...row, ante: 100 } : row,
+    );
+    expect(levelsChanged(NLPT_STANDARD_LEVELS, edited)).toBe(true);
+  });
+
+  it("is true after a row is removed", () => {
+    expect(levelsChanged(NLPT_STANDARD_LEVELS, draftLevels().slice(1))).toBe(
+      true,
+    );
+  });
+
+  it("is false after an edit typed then changed back", () => {
+    const draft = clockLevelsDraft(makeClock(), counterKeys());
+    const typed = levelsReducer(draft, {
+      type: "updateLevel",
+      index: 3,
+      change: { ante: 100 },
+    });
+    const undone = levelsReducer(typed, {
+      type: "updateLevel",
+      index: 3,
+      change: { ante: 0 },
+    });
+    expect(levelsChanged(NLPT_STANDARD_LEVELS, typed.levels)).toBe(true);
+    expect(levelsChanged(NLPT_STANDARD_LEVELS, undone.levels)).toBe(false);
+  });
+
+  it("treats a saved empty note the same as no note", () => {
+    const saved = NLPT_STANDARD_LEVELS.map((level) =>
+      level.kind === "break" ? { ...level, note: null } : level,
+    );
+    expect(levelsChanged(saved, draftLevels())).toBe(false);
   });
 });

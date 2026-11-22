@@ -1,6 +1,13 @@
 import { levelDurationMs, toStoredLevel } from "@/features/clock/lib/levels";
 import { fail, ok, type Result } from "@/features/clock/lib/result";
-import { validateLevels } from "@/features/clock/lib/structures";
+import type { LevelsDraft } from "@/features/clock/lib/structure-editor";
+import {
+  DEFAULT_BREAK_SECONDS,
+  DEFAULT_LEVEL_SECONDS,
+  type DraftLevel,
+  mostCommonSeconds,
+  validateLevels,
+} from "@/features/clock/lib/structures";
 import {
   type ClockUpdate,
   getClockPosition,
@@ -32,6 +39,40 @@ export function levelEditLocks(
     case "finished":
       return null;
   }
+}
+
+// A clock's levels ready for the level editor: every row keyed, and new rows
+// as long as most of the clock's levels and breaks (as for a template).
+export function clockLevelsDraft(
+  clock: Pick<TournamentClock, "levels">,
+  nextKey: () => string,
+): LevelsDraft {
+  const { levels } = clock;
+  return {
+    levels: levels.map((level) => ({ ...level, key: nextKey() })),
+    new_level_seconds: mostCommonSeconds(
+      levels,
+      "level",
+      DEFAULT_LEVEL_SECONDS,
+    ),
+    new_break_seconds: mostCommonSeconds(
+      levels,
+      "break",
+      DEFAULT_BREAK_SECONDS,
+    ),
+  };
+}
+
+// Whether the edited levels would save anything different from the saved
+// ones. Ignores row keys, and catches edits typed then undone.
+export function levelsChanged(
+  saved: BlindLevel[],
+  draft: DraftLevel[],
+): boolean {
+  return (
+    JSON.stringify(saved.map(toStoredLevel)) !==
+    JSON.stringify(draft.map(toStoredLevel))
+  );
 }
 
 // The columns a level save writes: the new levels and the timing that keeps

@@ -8,6 +8,7 @@ import LevelsFields from "@/features/clock/components/structures/levels-fields";
 import NewRowLengthFields from "@/features/clock/components/structures/new-row-length-fields";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
 import SettingsFields from "@/features/clock/components/structures/settings-fields";
+import { useLeaveWarning } from "@/features/clock/hooks/use-leave-warning";
 import { structureEditorReducer } from "@/features/clock/lib/structure-editor";
 import {
   hasUnsavedChanges,
@@ -17,23 +18,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useEffect, useReducer, useRef, useState, useTransition } from "react";
+import { useReducer, useRef, useState, useTransition } from "react";
 
 type Props = {
   // null for a new template.
   id: string | null;
   initialDraft: StructureDraft;
 };
-
-// Warns before closing or reloading the tab with unsaved changes.
-function useUnsavedChangesWarning(isDirty: boolean): void {
-  useEffect(() => {
-    if (!isDirty) return;
-    const warn = (event: BeforeUnloadEvent): void => event.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isDirty]);
-}
 
 // Edits a whole template (settings, payouts and levels) and saves it in one
 // go. Changes stay local until Save.
@@ -48,7 +39,7 @@ function StructureEditor({ id, initialDraft }: Props) {
   const errors = validateStructureDraft(draft);
   const isDirty = hasUnsavedChanges(savedDraft, draft);
   const canSave = isDirty && errors.length === 0 && !isSaving;
-  useUnsavedChangesWarning(isDirty && !isSaving);
+  useLeaveWarning(isDirty && !isSaving);
 
   const nextKey = (): string => {
     keyCount.current += 1;

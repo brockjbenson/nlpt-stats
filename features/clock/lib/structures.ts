@@ -97,9 +97,9 @@ export function newStructureDraft(): StructureDraft {
   };
 }
 
-// The length most of a template's rows of this kind have (the first one
-// wins a tie), or the fallback with none.
-function mostCommonSeconds(
+// The length most of these rows of this kind have (the first one wins a
+// tie), or the fallback with none.
+export function mostCommonSeconds(
   levels: BlindLevel[],
   kind: BlindLevel["kind"],
   fallback: number,

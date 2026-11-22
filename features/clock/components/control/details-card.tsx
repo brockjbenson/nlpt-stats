@@ -31,10 +31,12 @@ import {
   formatDuration,
   plural,
 } from "@/features/clock/lib/format";
+import { clockLevelsPath } from "@/features/clock/lib/paths";
 import { settingsReducer } from "@/features/clock/lib/structure-editor";
 import { summarizeLevels } from "@/features/clock/lib/structures";
 import type { TournamentClock } from "@/features/clock/types";
-import { Pencil } from "lucide-react";
+import { ChevronRight, Pencil } from "lucide-react";
+import Link from "next/link";
 import { useReducer, useState } from "react";
 
 type Props = {
@@ -140,7 +142,8 @@ function levelsSummary(levels: TournamentClock["levels"]): string {
 }
 
 // The control screen's clock details: buy-in, chips, rebuy limit and a
-// levels summary, with (until the clock finishes) an Edit button.
+// levels summary, with (until the clock finishes) an Edit button and an
+// Edit levels link.
 function DetailsCard({ clock, applyRow }: Props) {
   return (
     <Card className="py-4">
@@ -162,8 +165,17 @@ function DetailsCard({ clock, applyRow }: Props) {
         <dl className="flex flex-wrap gap-x-6 gap-y-1">
           <Detail label="Max rebuys" value={String(clock.max_rebuys)} />
         </dl>
-        {/* Task 9 adds an "Edit levels" link beside this summary. */}
-        <p className="text-muted">{levelsSummary(clock.levels)}</p>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <p className="text-muted">{levelsSummary(clock.levels)}</p>
+          {clock.status !== "finished" && (
+            <Link
+              href={clockLevelsPath(clock.id)}
+              className="inline-flex items-center gap-0.5 font-semibold text-primary hover:underline"
+            >
+              Edit levels <ChevronRight size={14} />
+            </Link>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
