@@ -100,7 +100,8 @@ export function makeEntrant(
   };
 }
 
-// The phase 1 database rule (tournament_clocks_status_fields_check).
+// The database rule on which timing fields each status allows
+// (tournament_clocks_status_fields_check).
 export function satisfiesStatusRule(clock: TournamentClock): boolean {
   switch (clock.status) {
     case "setup":

@@ -116,6 +116,7 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
     ({ levelIndex }) => levelIndex === undefined || levelIndex >= firstEditable,
   );
   const canSave = isDirty && errors.length === 0 && !isPending;
+  const saveLabel = isDirty ? "Save Levels" : "No Changes";
 
   const save = (): void => {
     run(
@@ -166,7 +167,7 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
                   : "cursor-not-allowed text-muted",
               )}
             >
-              {isPending ? <Spinner /> : isDirty ? "Save Levels" : "No Changes"}
+              {isPending ? <Spinner /> : saveLabel}
             </button>
           </BottomTabAccessory>
         </>

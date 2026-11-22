@@ -13,8 +13,9 @@ import type {
   TournamentClock,
 } from "@/features/clock/types";
 
-// A new clock's settings, prefilled from its template and editable before
-// the clock is created. Levels aren't editable per clock.
+// A clock's settings as a form edits them: prefilled from its template for
+// a new clock, or from the saved clock when editing. Levels have their own
+// editor.
 export type ClockSettings = SettingsFields;
 
 // The settings a running clock lets admins edit: everything but the payouts,
