@@ -26,10 +26,18 @@ import {
   finishRefusalMessage,
   planFinishClock,
 } from "@/features/clock/lib/finish";
+import {
+  type LevelEditRefusal,
+  planLevelEdit,
+} from "@/features/clock/lib/level-edits";
 import { CLOCKS_PATH } from "@/features/clock/lib/paths";
 import type { StructureError } from "@/features/clock/lib/structures";
 import { catchUpUpdate } from "@/features/clock/lib/timing";
-import type { ClockEntrant, TournamentClock } from "@/features/clock/types";
+import type {
+  BlindLevel,
+  ClockEntrant,
+  TournamentClock,
+} from "@/features/clock/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isAdmin } from "@/features/clock/actions/is-admin";
 import { createClient } from "@/utils/supabase/server";
@@ -382,5 +390,69 @@ export async function updateClockSettingsAction(
   } catch (error) {
     console.error("Error saving clock settings:", error);
     return { success: false, message: "Couldn't save the settings." };
+  }
+}
+
+function levelEditRefusalMessage(reason: LevelEditRefusal): string {
+  switch (reason) {
+    case "finished":
+      return "This clock is finished.";
+    case "invalid_levels":
+      return "Fix the levels.";
+    case "clock_moved":
+      return CHANGED_ELSEWHERE;
+  }
+}
+
+async function saveLevels(
+  clockId: string,
+  levels: BlindLevel[],
+): Promise<ClockControlResult> {
+  const { db, clock, error, nowMs } = await loadClockAndTime(clockId);
+  if (error) return { success: false, message: error.message };
+  if (!clock) return { success: false, message: CLOCK_GONE };
+
+  const plan = planLevelEdit(clock, levels, nowMs);
+  if (!plan.ok) {
+    return { success: false, message: levelEditRefusalMessage(plan.reason) };
+  }
+
+  let query = db
+    .from("_tournament_clocks")
+    .update(plan.value)
+    .eq("id", clockId)
+    .eq("status", clock.status)
+    .eq("level_index", clock.level_index);
+  // Also guards against a +1 min or -1 min pressed on another screen, which
+  // moves the timing without changing the status or level.
+  if (clock.status === "running") {
+    query = query.eq("level_started_at", clock.level_started_at);
+  } else if (clock.status === "paused") {
+    query = query.eq("paused_remaining_ms", clock.paused_remaining_ms);
+  }
+
+  const { data, error: saveError } = await query.select().maybeSingle();
+  if (saveError) return { success: false, message: saveError.message };
+  if (!data) return { success: false, message: CHANGED_ELSEWHERE };
+
+  return {
+    success: true,
+    message: "Levels saved.",
+    clock: toClock(data as ClockRow),
+  };
+}
+
+// Saves an edited list of levels while the clock isn't finished. The server
+// re-checks every row, so the page's list is never trusted.
+export async function updateClockLevelsAction(
+  clockId: string,
+  levels: BlindLevel[],
+): Promise<ClockControlResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    return await saveLevels(clockId, levels);
+  } catch (error) {
+    console.error("Error saving clock levels:", error);
+    return { success: false, message: "Couldn't save the levels." };
   }
 }
