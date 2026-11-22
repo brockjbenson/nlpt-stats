@@ -12,13 +12,17 @@ import { planRebuy } from "@/features/clock/lib/entrants";
 import {
   addRefusalMessage,
   bustRefusalMessage,
+  changeKnockerRefusalMessage,
   rebuyRefusalMessage,
+  takeAwayRebuyRefusalMessage,
   undoRefusalMessage,
 } from "@/features/clock/lib/player-messages";
 import {
   canRemoveEntrant,
   planAddEntrants,
   planBustPlayer,
+  planChangeKnocker,
+  planTakeAwayRebuy,
   planUndoPlayer,
 } from "@/features/clock/lib/players";
 import {
@@ -261,6 +265,68 @@ export async function rebuyEntrantAction(
       entrant.finish_place === null
         ? update.is("busted_at", null)
         : update.eq("finish_place", entrant.finish_place);
+    const { data, error } = await unchanged.select("id");
+    if (error) return writeFailure(error);
+    if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
+    return savedPlayers(loaded.db, clockId, "");
+  });
+}
+
+// Takes one rebuy back from a player, for a rebuy given by mistake. Saved
+// only if their rebuys haven't changed since they were read.
+export async function takeAwayRebuyAction(
+  clockId: string,
+  entrantId: string,
+): Promise<PlayersActionResult> {
+  return changePlayers(clockId, "take away the rebuy", async (loaded) => {
+    const entrant = loaded.entrants.find(({ id }) => id === entrantId);
+    const plan = planTakeAwayRebuy(loaded.clock, loaded.entrants, entrantId);
+    if (!plan.ok) return failed(takeAwayRebuyRefusalMessage(plan.reason));
+    if (!entrant) return failed(CHANGED_ELSEWHERE);
+
+    const { data, error } = await loaded.db
+      .from("_clock_entrants")
+      .update(plan.value)
+      .eq("id", entrantId)
+      .eq("clock_id", clockId)
+      .eq("rebuys", entrant.rebuys)
+      .select("id");
+    if (error) return writeFailure(error);
+    if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
+    return savedPlayers(loaded.db, clockId, "");
+  });
+}
+
+// Fixes who knocked a busted player out (null: not recorded). Saved only if
+// the knockout still has the knocker it was read with.
+export async function changeKnockerAction(
+  clockId: string,
+  entrantId: string,
+  knockedOutBy: string | null,
+): Promise<PlayersActionResult> {
+  return changePlayers(clockId, "change the knockout", async (loaded) => {
+    const plan = planChangeKnocker(
+      loaded.clock,
+      loaded.entrants,
+      loaded.knockouts,
+      entrantId,
+      knockedOutBy,
+    );
+    if (!plan.ok) return failed(changeKnockerRefusalMessage(plan.reason));
+    const knockout = loaded.knockouts.find(
+      ({ id }) => id === plan.value.knockoutId,
+    );
+    if (!knockout) return failed(CHANGED_ELSEWHERE);
+
+    const update = loaded.db
+      .from("_clock_knockouts")
+      .update({ knocked_out_by: plan.value.knocked_out_by })
+      .eq("id", plan.value.knockoutId)
+      .eq("clock_id", clockId);
+    const unchanged =
+      knockout.knocked_out_by === null
+        ? update.is("knocked_out_by", null)
+        : update.eq("knocked_out_by", knockout.knocked_out_by);
     const { data, error } = await unchanged.select("id");
     if (error) return writeFailure(error);
     if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
