@@ -9,6 +9,7 @@ import {
   InPlayerButtons,
   OutPlayerButtons,
 } from "@/features/clock/components/players/player-buttons";
+import EditPlayerDrawer from "@/features/clock/components/players/edit-player-drawer";
 import PlayerRow from "@/features/clock/components/players/player-row";
 import { usePlayerAction } from "@/features/clock/components/players/use-player-action";
 import type { LivePlayers } from "@/features/clock/hooks/use-entrants";
@@ -65,12 +66,14 @@ function PlayersCard({ clock, players, members }: Props) {
   const { entrants, knockouts, applyResult } = players;
   const { run, isPending } = usePlayerAction(applyResult);
   const [busting, setBusting] = useState<PlayerRowData | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const names = entrantNames(entrants, members);
   const { left, out } = listPlayers(entrants, knockouts, names);
   const knockers = latestKnockers(knockouts);
   const addBlockedReason = addPlayersBlocked(clock, entrants);
   const note = buttonsNote(clock, left, entrants.length);
+  const canEdit = clock.status !== "finished";
   const buttonProps = { clock, entrants, run, isPending };
 
   return (
@@ -110,7 +113,13 @@ function PlayersCard({ clock, players, members }: Props) {
         {left.length > 0 && (
           <ul className="divide-y">
             {left.map((player) => (
-              <PlayerRow key={player.entrant.id} player={player}>
+              <PlayerRow
+                key={player.entrant.id}
+                player={player}
+                onEdit={
+                  canEdit ? () => setEditingId(player.entrant.id) : undefined
+                }
+              >
                 <InPlayerButtons
                   {...buttonProps}
                   player={player}
@@ -135,6 +144,11 @@ function PlayersCard({ clock, players, members }: Props) {
                     key={player.entrant.id}
                     player={player}
                     knockedOutBy={knocker ? names.get(knocker) : null}
+                    onEdit={
+                      canEdit
+                        ? () => setEditingId(player.entrant.id)
+                        : undefined
+                    }
                   >
                     <OutPlayerButtons {...buttonProps} player={player} />
                   </PlayerRow>
@@ -144,6 +158,17 @@ function PlayersCard({ clock, players, members }: Props) {
           </>
         )}
       </CardContent>
+
+      <EditPlayerDrawer
+        clock={clock}
+        entrants={entrants}
+        knockouts={knockouts}
+        names={names}
+        entrantId={editingId}
+        onClose={() => setEditingId(null)}
+        run={run}
+        isPending={isPending}
+      />
 
       <BustDialog
         key={busting?.entrant.id ?? "closed"}
