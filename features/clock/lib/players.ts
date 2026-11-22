@@ -256,3 +256,86 @@ export function planUndoPlayer(
   if (!isInPlay(clock)) return fail("wrong_status");
   return planUndoBust(entrants, entrantId);
 }
+
+// Each player's newest knockout by bust time, by entrant id: their current
+// bust while they're out. A re-entry keeps the old row, so a player can have
+// several; on a tie the later row wins.
+export function latestKnockouts(
+  knockouts: ClockKnockout[],
+): Map<string, ClockKnockout> {
+  const latest = new Map<string, ClockKnockout>();
+  knockouts.forEach((knockout) => {
+    const current = latest.get(knockout.entrant_id);
+    if (!current || knockout.busted_at >= current.busted_at) {
+      latest.set(knockout.entrant_id, knockout);
+    }
+  });
+  return latest;
+}
+
+export type TakeAwayRebuyRefusal = "not_found" | "finished" | "no_rebuys";
+
+// Takes one rebuy off a player (a rebuy added by mistake), in any status
+// but finished. The player's bust and place stay as they are.
+export function planTakeAwayRebuy(
+  clock: Pick<TournamentClock, "status">,
+  entrants: ClockEntrant[],
+  entrantId: string,
+): Result<{ rebuys: number }, TakeAwayRebuyRefusal> {
+  const entrant = entrants.find(({ id }) => id === entrantId);
+  if (!entrant) return fail("not_found");
+  if (clock.status === "finished") return fail("finished");
+  if (entrant.rebuys <= 0) return fail("no_rebuys");
+  return ok({ rebuys: entrant.rebuys - 1 });
+}
+
+// Who can be named as this player's knocker: every other player who is
+// still in, or who went out later than they did (a better finish place).
+// Empty for a player who is still in.
+export function knockerChoices(
+  entrants: ClockEntrant[],
+  entrantId: string,
+): ClockEntrant[] {
+  const entrant = entrants.find(({ id }) => id === entrantId);
+  if (!entrant || entrant.busted_at === null) return [];
+  const place = entrant.finish_place ?? Infinity;
+  return entrants.filter(
+    ({ id, busted_at, finish_place }) =>
+      id !== entrantId &&
+      (busted_at === null || (finish_place ?? Infinity) < place),
+  );
+}
+
+export type ChangeKnockerRefusal =
+  | "not_found"
+  | "finished"
+  | "not_busted"
+  | "bad_knocker";
+
+export type PlannedKnockerChange = {
+  knockoutId: string;
+  knocked_out_by: string | null;
+};
+
+// Changes who knocked a player out (null: not recorded), on their current
+// bust's knockout row. The knocker must be one of knockerChoices.
+export function planChangeKnocker(
+  clock: Pick<TournamentClock, "status">,
+  entrants: ClockEntrant[],
+  knockouts: ClockKnockout[],
+  entrantId: string,
+  knockedOutBy: string | null,
+): Result<PlannedKnockerChange, ChangeKnockerRefusal> {
+  const entrant = entrants.find(({ id }) => id === entrantId);
+  if (!entrant) return fail("not_found");
+  if (clock.status === "finished") return fail("finished");
+  if (entrant.busted_at === null) return fail("not_busted");
+
+  const knockout = latestKnockouts(knockouts).get(entrantId);
+  if (!knockout) return fail("not_found");
+  const isChoice = knockerChoices(entrants, entrantId).some(
+    ({ id }) => id === knockedOutBy,
+  );
+  if (knockedOutBy !== null && !isChoice) return fail("bad_knocker");
+  return ok({ knockoutId: knockout.id, knocked_out_by: knockedOutBy });
+}

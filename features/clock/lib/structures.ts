@@ -1,7 +1,7 @@
 import {
-  cleanNote,
   levelDurationMs,
   levelProblem,
+  toStoredLevel,
 } from "@/features/clock/lib/levels";
 import type {
   BlindLevel,
@@ -97,9 +97,9 @@ export function newStructureDraft(): StructureDraft {
   };
 }
 
-// The length most of a template's rows of this kind have (the first one
-// wins a tie), or the fallback with none.
-function mostCommonSeconds(
+// The length most of these rows of this kind have (the first one wins a
+// tie), or the fallback with none.
+export function mostCommonSeconds(
   levels: BlindLevel[],
   kind: BlindLevel["kind"],
   fallback: number,
@@ -167,18 +167,7 @@ export function draftToSaveInput(draft: StructureDraft): StructureSaveInput {
       default_payout_pcts: [...draft.payout_pcts],
       default_max_rebuys: draft.max_rebuys,
     },
-    levels: draft.levels.map((level) => {
-      // Notes are for breaks; a blank one isn't sent.
-      const note = level.kind === "break" ? cleanNote(level.note) : null;
-      return {
-        kind: level.kind,
-        small_blind: level.small_blind,
-        big_blind: level.big_blind,
-        ante: level.ante,
-        duration_seconds: level.duration_seconds,
-        ...(note && { note }),
-      };
-    }),
+    levels: draft.levels.map(toStoredLevel),
   };
 }
 
@@ -242,7 +231,10 @@ function payoutError({
   return null;
 }
 
-function levelErrors(levels: DraftLevel[]): StructureError[] {
+// What's wrong with a list of levels: each bad row, or (when the rows are
+// fine) a list with nothing to play. Shared by the template editor and the
+// live clock level editor.
+export function validateLevels(levels: BlindLevel[]): StructureError[] {
   const rowErrors = levels.flatMap((level, levelIndex): StructureError[] => {
     const problem = levelProblem(level);
     return problem ? [{ field: "levels", levelIndex, message: problem }] : [];
@@ -253,6 +245,9 @@ function levelErrors(levels: DraftLevel[]): StructureError[] {
   }
   return [];
 }
+
+// The settings other than the payouts.
+export type DetailFields = Omit<SettingsFields, "places_paid" | "payout_pcts">;
 
 // Places paid and the split above the last paid place.
 export type PayoutSettings = Pick<
@@ -278,10 +273,10 @@ export function validatePayouts(settings: PayoutSettings): StructureError[] {
   return message ? [{ field: "payout_pcts", message }] : [];
 }
 
-// Everything wrong with a template's or clock's settings, in form order.
-// The rules match the database checks.
-export function validateSettings(
-  settings: SettingsFields,
+// Everything wrong with the settings other than the payouts: name, money,
+// chips and max rebuys, in form order. The rules match the database checks.
+export function validateDetails(
+  details: DetailFields,
   owner: SettingsOwner,
 ): StructureError[] {
   const errors: StructureError[] = [];
@@ -289,28 +284,37 @@ export function validateSettings(
     if (message) errors.push({ field, message });
   };
 
-  add("name", nameError(settings.name, owner));
+  add("name", nameError(details.name, owner));
   add(
     "money",
-    isMoney(settings.buy_in) && isMoney(settings.rebuy)
+    isMoney(details.buy_in) && isMoney(details.rebuy)
       ? null
       : "Buy-in and rebuy must be $0 or more.",
   );
   add(
     "chips",
-    isPositiveWholeNumber(settings.starting_chips) &&
-      isPositiveWholeNumber(settings.rebuy_chips)
+    isPositiveWholeNumber(details.starting_chips) &&
+      isPositiveWholeNumber(details.rebuy_chips)
       ? null
       : "Chip counts must be whole numbers above 0.",
   );
-  errors.push(...validatePayouts(settings));
   add(
     "max_rebuys",
-    Number.isInteger(settings.max_rebuys) && settings.max_rebuys >= 0
+    Number.isInteger(details.max_rebuys) && details.max_rebuys >= 0
       ? null
       : "Max rebuys must be a whole number, 0 or more.",
   );
   return errors;
+}
+
+// Everything wrong with a template's or clock's settings, in form order
+// (name, money, chips, max rebuys, payouts). The rules match the database
+// checks.
+export function validateSettings(
+  settings: SettingsFields,
+  owner: SettingsOwner,
+): StructureError[] {
+  return [...validateDetails(settings, owner), ...validatePayouts(settings)];
 }
 
 // Everything wrong with a draft, in form order. Empty means it can be saved.
@@ -318,7 +322,10 @@ export function validateSettings(
 export function validateStructureDraft(
   draft: StructureDraft,
 ): StructureError[] {
-  return [...validateSettings(draft, "template"), ...levelErrors(draft.levels)];
+  return [
+    ...validateSettings(draft, "template"),
+    ...validateLevels(draft.levels),
+  ];
 }
 
 export type LevelSummary = {

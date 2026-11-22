@@ -3,13 +3,19 @@ import { plural } from "@/features/clock/lib/format";
 import {
   type AddEntrantsRefusal,
   type BustPlayerRefusal,
+  type ChangeKnockerRefusal,
   GUEST_NAME_MAX_LENGTH,
+  type TakeAwayRebuyRefusal,
   type UndoPlayerRefusal,
 } from "@/features/clock/lib/players";
 
 // What the control screen says when a player change is refused.
 
 const PLAYER_GONE = "This player is no longer in this clock.";
+export const PLAYERS_CHANGED_ELSEWHERE =
+  "The players changed on another screen. Try again.";
+export const CLOCK_FINISHED = "This clock is finished.";
+const NOT_OUT = "This player isn't out.";
 const NOT_IN_PLAY = "Only while the clock is running or paused.";
 
 const BUST_MESSAGES: Record<BustPlayerRefusal, string> = {
@@ -22,18 +28,31 @@ const BUST_MESSAGES: Record<BustPlayerRefusal, string> = {
 
 const UNDO_MESSAGES: Record<UndoPlayerRefusal, string> = {
   not_found: PLAYER_GONE,
-  not_busted: "This player isn't out.",
+  not_busted: NOT_OUT,
   not_most_recent: "Only the most recent bust can be undone.",
   wrong_status: `Busts can be undone ${NOT_IN_PLAY.toLowerCase()}`,
 };
 
 const ADD_MESSAGES: Record<AddEntrantsRefusal, string> = {
-  finished: "This clock is finished.",
+  finished: CLOCK_FINISHED,
   player_out: "Players can't be added while anyone is out.",
   nothing_to_add: "Pick a member or type a guest's name.",
   already_playing: "A member you picked is already playing.",
   bad_guest_name: `Guest names need 1 to ${GUEST_NAME_MAX_LENGTH} characters.`,
   duplicate_guest: "There's already a guest with that name.",
+};
+
+const TAKE_AWAY_REBUY_MESSAGES: Record<TakeAwayRebuyRefusal, string> = {
+  not_found: PLAYER_GONE,
+  finished: CLOCK_FINISHED,
+  no_rebuys: "This player has no rebuys to take away.",
+};
+
+const CHANGE_KNOCKER_MESSAGES: Record<ChangeKnockerRefusal, string> = {
+  not_found: PLAYER_GONE,
+  finished: CLOCK_FINISHED,
+  not_busted: NOT_OUT,
+  bad_knocker: PLAYERS_CHANGED_ELSEWHERE,
 };
 
 export function bustRefusalMessage(reason: BustPlayerRefusal): string {
@@ -66,4 +85,16 @@ export function rebuyRefusalMessage(
     case "in_the_money":
       return "Everyone left is in the money: no more rebuys.";
   }
+}
+
+export function takeAwayRebuyRefusalMessage(
+  reason: TakeAwayRebuyRefusal,
+): string {
+  return TAKE_AWAY_REBUY_MESSAGES[reason];
+}
+
+export function changeKnockerRefusalMessage(
+  reason: ChangeKnockerRefusal,
+): string {
+  return CHANGE_KNOCKER_MESSAGES[reason];
 }

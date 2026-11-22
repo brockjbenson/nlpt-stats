@@ -6,18 +6,14 @@ import type { StructureWithLevels } from "@/features/clock/data/structures";
 import {
   formatChips,
   formatDollars,
-  formatDuration,
+  formatLevelsSummary,
   ordinal,
   plural,
 } from "@/features/clock/lib/format";
-import { summarizeLevels } from "@/features/clock/lib/structures";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
 
 function StructureCard({ structure }: { structure: StructureWithLevels }) {
-  const { levelCount, breakCount, lengthMs } = summarizeLevels(
-    structure.levels,
-  );
   const editHref = `/admin/clock/structures/${structure.id}`;
 
   return (
@@ -39,10 +35,7 @@ function StructureCard({ structure }: { structure: StructureWithLevels }) {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-1 text-sm text-muted">
-        <p>
-          {plural(levelCount, "level")} · {plural(breakCount, "break")} ·{" "}
-          {formatDuration(lengthMs)}
-        </p>
+        <p>{formatLevelsSummary(structure.levels)}</p>
         <p>
           {formatDollars(structure.default_buy_in)} buy-in ·{" "}
           {formatDollars(structure.default_rebuy)} rebuy ·{" "}

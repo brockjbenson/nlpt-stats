@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import LevelRow from "@/features/clock/components/structures/level-row";
-import { formatDuration, plural } from "@/features/clock/lib/format";
+import { formatLevelsSummary } from "@/features/clock/lib/format";
 import { levelNumber } from "@/features/clock/lib/levels";
-import type { StructureEditorAction } from "@/features/clock/lib/structure-editor";
+import type { LevelLocks } from "@/features/clock/lib/level-edits";
+import type {
+  LevelsAction,
+  LevelsDraft,
+} from "@/features/clock/lib/structure-editor";
 import {
   levelStartTimes,
-  type StructureDraft,
   type StructureError,
-  summarizeLevels,
 } from "@/features/clock/lib/structures";
 import {
   closestCenter,
@@ -32,16 +34,27 @@ import type React from "react";
 import { useState } from "react";
 
 type Props = {
-  draft: StructureDraft;
+  draft: LevelsDraft;
   errors: StructureError[];
-  dispatch: React.Dispatch<StructureEditorAction>;
+  dispatch: React.Dispatch<LevelsAction>;
   // A fresh React key for each new row.
   nextKey: () => string;
+  // On a running clock: which rows are played or being played. Left out for
+  // templates, where every row is free.
+  locks?: LevelLocks;
+  // The level being played, marked "Now playing".
+  currentIndex?: number;
 };
 
-function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
+function LevelsFields({
+  draft,
+  errors,
+  dispatch,
+  nextKey,
+  locks,
+  currentIndex,
+}: Props) {
   const { levels } = draft;
-  const { levelCount, breakCount, lengthMs } = summarizeLevels(levels);
   const levelErrors = errors.filter(({ field }) => field === "levels");
   const keys = levels.map(({ key }) => key);
   const startTimes = levelStartTimes(levels);
@@ -55,13 +68,16 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
     }),
   );
 
+  const firstEditable = locks?.firstEditable ?? 0;
+  const firstMovable = locks?.firstMovable ?? 0;
+
   const reorder = ({ active, over }: DragEndEvent): void => {
     if (!over) return;
-    dispatch({
-      type: "reorderLevel",
-      from: keys.indexOf(String(active.id)),
-      to: keys.indexOf(String(over.id)),
-    });
+    const from = keys.indexOf(String(active.id));
+    const to = keys.indexOf(String(over.id));
+    // Played and current rows stay put, and nothing lands before them.
+    if (from < firstMovable || to < firstMovable) return;
+    dispatch({ type: "reorderLevel", from, to });
   };
 
   // New rows open so their numbers can be set straight away.
@@ -75,10 +91,7 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
     <Card className="gap-2">
       <CardHeader className="flex flex-row items-baseline justify-between gap-2 space-y-0">
         <CardTitle className="text-base">Levels</CardTitle>
-        <p className="text-xs text-muted">
-          {plural(levelCount, "level")} · {plural(breakCount, "break")} ·{" "}
-          {Number.isFinite(lengthMs) ? formatDuration(lengthMs) : "—"}
-        </p>
+        <p className="text-xs text-muted">{formatLevelsSummary(levels)}</p>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <DndContext
@@ -108,7 +121,10 @@ function LevelsFields({ draft, errors, dispatch, nextKey }: Props) {
                       current === level.key ? null : level.key,
                     )
                   }
-                  canRemove={levels.length > 1}
+                  canRemove={levels.length > 1 && index >= firstMovable}
+                  isLocked={index < firstEditable}
+                  canDrag={index >= firstMovable}
+                  isCurrent={index === currentIndex}
                   errors={levelErrors.filter(
                     ({ levelIndex }) => levelIndex === index,
                   )}

@@ -5,10 +5,14 @@ import {
   cleanGuestName,
   entrantNames,
   GUEST_NAME_MAX_LENGTH,
+  knockerChoices,
+  latestKnockouts,
   listPlayers,
   type MemberName,
   planAddEntrants,
   planBustPlayer,
+  planChangeKnocker,
+  planTakeAwayRebuy,
   planUndoPlayer,
 } from "@/features/clock/lib/players";
 import { makeClock, makeEntrant } from "@/features/clock/lib/test-fixtures";
@@ -403,5 +407,190 @@ describe("addPlayersBlocked", () => {
     expect(addPlayersBlocked(makeClock({ status: "finished" }), [])).toBe(
       "finished",
     );
+  });
+});
+
+describe("planTakeAwayRebuy", () => {
+  const running = makeClock({ status: "running" });
+
+  it("takes one rebuy off", () => {
+    const entrants = [member("a", { rebuys: 2 })];
+    expect(planTakeAwayRebuy(running, entrants, entrants[0].id)).toEqual({
+      ok: true,
+      value: { rebuys: 1 },
+    });
+  });
+
+  it("works for a player who is out", () => {
+    const entrants = [member("a", { rebuys: 1, ...busted(3) })];
+    expect(planTakeAwayRebuy(running, entrants, entrants[0].id)).toEqual({
+      ok: true,
+      value: { rebuys: 0 },
+    });
+  });
+
+  it("refuses a player with no rebuys", () => {
+    const entrants = [member("a", { rebuys: 0 })];
+    expect(planTakeAwayRebuy(running, entrants, entrants[0].id)).toEqual({
+      ok: false,
+      reason: "no_rebuys",
+    });
+  });
+
+  it("refuses once the clock is finished", () => {
+    const entrants = [member("a", { rebuys: 1 })];
+    const finished = makeClock({ status: "finished" });
+    expect(planTakeAwayRebuy(finished, entrants, entrants[0].id)).toEqual({
+      ok: false,
+      reason: "finished",
+    });
+  });
+
+  it("refuses an unknown player", () => {
+    expect(planTakeAwayRebuy(running, [], "nobody")).toEqual({
+      ok: false,
+      reason: "not_found",
+    });
+  });
+});
+
+describe("knockerChoices", () => {
+  const stillIn = member("in");
+  const outThird = member("third", busted(3));
+  const outFifth = member("fifth", busted(5));
+  const outSixth = member("sixth", busted(6));
+  const all = [stillIn, outThird, outFifth, outSixth];
+  const ids = (entrants: ClockEntrant[]) => entrants.map(({ id }) => id);
+
+  it("offers players still in and players who went out later", () => {
+    expect(ids(knockerChoices(all, outFifth.id))).toEqual([
+      stillIn.id,
+      outThird.id,
+    ]);
+  });
+
+  it("leaves out players who went out earlier", () => {
+    expect(ids(knockerChoices(all, outFifth.id))).not.toContain(outSixth.id);
+  });
+
+  it("never offers the player themselves", () => {
+    expect(ids(knockerChoices(all, outThird.id))).not.toContain(outThird.id);
+  });
+
+  it("is empty for a player still in", () => {
+    expect(knockerChoices(all, stillIn.id)).toEqual([]);
+  });
+});
+
+function ko(
+  id: string,
+  entrantId: string,
+  bustedAt: string,
+  by: string | null = null,
+): ClockKnockout {
+  return { ...knockout(entrantId, by), id, busted_at: bustedAt };
+}
+
+describe("latestKnockouts", () => {
+  const early = "2026-11-27T01:00:00.000Z";
+  const late = "2026-11-27T02:00:00.000Z";
+
+  it("keeps the newest row whatever order the rows come in", () => {
+    const oldRow = ko("old", "a", early);
+    const newRow = ko("new", "a", late);
+    expect(latestKnockouts([oldRow, newRow]).get("a")?.id).toBe("new");
+    expect(latestKnockouts([newRow, oldRow]).get("a")?.id).toBe("new");
+  });
+
+  it("lets the later row win a tie on bust time", () => {
+    const knockouts = [ko("first", "a", early), ko("second", "a", early)];
+    expect(latestKnockouts(knockouts).get("a")?.id).toBe("second");
+  });
+
+  it("keeps different players apart", () => {
+    const latest = latestKnockouts([ko("a1", "a", late), ko("b1", "b", early)]);
+    expect(latest.get("a")?.id).toBe("a1");
+    expect(latest.get("b")?.id).toBe("b1");
+    expect(latest.size).toBe(2);
+  });
+});
+
+describe("planChangeKnocker", () => {
+  const running = makeClock({ status: "running" });
+  const winner = member("winner");
+  const fifth = member("fifth", busted(5));
+  const sixth = member("sixth", busted(6));
+  const entrants = [winner, fifth, sixth];
+
+  it("picks the newest knockout after a re-entry", () => {
+    const knockouts = [
+      ko("old", fifth.id, "2026-11-27T01:00:00.000Z"),
+      ko("new", fifth.id, "2026-11-27T02:00:00.000Z"),
+    ];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, fifth.id, winner.id),
+    ).toEqual({
+      ok: true,
+      value: { knockoutId: "new", knocked_out_by: winner.id },
+    });
+  });
+
+  it("allows clearing the knocker", () => {
+    const knockouts = [
+      ko("k", fifth.id, "2026-11-27T01:00:00.000Z", winner.id),
+    ];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, fifth.id, null),
+    ).toEqual({ ok: true, value: { knockoutId: "k", knocked_out_by: null } });
+  });
+
+  it("refuses a player who went out earlier", () => {
+    const knockouts = [ko("k", fifth.id, "2026-11-27T01:00:00.000Z")];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, fifth.id, sixth.id),
+    ).toEqual({ ok: false, reason: "bad_knocker" });
+  });
+
+  it("accepts a player who went out after", () => {
+    const knockouts = [ko("k", sixth.id, "2026-11-27T01:00:00.000Z")];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, sixth.id, fifth.id),
+    ).toEqual({
+      ok: true,
+      value: { knockoutId: "k", knocked_out_by: fifth.id },
+    });
+  });
+
+  it("refuses naming the player as their own knocker", () => {
+    const knockouts = [ko("k", fifth.id, "2026-11-27T01:00:00.000Z")];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, fifth.id, fifth.id),
+    ).toEqual({ ok: false, reason: "bad_knocker" });
+  });
+
+  it("refuses a player who is still in", () => {
+    expect(planChangeKnocker(running, entrants, [], winner.id, null)).toEqual({
+      ok: false,
+      reason: "not_busted",
+    });
+  });
+
+  it("refuses once the clock is finished", () => {
+    const finished = makeClock({ status: "finished" });
+    expect(planChangeKnocker(finished, entrants, [], fifth.id, null)).toEqual({
+      ok: false,
+      reason: "finished",
+    });
+  });
+
+  it("refuses an unknown player, or one with no knockout row", () => {
+    expect(planChangeKnocker(running, entrants, [], "nobody", null)).toEqual({
+      ok: false,
+      reason: "not_found",
+    });
+    expect(planChangeKnocker(running, entrants, [], fifth.id, null)).toEqual({
+      ok: false,
+      reason: "not_found",
+    });
   });
 });
