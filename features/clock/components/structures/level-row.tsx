@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { badgeVariants } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ErrorText from "@/features/clock/components/structures/error-text";
 import LevelEditFields from "@/features/clock/components/structures/level-edit-fields";
@@ -55,7 +55,8 @@ type Props = {
   canRemove: boolean;
   // A played row: greyed and closed, with no editing.
   isLocked?: boolean;
-  // False for rows that can't be dragged (played or current).
+  // False for rows that can't move (played or current): no drag handle, not
+  // a drop target, and no remove button.
   canDrag?: boolean;
   // The level being played right now.
   isCurrent?: boolean;
@@ -94,7 +95,12 @@ function LevelRow({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: level.key, disabled: !canDrag });
+  } = useSortable({
+    id: level.key,
+    // A row that can't move isn't a drop target either, so a drag stops at
+    // the first upcoming row instead of sliding past the played ones.
+    disabled: { draggable: !canDrag, droppable: !canDrag },
+  });
 
   return (
     <li
@@ -136,7 +142,7 @@ function LevelRow({
               onClick={onToggle}
               disabled={isLocked}
               aria-expanded={isLocked ? undefined : isExpanded}
-              aria-controls={id("fields")}
+              aria-controls={isLocked ? undefined : id("fields")}
               className="flex min-w-0 flex-1 items-center gap-3 rounded py-1 text-left text-sm"
             >
               <span
@@ -161,9 +167,17 @@ function LevelRow({
               >
                 {isBreak ? (level.note ?? "") : blindsText(level)}
               </span>
+              {/* A span, not Badge's div: a button only holds inline content.
+                  Short so the blinds still fit at phone width. */}
               {isCurrent && (
-                <Badge className="shrink-0 px-2 py-0">Now playing</Badge>
+                <span
+                  className={cn(badgeVariants(), "shrink-0 px-1.5 py-0")}
+                  title="Now playing"
+                >
+                  Now<span className="sr-only"> playing</span>
+                </span>
               )}
+              {isLocked && <span className="sr-only">, played</span>}
               <span className="shrink-0 text-xs tabular-nums text-muted">
                 {minutesText(level)}
               </span>
@@ -178,7 +192,7 @@ function LevelRow({
               )}
             </button>
             {/* Played and current rows can't be removed: no button at all. */}
-            {!isLocked && canDrag && (
+            {canDrag && (
               <Button
                 variant="ghost"
                 size="icon"
