@@ -1,6 +1,8 @@
 import {
+  type DetailFields,
   type SettingsFields,
   type StructureError,
+  validateDetails,
   validateSettings,
 } from "@/features/clock/lib/structures";
 import type {
@@ -14,6 +16,10 @@ import type {
 // A new clock's settings, prefilled from its template and editable before
 // the clock is created. Levels aren't editable per clock.
 export type ClockSettings = SettingsFields;
+
+// The settings a running clock lets admins edit: everything but the payouts,
+// which have their own card.
+export type ClockDetails = DetailFields;
 
 // The _tournament_clocks columns to insert for a new clock.
 export type ClockInsert = Omit<TournamentClock, "id" | "created_at">;
@@ -40,6 +46,26 @@ export function validateClockSettings(
   settings: ClockSettings,
 ): StructureError[] {
   return validateSettings(settings, "clock");
+}
+
+// A saved clock's settings, as the edit forms start from them.
+export function clockSettingsOf(clock: TournamentClock): ClockSettings {
+  return {
+    name: clock.name,
+    buy_in: clock.buy_in,
+    rebuy: clock.rebuy,
+    starting_chips: clock.starting_chips,
+    rebuy_chips: clock.rebuy_chips,
+    places_paid: clock.places_paid,
+    payout_pcts: [...clock.payout_pcts],
+    max_rebuys: clock.max_rebuys,
+  };
+}
+
+// Everything wrong with a running clock's edited details (no payouts); empty
+// means they can be saved. The screen and the action share this check.
+export function validateClockDetails(details: ClockDetails): StructureError[] {
+  return validateDetails(details, "clock");
 }
 
 // A template row as a clock level: the playing fields, and the note only

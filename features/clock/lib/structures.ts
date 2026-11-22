@@ -257,6 +257,9 @@ export function validateLevels(levels: BlindLevel[]): StructureError[] {
   return [];
 }
 
+// The settings other than the payouts.
+export type DetailFields = Omit<SettingsFields, "places_paid" | "payout_pcts">;
+
 // Places paid and the split above the last paid place.
 export type PayoutSettings = Pick<
   SettingsFields,
@@ -281,10 +284,10 @@ export function validatePayouts(settings: PayoutSettings): StructureError[] {
   return message ? [{ field: "payout_pcts", message }] : [];
 }
 
-// Everything wrong with a template's or clock's settings, in form order.
-// The rules match the database checks.
-export function validateSettings(
-  settings: SettingsFields,
+// Everything wrong with the settings other than the payouts: name, money,
+// chips and max rebuys, in form order. The rules match the database checks.
+export function validateDetails(
+  details: DetailFields,
   owner: SettingsOwner,
 ): StructureError[] {
   const errors: StructureError[] = [];
@@ -292,28 +295,43 @@ export function validateSettings(
     if (message) errors.push({ field, message });
   };
 
-  add("name", nameError(settings.name, owner));
+  add("name", nameError(details.name, owner));
   add(
     "money",
-    isMoney(settings.buy_in) && isMoney(settings.rebuy)
+    isMoney(details.buy_in) && isMoney(details.rebuy)
       ? null
       : "Buy-in and rebuy must be $0 or more.",
   );
   add(
     "chips",
-    isPositiveWholeNumber(settings.starting_chips) &&
-      isPositiveWholeNumber(settings.rebuy_chips)
+    isPositiveWholeNumber(details.starting_chips) &&
+      isPositiveWholeNumber(details.rebuy_chips)
       ? null
       : "Chip counts must be whole numbers above 0.",
   );
-  errors.push(...validatePayouts(settings));
   add(
     "max_rebuys",
-    Number.isInteger(settings.max_rebuys) && settings.max_rebuys >= 0
+    Number.isInteger(details.max_rebuys) && details.max_rebuys >= 0
       ? null
       : "Max rebuys must be a whole number, 0 or more.",
   );
   return errors;
+}
+
+// Everything wrong with a template's or clock's settings, in form order
+// (name, money, chips, payouts, max rebuys). The rules match the database
+// checks.
+export function validateSettings(
+  settings: SettingsFields,
+  owner: SettingsOwner,
+): StructureError[] {
+  const detailErrors = validateDetails(settings, owner);
+  const isLast = ({ field }: StructureError): boolean => field === "max_rebuys";
+  return [
+    ...detailErrors.filter((error) => !isLast(error)),
+    ...validatePayouts(settings),
+    ...detailErrors.filter(isLast),
+  ];
 }
 
 // Everything wrong with a draft, in form order. Empty means it can be saved.

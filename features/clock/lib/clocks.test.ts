@@ -3,7 +3,9 @@ import {
   buildClockInsert,
   clockStatusLabel,
   clockSettingsFromStructure,
+  validateClockDetails,
   validateClockSettings,
+  type ClockDetails,
   type ClockSettings,
 } from "@/features/clock/lib/clocks";
 import { parseLevels } from "@/features/clock/lib/levels";
@@ -156,5 +158,46 @@ describe("clockStatusLabel", () => {
     ["finished", "Finished"],
   ] as const)("%s reads %s", (status, label) => {
     expect(clockStatusLabel(status)).toBe(label);
+  });
+});
+
+describe("validateClockDetails", () => {
+  const validDetails = (change: Partial<ClockDetails> = {}): ClockDetails => {
+    const { name, buy_in, rebuy, starting_chips, rebuy_chips, max_rebuys } =
+      validSettings();
+    return {
+      name,
+      buy_in,
+      rebuy,
+      starting_chips,
+      rebuy_chips,
+      max_rebuys,
+      ...change,
+    };
+  };
+
+  it("accepts the template's defaults", () => {
+    expect(validateClockDetails(validDetails())).toEqual([]);
+  });
+
+  it.each<[string, Partial<ClockDetails>, StructureField, string]>([
+    ["a blank name", { name: "  " }, "name", "Give the clock a name."],
+    ["a negative buy-in", { buy_in: -1 }, "money", "Buy-in and rebuy"],
+    ["zero starting chips", { starting_chips: 0 }, "chips", "Chip counts"],
+    ["fractional max rebuys", { max_rebuys: 1.5 }, "max_rebuys", "Max rebuys"],
+  ])("reports %s", (_name, change, field, message) => {
+    const errors = validateClockDetails(validDetails(change));
+    expect(errors).toHaveLength(1);
+    expect(errors[0].field).toBe(field);
+    expect(errors[0].message).toContain(message);
+  });
+
+  it("doesn't check payouts", () => {
+    const withBadPayouts = {
+      ...validDetails(),
+      places_paid: 1,
+      payout_pcts: [10],
+    };
+    expect(validateClockDetails(withBadPayouts)).toEqual([]);
   });
 });

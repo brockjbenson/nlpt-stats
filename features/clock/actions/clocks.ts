@@ -12,7 +12,9 @@ import { getClockPlayers } from "@/features/clock/data/entrants";
 import { getStructure } from "@/features/clock/data/structures";
 import {
   buildClockInsert,
+  type ClockDetails,
   type ClockSettings,
+  validateClockDetails,
   validateClockSettings,
 } from "@/features/clock/lib/clocks";
 import {
@@ -47,6 +49,15 @@ export type ClockControlResult = {
   success: boolean;
   message: string;
   clock?: TournamentClock;
+};
+
+// The outcome of saving a clock's details. clock is the saved row, so the
+// screen can show it before the Realtime event arrives.
+export type ClockSettingsActionResult = {
+  success: boolean;
+  message: string;
+  clock?: TournamentClock;
+  errors?: StructureError[];
 };
 
 const CLOCK_GONE = "This clock no longer exists.";
@@ -323,5 +334,53 @@ export async function reopenClockAction(
   } catch (error) {
     console.error("Error reopening tournament clock:", error);
     return { success: false, message: "Couldn't reopen the tournament." };
+  }
+}
+
+// Changes a clock's name, money, chips and max rebuys while it isn't
+// finished. Lowering max rebuys below what a player already has is allowed.
+export async function updateClockSettingsAction(
+  clockId: string,
+  details: ClockDetails,
+): Promise<ClockSettingsActionResult> {
+  if (!(await isAdmin())) return NOT_ADMIN;
+  try {
+    const errors = validateClockDetails(details);
+    if (errors.length > 0) {
+      return { success: false, message: "Fix the settings.", errors };
+    }
+
+    const db = await createClient();
+    const { data, error } = await db
+      .from("_tournament_clocks")
+      .update({
+        name: details.name.trim(),
+        buy_in: details.buy_in,
+        rebuy: details.rebuy,
+        starting_chips: details.starting_chips,
+        rebuy_chips: details.rebuy_chips,
+        max_rebuys: details.max_rebuys,
+      })
+      .eq("id", clockId)
+      .neq("status", "finished")
+      .select()
+      .maybeSingle();
+    if (error) return { success: false, message: error.message };
+    if (!data) {
+      return {
+        success: false,
+        message: "This clock is finished or no longer exists.",
+      };
+    }
+
+    revalidatePath(CLOCKS_PATH);
+    return {
+      success: true,
+      message: "Settings saved.",
+      clock: toClock(data as ClockRow),
+    };
+  } catch (error) {
+    console.error("Error saving clock settings:", error);
+    return { success: false, message: "Couldn't save the settings." };
   }
 }
