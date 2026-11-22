@@ -19,6 +19,7 @@ import {
 import {
   addPlayersBlocked,
   entrantNames,
+  latestKnockouts,
   listPlayers,
   type PlayerRow as PlayerRowData,
 } from "@/features/clock/lib/players";
@@ -34,15 +35,8 @@ type Props = {
 
 // Who knocked each player out in their latest bust, by entrant id.
 function latestKnockers(knockouts: ClockKnockout[]): Map<string, string> {
-  const latest = new Map<string, ClockKnockout>();
-  knockouts.forEach((knockout) => {
-    const current = latest.get(knockout.entrant_id);
-    if (!current || knockout.busted_at >= current.busted_at) {
-      latest.set(knockout.entrant_id, knockout);
-    }
-  });
   const knockers = new Map<string, string>();
-  latest.forEach(({ entrant_id, knocked_out_by }) => {
+  latestKnockouts(knockouts).forEach(({ entrant_id, knocked_out_by }) => {
     if (knocked_out_by) knockers.set(entrant_id, knocked_out_by);
   });
   return knockers;

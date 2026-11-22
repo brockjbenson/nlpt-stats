@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   addRefusalMessage,
   bustRefusalMessage,
+  changeKnockerRefusalMessage,
   rebuyRefusalMessage,
+  takeAwayRebuyRefusalMessage,
   undoRefusalMessage,
 } from "@/features/clock/lib/player-messages";
 
@@ -24,6 +26,14 @@ describe("player refusal messages", () => {
     [
       rebuyRefusalMessage("not_most_recent", 2),
       "Only the most recent bust can rebuy back in.",
+    ],
+    [
+      takeAwayRebuyRefusalMessage("no_rebuys"),
+      "This player has no rebuys to take away.",
+    ],
+    [
+      changeKnockerRefusalMessage("bad_knocker"),
+      "The players changed on another screen. Try again.",
     ],
     [
       addRefusalMessage("player_out"),
@@ -68,6 +78,12 @@ describe("player refusal messages", () => {
           "in_the_money",
         ] as const
       ).map((reason) => rebuyRefusalMessage(reason, 2)),
+      ...(["not_found", "finished", "no_rebuys"] as const).map(
+        takeAwayRebuyRefusalMessage,
+      ),
+      ...(["not_found", "finished", "not_busted", "bad_knocker"] as const).map(
+        changeKnockerRefusalMessage,
+      ),
       ...(
         [
           "finished",

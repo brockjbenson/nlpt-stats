@@ -3,7 +3,9 @@ import { plural } from "@/features/clock/lib/format";
 import {
   type AddEntrantsRefusal,
   type BustPlayerRefusal,
+  type ChangeKnockerRefusal,
   GUEST_NAME_MAX_LENGTH,
+  type TakeAwayRebuyRefusal,
   type UndoPlayerRefusal,
 } from "@/features/clock/lib/players";
 
@@ -36,6 +38,19 @@ const ADD_MESSAGES: Record<AddEntrantsRefusal, string> = {
   duplicate_guest: "There's already a guest with that name.",
 };
 
+const TAKE_AWAY_REBUY_MESSAGES: Record<TakeAwayRebuyRefusal, string> = {
+  not_found: PLAYER_GONE,
+  finished: "This clock is finished.",
+  no_rebuys: "This player has no rebuys to take away.",
+};
+
+const CHANGE_KNOCKER_MESSAGES: Record<ChangeKnockerRefusal, string> = {
+  not_found: PLAYER_GONE,
+  finished: "This clock is finished.",
+  not_busted: "This player isn't out.",
+  bad_knocker: "The players changed on another screen. Try again.",
+};
+
 export function bustRefusalMessage(reason: BustPlayerRefusal): string {
   return BUST_MESSAGES[reason];
 }
@@ -66,4 +81,16 @@ export function rebuyRefusalMessage(
     case "in_the_money":
       return "Everyone left is in the money: no more rebuys.";
   }
+}
+
+export function takeAwayRebuyRefusalMessage(
+  reason: TakeAwayRebuyRefusal,
+): string {
+  return TAKE_AWAY_REBUY_MESSAGES[reason];
+}
+
+export function changeKnockerRefusalMessage(
+  reason: ChangeKnockerRefusal,
+): string {
+  return CHANGE_KNOCKER_MESSAGES[reason];
 }
