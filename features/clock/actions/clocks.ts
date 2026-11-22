@@ -393,6 +393,7 @@ export async function updateClockSettingsAction(
   }
 }
 
+// What to tell the admin when an edited list of levels can't be saved.
 function levelEditRefusalMessage(reason: LevelEditRefusal): string {
   switch (reason) {
     case "finished":

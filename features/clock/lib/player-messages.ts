@@ -12,6 +12,10 @@ import {
 // What the control screen says when a player change is refused.
 
 const PLAYER_GONE = "This player is no longer in this clock.";
+export const PLAYERS_CHANGED_ELSEWHERE =
+  "The players changed on another screen. Try again.";
+const CLOCK_FINISHED = "This clock is finished.";
+const NOT_OUT = "This player isn't out.";
 const NOT_IN_PLAY = "Only while the clock is running or paused.";
 
 const BUST_MESSAGES: Record<BustPlayerRefusal, string> = {
@@ -24,13 +28,13 @@ const BUST_MESSAGES: Record<BustPlayerRefusal, string> = {
 
 const UNDO_MESSAGES: Record<UndoPlayerRefusal, string> = {
   not_found: PLAYER_GONE,
-  not_busted: "This player isn't out.",
+  not_busted: NOT_OUT,
   not_most_recent: "Only the most recent bust can be undone.",
   wrong_status: `Busts can be undone ${NOT_IN_PLAY.toLowerCase()}`,
 };
 
 const ADD_MESSAGES: Record<AddEntrantsRefusal, string> = {
-  finished: "This clock is finished.",
+  finished: CLOCK_FINISHED,
   player_out: "Players can't be added while anyone is out.",
   nothing_to_add: "Pick a member or type a guest's name.",
   already_playing: "A member you picked is already playing.",
@@ -40,15 +44,15 @@ const ADD_MESSAGES: Record<AddEntrantsRefusal, string> = {
 
 const TAKE_AWAY_REBUY_MESSAGES: Record<TakeAwayRebuyRefusal, string> = {
   not_found: PLAYER_GONE,
-  finished: "This clock is finished.",
+  finished: CLOCK_FINISHED,
   no_rebuys: "This player has no rebuys to take away.",
 };
 
 const CHANGE_KNOCKER_MESSAGES: Record<ChangeKnockerRefusal, string> = {
   not_found: PLAYER_GONE,
-  finished: "This clock is finished.",
-  not_busted: "This player isn't out.",
-  bad_knocker: "The players changed on another screen. Try again.",
+  finished: CLOCK_FINISHED,
+  not_busted: NOT_OUT,
+  bad_knocker: PLAYERS_CHANGED_ELSEWHERE,
 };
 
 export function bustRefusalMessage(reason: BustPlayerRefusal): string {

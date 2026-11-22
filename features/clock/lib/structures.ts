@@ -1,7 +1,7 @@
 import {
-  cleanNote,
   levelDurationMs,
   levelProblem,
+  toStoredLevel,
 } from "@/features/clock/lib/levels";
 import type {
   BlindLevel,
@@ -167,18 +167,7 @@ export function draftToSaveInput(draft: StructureDraft): StructureSaveInput {
       default_payout_pcts: [...draft.payout_pcts],
       default_max_rebuys: draft.max_rebuys,
     },
-    levels: draft.levels.map((level) => {
-      // Notes are for breaks; a blank one isn't sent.
-      const note = level.kind === "break" ? cleanNote(level.note) : null;
-      return {
-        kind: level.kind,
-        small_blind: level.small_blind,
-        big_blind: level.big_blind,
-        ante: level.ante,
-        duration_seconds: level.duration_seconds,
-        ...(note && { note }),
-      };
-    }),
+    levels: draft.levels.map(toStoredLevel),
   };
 }
 
@@ -319,19 +308,13 @@ export function validateDetails(
 }
 
 // Everything wrong with a template's or clock's settings, in form order
-// (name, money, chips, payouts, max rebuys). The rules match the database
+// (name, money, chips, max rebuys, payouts). The rules match the database
 // checks.
 export function validateSettings(
   settings: SettingsFields,
   owner: SettingsOwner,
 ): StructureError[] {
-  const detailErrors = validateDetails(settings, owner);
-  const isLast = ({ field }: StructureError): boolean => field === "max_rebuys";
-  return [
-    ...detailErrors.filter((error) => !isLast(error)),
-    ...validatePayouts(settings),
-    ...detailErrors.filter(isLast),
-  ];
+  return [...validateDetails(settings, owner), ...validatePayouts(settings)];
 }
 
 // Everything wrong with a draft, in form order. Empty means it can be saved.

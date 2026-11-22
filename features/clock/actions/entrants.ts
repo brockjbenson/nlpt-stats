@@ -13,6 +13,7 @@ import {
   addRefusalMessage,
   bustRefusalMessage,
   changeKnockerRefusalMessage,
+  PLAYERS_CHANGED_ELSEWHERE,
   rebuyRefusalMessage,
   takeAwayRebuyRefusalMessage,
   undoRefusalMessage,
@@ -61,7 +62,7 @@ const NOT_ADMIN = {
   message: "Only admins can change tournament clocks.",
 } as const;
 const CLOCK_GONE = "This clock no longer exists.";
-const CHANGED_ELSEWHERE = "The players changed on another screen. Try again.";
+const CHANGED_ELSEWHERE = PLAYERS_CHANGED_ELSEWHERE;
 const CANT_REMOVE = "This player can't be removed now.";
 
 // Postgres error codes the player functions and tables raise.
@@ -328,7 +329,12 @@ export async function changeKnockerAction(
         ? update.is("knocked_out_by", null)
         : update.eq("knocked_out_by", knockout.knocked_out_by);
     const { data, error } = await unchanged.select("id");
-    if (error) return writeFailure(error);
+    if (error) {
+      // The chosen knocker was removed on another screen.
+      return error.code === FOREIGN_KEY_VIOLATION
+        ? failed(CHANGED_ELSEWHERE)
+        : writeFailure(error);
+    }
     if (!data || data.length === 0) return failed(CHANGED_ELSEWHERE);
     return savedPlayers(loaded.db, clockId, "");
   });

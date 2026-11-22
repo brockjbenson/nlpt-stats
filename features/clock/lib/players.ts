@@ -257,8 +257,8 @@ export function planUndoPlayer(
   return planUndoBust(entrants, entrantId);
 }
 
-// Each player's current bust: their newest knockout by bust time, by
-// entrant id. A re-entry keeps the old knockout row, so a player can have
+// Each player's newest knockout by bust time, by entrant id: their current
+// bust while they're out. A re-entry keeps the old row, so a player can have
 // several; on a tie the later row wins.
 export function latestKnockouts(
   knockouts: ClockKnockout[],
@@ -312,6 +312,11 @@ export type ChangeKnockerRefusal =
   | "not_busted"
   | "bad_knocker";
 
+export type PlannedKnockerChange = {
+  knockoutId: string;
+  knocked_out_by: string | null;
+};
+
 // Changes who knocked a player out (null: not recorded), on their current
 // bust's knockout row. The knocker must be one of knockerChoices.
 export function planChangeKnocker(
@@ -320,10 +325,7 @@ export function planChangeKnocker(
   knockouts: ClockKnockout[],
   entrantId: string,
   knockedOutBy: string | null,
-): Result<
-  { knockoutId: string; knocked_out_by: string | null },
-  ChangeKnockerRefusal
-> {
+): Result<PlannedKnockerChange, ChangeKnockerRefusal> {
   const entrant = entrants.find(({ id }) => id === entrantId);
   if (!entrant) return fail("not_found");
   if (clock.status === "finished") return fail("finished");

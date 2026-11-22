@@ -17,7 +17,10 @@ const MINUTE = 60_000;
 const START_MS = Date.parse("2026-11-27T19:00:00.000Z");
 
 // Level 3 (index 2) started five minutes before `nowMs`.
-function runningClock(startOffsetMs = -5 * MINUTE) {
+function runningClock(startOffsetMs = -5 * MINUTE): {
+  clock: TournamentClock;
+  nowMs: number;
+} {
   const nowMs = START_MS;
   const clock = makeClock({
     status: "running",
@@ -110,6 +113,16 @@ describe("planLevelEdit in setup", () => {
     expect(edit.levels.every((level) => !("key" in level))).toBe(true);
     expect("note" in edit.levels[2]).toBe(false);
   });
+
+  it("drops a note sent on a row that isn't a break", () => {
+    const sent = [
+      { ...NLPT_STANDARD_LEVELS[0], note: "Not a break" },
+      NLPT_STANDARD_LEVELS[4],
+    ];
+    const { edit } = planned(makeClock(), sent, START_MS);
+    expect(edit.levels[0]).toEqual(NLPT_STANDARD_LEVELS[0]);
+    expect("note" in edit.levels[0]).toBe(false);
+  });
 });
 
 describe("planLevelEdit while running", () => {
@@ -130,7 +143,12 @@ describe("planLevelEdit while running", () => {
 
   it("ends the level now when the new length is already used up", () => {
     const { clock, nowMs } = runningClock();
-    const { updated } = planned(clock, withLength(clock.levels, 2, 4), nowMs);
+    const { edit, updated } = planned(
+      clock,
+      withLength(clock.levels, 2, 4),
+      nowMs,
+    );
+    expect(edit.level_index).toBe(2);
     expect(getClockPosition(updated, nowMs)).toMatchObject({
       levelIndex: 3,
       remainingMs: 20 * MINUTE,

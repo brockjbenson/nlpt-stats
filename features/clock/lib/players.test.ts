@@ -482,21 +482,45 @@ describe("knockerChoices", () => {
   });
 });
 
+function ko(
+  id: string,
+  entrantId: string,
+  bustedAt: string,
+  by: string | null = null,
+): ClockKnockout {
+  return { ...knockout(entrantId, by), id, busted_at: bustedAt };
+}
+
+describe("latestKnockouts", () => {
+  const early = "2026-11-27T01:00:00.000Z";
+  const late = "2026-11-27T02:00:00.000Z";
+
+  it("keeps the newest row whatever order the rows come in", () => {
+    const oldRow = ko("old", "a", early);
+    const newRow = ko("new", "a", late);
+    expect(latestKnockouts([oldRow, newRow]).get("a")?.id).toBe("new");
+    expect(latestKnockouts([newRow, oldRow]).get("a")?.id).toBe("new");
+  });
+
+  it("lets the later row win a tie on bust time", () => {
+    const knockouts = [ko("first", "a", early), ko("second", "a", early)];
+    expect(latestKnockouts(knockouts).get("a")?.id).toBe("second");
+  });
+
+  it("keeps different players apart", () => {
+    const latest = latestKnockouts([ko("a1", "a", late), ko("b1", "b", early)]);
+    expect(latest.get("a")?.id).toBe("a1");
+    expect(latest.get("b")?.id).toBe("b1");
+    expect(latest.size).toBe(2);
+  });
+});
+
 describe("planChangeKnocker", () => {
   const running = makeClock({ status: "running" });
   const winner = member("winner");
   const fifth = member("fifth", busted(5));
   const sixth = member("sixth", busted(6));
   const entrants = [winner, fifth, sixth];
-
-  function ko(
-    id: string,
-    entrantId: string,
-    bustedAt: string,
-    by: string | null = null,
-  ): ClockKnockout {
-    return { ...knockout(entrantId, by), id, busted_at: bustedAt };
-  }
 
   it("picks the newest knockout after a re-entry", () => {
     const knockouts = [
@@ -509,14 +533,6 @@ describe("planChangeKnocker", () => {
       ok: true,
       value: { knockoutId: "new", knocked_out_by: winner.id },
     });
-  });
-
-  it("shares the newest pick with latestKnockouts", () => {
-    const knockouts = [
-      ko("new", fifth.id, "2026-11-27T02:00:00.000Z"),
-      ko("old", fifth.id, "2026-11-27T01:00:00.000Z"),
-    ];
-    expect(latestKnockouts(knockouts).get(fifth.id)?.id).toBe("new");
   });
 
   it("allows clearing the knocker", () => {
@@ -532,6 +548,23 @@ describe("planChangeKnocker", () => {
     const knockouts = [ko("k", fifth.id, "2026-11-27T01:00:00.000Z")];
     expect(
       planChangeKnocker(running, entrants, knockouts, fifth.id, sixth.id),
+    ).toEqual({ ok: false, reason: "bad_knocker" });
+  });
+
+  it("accepts a player who went out after", () => {
+    const knockouts = [ko("k", sixth.id, "2026-11-27T01:00:00.000Z")];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, sixth.id, fifth.id),
+    ).toEqual({
+      ok: true,
+      value: { knockoutId: "k", knocked_out_by: fifth.id },
+    });
+  });
+
+  it("refuses naming the player as their own knocker", () => {
+    const knockouts = [ko("k", fifth.id, "2026-11-27T01:00:00.000Z")];
+    expect(
+      planChangeKnocker(running, entrants, knockouts, fifth.id, fifth.id),
     ).toEqual({ ok: false, reason: "bad_knocker" });
   });
 

@@ -1,4 +1,4 @@
-import { cleanNote, levelDurationMs } from "@/features/clock/lib/levels";
+import { levelDurationMs, toStoredLevel } from "@/features/clock/lib/levels";
 import { fail, ok, type Result } from "@/features/clock/lib/result";
 import { validateLevels } from "@/features/clock/lib/structures";
 import {
@@ -40,38 +40,32 @@ export type LevelEdit = ClockUpdate & { levels: BlindLevel[] };
 
 export type LevelEditRefusal = "finished" | "invalid_levels" | "clock_moved";
 
-// A level as the clock stores it: the playing fields, and the note only on
-// a break that has one. Drops editor-only fields such as `key`.
-function toSavedLevel(level: BlindLevel): BlindLevel {
-  const note = level.kind === "break" ? cleanNote(level.note) : null;
-  return {
-    kind: level.kind,
-    small_blind: level.small_blind ?? null,
-    big_blind: level.big_blind ?? null,
-    ante: level.ante,
-    duration_seconds: level.duration_seconds,
-    ...(note && { note }),
-  };
-}
-
 function toIso(ms: number): string {
   return new Date(ms).toISOString();
 }
 
-// Running: keeps the time already played in the current level (counting
-// time added with +1 min), so a longer level has more left and a shorter one
-// has less. If the new length is already used up, the level ends now and the
-// next one starts with its full time.
-function runningTiming(
-  playedMs: number,
+// Running: when the current level counts as started. Keeps the time already
+// played (counting time added with +1 min), so a longer level has more left
+// and a shorter one has less. If the new length is already used up, the
+// level ends now and the next one starts with its full time.
+function runningStartMs(
   startedAtMs: number,
   newLengthMs: number,
   nowMs: number,
-): Pick<ClockUpdate, "level_started_at"> {
-  const keepStart = playedMs < newLengthMs;
-  return {
-    level_started_at: toIso(keepStart ? startedAtMs : nowMs - newLengthMs),
-  };
+): number {
+  const playedMs = nowMs - startedAtMs;
+  return playedMs < newLengthMs ? startedAtMs : nowMs - newLengthMs;
+}
+
+// Paused: the time left after the level's length changes. The time already
+// played stays, and nothing is left once the new length is used up.
+function pausedRemainingMs(
+  oldLengthMs: number,
+  oldRemainingMs: number,
+  newLengthMs: number,
+): number {
+  const playedMs = oldLengthMs - oldRemainingMs;
+  return Math.max(0, newLengthMs - playedMs);
 }
 
 // Decides what saving an edited list of levels writes. Rows already played
@@ -85,7 +79,7 @@ export function planLevelEdit(
   if (clock.status === "finished") return fail("finished");
 
   if (clock.status === "setup") {
-    const saved = levels.map(toSavedLevel);
+    const saved = levels.map(toStoredLevel);
     if (validateLevels(saved).length > 0) return fail("invalid_levels");
     return ok({ levels: saved, level_index: 0 });
   }
@@ -96,19 +90,21 @@ export function planLevelEdit(
 
   const merged = [
     ...clock.levels.slice(0, current),
-    ...levels.slice(current).map(toSavedLevel),
+    ...levels.slice(current).map(toStoredLevel),
   ];
   if (validateLevels(merged).length > 0) return fail("invalid_levels");
 
   const newLengthMs = levelDurationMs(merged[current]);
 
   if (clock.status === "paused") {
-    const playedMs =
-      levelDurationMs(clock.levels[current]) - (clock.paused_remaining_ms ?? 0);
     return ok({
       levels: merged,
       level_index: current,
-      paused_remaining_ms: Math.max(0, newLengthMs - playedMs),
+      paused_remaining_ms: pausedRemainingMs(
+        levelDurationMs(clock.levels[current]),
+        clock.paused_remaining_ms ?? 0,
+        newLengthMs,
+      ),
     });
   }
 
@@ -116,6 +112,6 @@ export function planLevelEdit(
   return ok({
     levels: merged,
     level_index: current,
-    ...runningTiming(nowMs - startedAtMs, startedAtMs, newLengthMs, nowMs),
+    level_started_at: toIso(runningStartMs(startedAtMs, newLengthMs, nowMs)),
   });
 }
