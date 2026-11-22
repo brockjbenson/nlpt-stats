@@ -77,6 +77,9 @@ function PlayersCard({ clock, players, members }: Props) {
   // The drawer closes if its player is removed or the clock finishes.
   const openId =
     canEdit && entrants.some(({ id }) => id === editingId) ? editingId : null;
+  // Forget a closed drawer's player, so it can't pop open again if the
+  // clock is reopened on another screen.
+  if (editingId !== null && openId === null) setEditingId(null);
   const editHandler = (id: string) =>
     canEdit ? () => setEditingId(id) : undefined;
   const buttonProps = { clock, entrants, run, isPending };

@@ -11,6 +11,7 @@ import {
 import {
   type ClockUpdate,
   getClockPosition,
+  toIso,
 } from "@/features/clock/lib/timing";
 import type {
   BlindLevel,
@@ -124,10 +125,6 @@ export function levelsChanged(
 export type LevelEdit = ClockUpdate & { levels: BlindLevel[] };
 
 export type LevelEditRefusal = "finished" | "invalid_levels" | "clock_moved";
-
-function toIso(ms: number): string {
-  return new Date(ms).toISOString();
-}
 
 // Running: when the current level counts as started. Keeps the time already
 // played (counting time added with +1 min), so a longer level has more left

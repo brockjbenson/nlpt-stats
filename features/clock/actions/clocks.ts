@@ -31,6 +31,7 @@ import {
   planLevelEdit,
 } from "@/features/clock/lib/level-edits";
 import { CLOCKS_PATH } from "@/features/clock/lib/paths";
+import { CLOCK_FINISHED } from "@/features/clock/lib/player-messages";
 import {
   type PayoutSettings,
   type StructureError,
@@ -446,7 +447,7 @@ export async function updatePayoutsAction(
 function levelEditRefusalMessage(reason: LevelEditRefusal): string {
   switch (reason) {
     case "finished":
-      return "This clock is finished.";
+      return CLOCK_FINISHED;
     case "invalid_levels":
       return "Fix the levels.";
     case "clock_moved":

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
-import { useKeyboardInset } from "@/hooks/use-keyboard-inset";
+import { currentInset, useKeyboardInset } from "@/hooks/use-keyboard-inset";
 import { isKeyboardOpen } from "@/lib/keyboard-inset";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +16,9 @@ const KEYBOARD_SETTLE_MS = 350;
 
 // vaul's own keyboard handling (repositionInputs) misplaces the sheet on iOS,
 // which also scrolls the page to show a focused input. DrawerContent handles
-// the keyboard instead.
+// the keyboard instead. In vaul 1.1.2 the same flag also turns off its iOS
+// scroll lock (usePreventScroll); the overlay's RemoveScroll still keeps the
+// page behind from scrolling.
 const Drawer = ({
   shouldScaleBackground = true,
   repositionInputs = false,
@@ -70,12 +72,20 @@ function opensKeyboard(element: EventTarget): element is HTMLElement {
 }
 
 // Once the keyboard has opened, scrolls a focused field into the middle of
-// the sheet's scroll area (clear of the sticky header).
+// the sheet's scroll area (clear of the sticky header). Only while a
+// keyboard is open, so a click on desktop never moves the sheet, and the
+// resize listener is always removed once the keyboard has settled.
 function scrollFieldIntoView(field: HTMLElement): void {
-  const scroll = (): void =>
+  const viewport = window.visualViewport;
+  const scroll = (): void => {
+    if (!isKeyboardOpen(currentInset())) return;
     field.scrollIntoView({ block: "center", behavior: "smooth" });
-  window.visualViewport?.addEventListener("resize", scroll, { once: true });
-  window.setTimeout(scroll, KEYBOARD_SETTLE_MS);
+  };
+  viewport?.addEventListener("resize", scroll, { once: true });
+  window.setTimeout(() => {
+    viewport?.removeEventListener("resize", scroll);
+    scroll();
+  }, KEYBOARD_SETTLE_MS);
 }
 
 // While the keyboard is open the sheet sits on top of it and shrinks to the

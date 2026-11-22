@@ -21,7 +21,8 @@ function subscribe(onChange: () => void): () => void {
   };
 }
 
-function currentInset(): number {
+// The keyboard's inset right now, outside React (0 without the API).
+export function currentInset(): number {
   const viewport = window.visualViewport;
   if (!viewport) return 0;
   return keyboardInset({

@@ -14,7 +14,7 @@ import {
 const PLAYER_GONE = "This player is no longer in this clock.";
 export const PLAYERS_CHANGED_ELSEWHERE =
   "The players changed on another screen. Try again.";
-const CLOCK_FINISHED = "This clock is finished.";
+export const CLOCK_FINISHED = "This clock is finished.";
 const NOT_OUT = "This player isn't out.";
 const NOT_IN_PLAY = "Only while the clock is running or paused.";
 
