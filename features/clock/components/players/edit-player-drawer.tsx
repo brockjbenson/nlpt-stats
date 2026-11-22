@@ -53,6 +53,16 @@ type Props = {
   isPending: boolean;
 };
 
+// Who knocked the player out, or NOT_RECORDED.
+function recordedKnocker(
+  knockouts: ClockKnockout[],
+  entrantId: string,
+): string {
+  return (
+    latestKnockouts(knockouts).get(entrantId)?.knocked_out_by ?? NOT_RECORDED
+  );
+}
+
 type FormProps = Omit<Props, "entrantId"> & { entrant: ClockEntrant };
 
 // A player's rebuys and, for a player who is out, who knocked them out.
@@ -67,8 +77,7 @@ function EditPlayerForm({
   isPending,
 }: FormProps) {
   const id = entrant.id;
-  const currentKnocker = latestKnockouts(knockouts).get(id)?.knocked_out_by;
-  const current = currentKnocker ?? NOT_RECORDED;
+  const current = recordedKnocker(knockouts, id);
   const [knocker, setKnocker] = useState(current);
   // Which button was pressed, so only that one shows the spinner.
   const [pressed, setPressed] = useState<"rebuy" | "knocker" | null>(null);
@@ -163,8 +172,7 @@ function EditPlayerDrawer({ entrantId, ...props }: Props) {
   const { entrants, knockouts, names, onClose } = props;
   const entrant = entrants.find(({ id }) => id === entrantId);
   const current = entrant
-    ? (latestKnockouts(knockouts).get(entrant.id)?.knocked_out_by ??
-      NOT_RECORDED)
+    ? recordedKnocker(knockouts, entrant.id)
     : NOT_RECORDED;
 
   return (
