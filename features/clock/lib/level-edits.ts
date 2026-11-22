@@ -41,15 +41,24 @@ export function levelEditLocks(
   }
 }
 
-// A clock's levels ready for the level editor: every row keyed, and new rows
-// as long as most of the clock's levels and breaks (as for a template).
+// The level editor's key for the clock's saved row at `index`. Rows added
+// in the editor get keys of their own ("new-row-N"), so keys never clash.
+export function savedRowKey(index: number): string {
+  return `saved-${index}`;
+}
+
+// A clock's levels ready for the level editor: each row keyed by its place
+// in the saved list (savedRowKey), and new rows as long as most of the
+// clock's levels and breaks (as for a template).
 export function clockLevelsDraft(
   clock: Pick<TournamentClock, "levels">,
-  nextKey: () => string,
 ): LevelsDraft {
   const { levels } = clock;
   return {
-    levels: levels.map((level) => ({ ...level, key: nextKey() })),
+    levels: levels.map((level, index) => ({
+      ...level,
+      key: savedRowKey(index),
+    })),
     new_level_seconds: mostCommonSeconds(
       levels,
       "level",
@@ -61,6 +70,41 @@ export function clockLevelsDraft(
       DEFAULT_BREAK_SECONDS,
     ),
   };
+}
+
+// Lines the editor's rows up with the clock after it moves to another
+// level. Rows lock by position but are matched here by key, so upcoming rows
+// the admin moved or removed before the clock got to them are never
+// duplicated or lost:
+// - the played rows become the saved ones, as they were really played;
+// - the current row is the saved row the clock is playing, keeping any edits
+//   made to it, or back as saved if the admin had removed it;
+// - every other row follows, in the editor's order.
+// The save still merges by position, so a level that ends between the last
+// line-up and a save lets the first upcoming row become the current one.
+export function alignDraftToClock(
+  draft: DraftLevel[],
+  saved: BlindLevel[],
+  firstEditable: number,
+  hasCurrent: boolean,
+): DraftLevel[] {
+  // The clock can't be past its own levels.
+  if (firstEditable >= saved.length) return draft;
+
+  const fixed: DraftLevel[] = saved
+    .slice(0, firstEditable)
+    .map((level, index) => ({ ...level, key: savedRowKey(index) }));
+  if (hasCurrent) {
+    const currentKey = savedRowKey(firstEditable);
+    fixed.push(
+      draft.find(({ key }) => key === currentKey) ?? {
+        ...saved[firstEditable],
+        key: currentKey,
+      },
+    );
+  }
+  const fixedKeys = new Set(fixed.map(({ key }) => key));
+  return [...fixed, ...draft.filter(({ key }) => !fixedKeys.has(key))];
 }
 
 // Whether the edited levels would save anything different from the saved

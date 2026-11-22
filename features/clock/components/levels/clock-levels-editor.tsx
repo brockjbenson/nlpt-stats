@@ -6,6 +6,7 @@ import {
   type ClockControlResult,
   updateClockLevelsAction,
 } from "@/features/clock/actions/clocks";
+import BackLink from "@/features/clock/components/back-link";
 import LevelsFields from "@/features/clock/components/structures/levels-fields";
 import { useActionWithToast } from "@/features/clock/hooks/use-action-with-toast";
 import { useClock } from "@/features/clock/hooks/use-clock";
@@ -13,11 +14,12 @@ import { useLeaveWarning } from "@/features/clock/hooks/use-leave-warning";
 import { clockStatusLabel } from "@/features/clock/lib/clocks";
 import type { ClockView } from "@/features/clock/lib/display";
 import {
+  alignDraftToClock,
   clockLevelsDraft,
   levelEditLocks,
   levelsChanged,
 } from "@/features/clock/lib/level-edits";
-import { clockControlPath } from "@/features/clock/lib/paths";
+import { CLOCKS_PATH, clockControlPath } from "@/features/clock/lib/paths";
 import {
   type LevelsDraft,
   levelsReducer,
@@ -25,27 +27,14 @@ import {
 import { validateLevels } from "@/features/clock/lib/structures";
 import type { TournamentClock } from "@/features/clock/types";
 import { cn } from "@/lib/utils";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useReducer, useRef } from "react";
+import { useReducer, useRef, useState } from "react";
 
 type Props = {
   initialClock: TournamentClock;
   // The database time the page was rendered at.
   initialNowMs: number;
 };
-
-// The editor's starting draft. The clock's own rows are keyed "saved-1",
-// "saved-2", …; rows added later get "new-row-N" from nextKey, so keys never
-// clash.
-function startDraft(clock: TournamentClock): LevelsDraft {
-  let count = 0;
-  return clockLevelsDraft(clock, () => {
-    count += 1;
-    return `saved-${count}`;
-  });
-}
 
 // The clock's name, and the level being played with its time left, as the
 // display shows them.
@@ -68,7 +57,8 @@ function LiveLine({ name, view }: { name: string; view: ClockView }) {
 // Edits a clock's current and upcoming levels and saves them in one go,
 // then returns to the control screen. Played levels are locked, and the
 // locks follow the clock live, so a level that ends while editing locks
-// itself. Edits stay local until Save; Realtime changes never replace them.
+// itself and the rows line up with the clock again. Edits stay local until
+// Save; Realtime changes never replace them.
 function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
   const router = useRouter();
   const { clock, view, isDeleted, applyRow } = useClock(
@@ -78,7 +68,7 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
   const [draft, dispatch] = useReducer(
     levelsReducer<LevelsDraft>,
     initialClock,
-    startDraft,
+    clockLevelsDraft,
   );
   const keyCount = useRef(0);
   const nextKey = (): string => {
@@ -92,20 +82,40 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
   // Null once the clock is finished: nothing can change.
   const locks = levelEditLocks(view.status, view.position.levelIndex);
   const canEdit = locks !== null && !isDeleted;
-  const isDirty = levelsChanged(clock.levels, draft.levels);
-  useLeaveWarning(canEdit && isDirty && !isPending);
-
   const firstEditable = locks?.firstEditable ?? 0;
+  // Once the clock has started, the row it's playing ("Now playing") can
+  // change but not move.
+  const hasCurrent = locks !== null && locks.firstMovable > locks.firstEditable;
+
+  // When the clock moves to another level, line the rows up with it again.
+  // Done during render, so the old line-up never shows, and only when the
+  // level changes, not on every tick.
+  const [alignedAt, setAlignedAt] = useState({ firstEditable, hasCurrent });
+  const hasMoved =
+    alignedAt.firstEditable !== firstEditable ||
+    alignedAt.hasCurrent !== hasCurrent;
+  if (locks !== null && hasMoved) {
+    setAlignedAt({ firstEditable, hasCurrent });
+    dispatch({
+      type: "setLevels",
+      levels: alignDraftToClock(
+        draft.levels,
+        clock.levels,
+        firstEditable,
+        hasCurrent,
+      ),
+    });
+  }
+
+  const isDirty = levelsChanged(clock.levels, draft.levels);
+  const hasUnsavedEdits = canEdit && isDirty;
+  useLeaveWarning(hasUnsavedEdits && !isPending);
+
   // Played rows are never saved, so their problems don't matter.
   const errors = validateLevels(draft.levels).filter(
     ({ levelIndex }) => levelIndex === undefined || levelIndex >= firstEditable,
   );
   const canSave = isDirty && errors.length === 0 && !isPending;
-  // "Now playing" only once the clock has started.
-  const currentIndex =
-    view.status === "running" || view.status === "paused"
-      ? view.position.levelIndex
-      : undefined;
 
   const save = (): void => {
     run(
@@ -117,12 +127,13 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
 
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
-      <Link
-        href={clockControlPath(clock.id)}
-        className="inline-flex items-center gap-1 text-sm text-muted hover:text-primary"
-      >
-        <ChevronLeft size={16} /> Clock
-      </Link>
+      {/* A deleted clock has no control screen to go back to. */}
+      <BackLink
+        href={isDeleted ? CLOCKS_PATH : clockControlPath(clock.id)}
+        label={isDeleted ? "Clocks" : "Clock"}
+        isDirty={hasUnsavedEdits}
+        description="Your changes to these levels will be lost."
+      />
       {!canEdit ? (
         <p className="py-8 text-center text-muted">
           {isDeleted ? "This clock was deleted." : "This clock is finished."}
@@ -136,7 +147,7 @@ function ClockLevelsEditor({ initialClock, initialNowMs }: Props) {
             dispatch={dispatch}
             nextKey={nextKey}
             locks={locks}
-            currentIndex={currentIndex}
+            currentIndex={hasCurrent ? firstEditable : undefined}
           />
           <BottomTabAccessory
             className={cn(

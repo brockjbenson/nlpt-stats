@@ -50,7 +50,10 @@ export type LevelsAction =
   | { type: "updateLevel"; index: number; change: Partial<BlindLevel> }
   // A drag and drop: the row at `from` ends up at `to`.
   | { type: "reorderLevel"; from: number; to: number }
-  | { type: "removeLevel"; index: number };
+  | { type: "removeLevel"; index: number }
+  // Every row at once, as a running clock's editor lines them up with the
+  // clock.
+  | { type: "setLevels"; levels: DraftLevel[] };
 
 export type StructureEditorAction = SettingsAction | LevelsAction;
 
@@ -237,6 +240,9 @@ export function levelsReducer<T extends LevelsDraft>(
         draft,
         draft.levels.filter((_, index) => index !== action.index),
       );
+
+    case "setLevels":
+      return setLevels(draft, action.levels);
   }
 }
 
@@ -260,6 +266,7 @@ export function structureEditorReducer(
     case "updateLevel":
     case "reorderLevel":
     case "removeLevel":
+    case "setLevels":
       return levelsReducer(draft, action);
   }
 }

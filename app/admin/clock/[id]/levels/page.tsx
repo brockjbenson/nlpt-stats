@@ -35,7 +35,15 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
       <PageHeader title={TITLE} />
       {/* The clock's name heads the editor. */}
       <DesktopPageHeader title={TITLE} />
-      <ClockLevelsEditor initialClock={clock} initialNowMs={nowMs} />
+      {/* A page you leave stays mounted, hidden, and shows again when you
+          come back (see components/page-transition.tsx). Keyed by the time
+          it was rendered, so each visit starts a fresh draft instead of one
+          left behind. */}
+      <ClockLevelsEditor
+        key={nowMs}
+        initialClock={clock}
+        initialNowMs={nowMs}
+      />
     </>
   );
 }

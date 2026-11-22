@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  alignDraftToClock,
   clockLevelsDraft,
   levelEditLocks,
   type LevelEdit,
   levelsChanged,
   planLevelEdit,
+  savedRowKey,
 } from "@/features/clock/lib/level-edits";
+import { toStoredLevel } from "@/features/clock/lib/levels";
 import { levelsReducer } from "@/features/clock/lib/structure-editor";
 import {
   DEFAULT_BREAK_SECONDS,
@@ -60,15 +63,6 @@ function planned(
 
 function minutesLeft(clock: TournamentClock, nowMs: number): number {
   return getClockPosition(clock, nowMs).remainingMs / MINUTE;
-}
-
-// Keys "row-1", "row-2", … in order, like the editor's counter.
-function counterKeys(): () => string {
-  let count = 0;
-  return () => {
-    count += 1;
-    return `row-${count}`;
-  };
 }
 
 describe("levelEditLocks", () => {
@@ -275,12 +269,12 @@ describe("planLevelEdit when finished", () => {
 });
 
 describe("clockLevelsDraft", () => {
-  it("keys every row from nextKey and keeps its fields", () => {
-    const draft = clockLevelsDraft(makeClock(), counterKeys());
+  it("keys every row by its saved place and keeps its fields", () => {
+    const draft = clockLevelsDraft(makeClock());
     expect(draft.levels).toEqual(
       NLPT_STANDARD_LEVELS.map((level, index) => ({
         ...level,
-        key: `row-${index + 1}`,
+        key: `saved-${index}`,
       })),
     );
   });
@@ -303,14 +297,14 @@ describe("clockLevelsDraft", () => {
       level(15),
       breakOf(20),
     ];
-    const draft = clockLevelsDraft(makeClock({ levels }), counterKeys());
+    const draft = clockLevelsDraft(makeClock({ levels }));
     expect(draft.new_level_seconds).toBe(15 * 60);
     expect(draft.new_break_seconds).toBe(5 * 60);
   });
 
   it("falls back to the default break length with no breaks", () => {
     const levels = NLPT_STANDARD_LEVELS.slice(0, 4);
-    const draft = clockLevelsDraft(makeClock({ levels }), counterKeys());
+    const draft = clockLevelsDraft(makeClock({ levels }));
     expect(draft.new_level_seconds).toBe(20 * 60);
     expect(draft.new_break_seconds).toBe(DEFAULT_BREAK_SECONDS);
   });
@@ -318,7 +312,7 @@ describe("clockLevelsDraft", () => {
 
 describe("levelsChanged", () => {
   function draftLevels(): DraftLevel[] {
-    return clockLevelsDraft(makeClock(), counterKeys()).levels;
+    return clockLevelsDraft(makeClock()).levels;
   }
 
   it("is false for the same levels with new keys", () => {
@@ -339,7 +333,7 @@ describe("levelsChanged", () => {
   });
 
   it("is false after an edit typed then changed back", () => {
-    const draft = clockLevelsDraft(makeClock(), counterKeys());
+    const draft = clockLevelsDraft(makeClock());
     const typed = levelsReducer(draft, {
       type: "updateLevel",
       index: 3,
@@ -359,5 +353,115 @@ describe("levelsChanged", () => {
       level.kind === "break" ? { ...level, note: null } : level,
     );
     expect(levelsChanged(saved, draftLevels())).toBe(false);
+  });
+});
+
+describe("alignDraftToClock", () => {
+  const saved = NLPT_STANDARD_LEVELS;
+
+  // The clock's rows as the page opened them.
+  function openedDraft(): DraftLevel[] {
+    return clockLevelsDraft(makeClock()).levels;
+  }
+
+  // Saved indexes, in order, as row keys.
+  function keysOf(indexes: number[]): string[] {
+    return indexes.map(savedRowKey);
+  }
+
+  function savedRange(from: number, to: number): number[] {
+    return Array.from({ length: to - from }, (_, i) => from + i);
+  }
+
+  // Level 7 (index 7) dragged up to index 4, ahead of the first break, as
+  // the clock plays index 3.
+  function withLevel7Moved(): DraftLevel[] {
+    return levelsReducer(clockLevelsDraft(makeClock()), {
+      type: "reorderLevel",
+      from: 7,
+      to: 4,
+    }).levels;
+  }
+
+  it("keeps every row once when the clock passes a moved row", () => {
+    const draft = withLevel7Moved();
+    expect(draft.map(({ key }) => key)).toEqual(
+      keysOf([0, 1, 2, 3, 7, 4, 5, 6, ...savedRange(8, saved.length)]),
+    );
+
+    const aligned = alignDraftToClock(draft, saved, 5, true);
+    // Played: 0-4 (the break included). Now: 5. Then the admin's order.
+    const order = [0, 1, 2, 3, 4, 5, 7, 6, ...savedRange(8, saved.length)];
+    expect(aligned.map(({ key }) => key)).toEqual(keysOf(order));
+    expect(aligned.map(toStoredLevel)).toEqual(order.map((i) => saved[i]));
+  });
+
+  it("saves the lined-up rows with nothing duplicated or lost", () => {
+    const nowMs = START_MS;
+    const clock = makeClock({
+      status: "running",
+      level_index: 5,
+      level_started_at: new Date(nowMs - 5 * MINUTE).toISOString(),
+    });
+    const aligned = alignDraftToClock(withLevel7Moved(), saved, 5, true);
+    const { edit } = planned(clock, aligned, nowMs);
+    const order = [0, 1, 2, 3, 4, 5, 7, 6, ...savedRange(8, saved.length)];
+    expect(edit.levels).toEqual(order.map((i) => saved[i]));
+  });
+
+  it("keeps the admin's edits to the row that becomes current", () => {
+    const draft = openedDraft().map((row, index) =>
+      index === 5 ? { ...row, ante: 100 } : row,
+    );
+    const aligned = alignDraftToClock(draft, saved, 5, true);
+    expect(aligned[5]).toEqual({ ...saved[5], ante: 100, key: savedRowKey(5) });
+  });
+
+  it("drops edits typed into a row that has since been played", () => {
+    const draft = openedDraft().map((row, index) =>
+      index === 3 ? { ...row, ante: 100 } : row,
+    );
+    const aligned = alignDraftToClock(draft, saved, 5, true);
+    expect(aligned[3]).toEqual({ ...saved[3], key: savedRowKey(3) });
+    expect(levelsChanged(saved, aligned)).toBe(false);
+  });
+
+  it("brings back the current row when the admin had removed it", () => {
+    const draft = openedDraft().filter((_, index) => index !== 5);
+    const aligned = alignDraftToClock(draft, saved, 5, true);
+    expect(aligned.map(({ key }) => key)).toEqual(
+      keysOf(savedRange(0, saved.length)),
+    );
+    expect(aligned[5]).toEqual({ ...saved[5], key: savedRowKey(5) });
+  });
+
+  it("keeps rows added in the editor in their place", () => {
+    const draft = levelsReducer(clockLevelsDraft(makeClock()), {
+      type: "addBreak",
+      key: "new-row-1",
+    }).levels;
+    const aligned = alignDraftToClock(draft, saved, 5, true);
+    expect(aligned.map(({ key }) => key)).toEqual([
+      ...keysOf(savedRange(0, saved.length)),
+      "new-row-1",
+    ]);
+  });
+
+  it("lines up again when the clock goes back a level", () => {
+    const atFive = alignDraftToClock(withLevel7Moved(), saved, 5, true);
+    const atFour = alignDraftToClock(atFive, saved, 4, true);
+    expect(atFour.map(({ key }) => key)).toEqual(
+      keysOf([0, 1, 2, 3, 4, 5, 7, 6, ...savedRange(8, saved.length)]),
+    );
+  });
+
+  it("leaves a clock in setup as it is", () => {
+    const draft = withLevel7Moved();
+    expect(alignDraftToClock(draft, saved, 0, false)).toEqual(draft);
+  });
+
+  it("leaves the draft as it is past the last saved level", () => {
+    const draft = withLevel7Moved();
+    expect(alignDraftToClock(draft, saved, saved.length, true)).toBe(draft);
   });
 });

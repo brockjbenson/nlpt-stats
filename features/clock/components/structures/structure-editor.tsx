@@ -3,7 +3,7 @@
 import { BottomTabAccessory } from "@/components/bottom-tabs/accessory";
 import { Spinner } from "@/components/ui/spinner";
 import { saveStructureAction } from "@/features/clock/actions/structures";
-import BackToStructuresLink from "@/features/clock/components/structures/back-to-structures-link";
+import BackLink from "@/features/clock/components/back-link";
 import LevelsFields from "@/features/clock/components/structures/levels-fields";
 import NewRowLengthFields from "@/features/clock/components/structures/new-row-length-fields";
 import PayoutFields from "@/features/clock/components/structures/payout-fields";
@@ -19,6 +19,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useReducer, useRef, useState, useTransition } from "react";
+
+const STRUCTURES_HREF = "/admin/clock/structures";
 
 type Props = {
   // null for a new template.
@@ -68,7 +70,12 @@ function StructureEditor({ id, initialDraft }: Props) {
 
   return (
     <div className="flex w-full flex-col gap-3 px-2 pb-28">
-      <BackToStructuresLink isDirty={isDirty} />
+      <BackLink
+        href={STRUCTURES_HREF}
+        label="Blind Structures"
+        isDirty={isDirty}
+        description="Your changes to this template will be lost."
+      />
       <SettingsFields
         idPrefix="structure"
         settings={draft}

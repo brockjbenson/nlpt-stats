@@ -450,6 +450,13 @@ describe("levelsReducer", () => {
     expect(next.new_break_seconds).toBe(5 * 60);
   });
 
+  it("replaces every row at once", () => {
+    const levels = [bare.levels[2], level("d", 300, 600)];
+    const next = levelsReducer(bare, { type: "setLevels", levels });
+    expect(next.levels).toBe(levels);
+    expect(next.new_level_seconds).toBe(15 * 60);
+  });
+
   it("keeps only the level fields", () => {
     const next = levelsReducer(bare, { type: "addLevel", key: "d" });
     expect(Object.keys(next).sort()).toEqual([
