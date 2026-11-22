@@ -242,7 +242,10 @@ function payoutError({
   return null;
 }
 
-function levelErrors(levels: DraftLevel[]): StructureError[] {
+// What's wrong with a list of levels: each bad row, or (when the rows are
+// fine) a list with nothing to play. Shared by the template editor and the
+// live clock level editor.
+export function validateLevels(levels: BlindLevel[]): StructureError[] {
   const rowErrors = levels.flatMap((level, levelIndex): StructureError[] => {
     const problem = levelProblem(level);
     return problem ? [{ field: "levels", levelIndex, message: problem }] : [];
@@ -318,7 +321,10 @@ export function validateSettings(
 export function validateStructureDraft(
   draft: StructureDraft,
 ): StructureError[] {
-  return [...validateSettings(draft, "template"), ...levelErrors(draft.levels)];
+  return [
+    ...validateSettings(draft, "template"),
+    ...validateLevels(draft.levels),
+  ];
 }
 
 export type LevelSummary = {

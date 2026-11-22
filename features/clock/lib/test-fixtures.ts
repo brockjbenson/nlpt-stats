@@ -99,3 +99,21 @@ export function makeEntrant(
     ...overrides,
   };
 }
+
+// The phase 1 database rule (tournament_clocks_status_fields_check).
+export function satisfiesStatusRule(clock: TournamentClock): boolean {
+  switch (clock.status) {
+    case "setup":
+      return (
+        clock.level_started_at === null && clock.paused_remaining_ms === null
+      );
+    case "running":
+      return (
+        clock.level_started_at !== null && clock.paused_remaining_ms === null
+      );
+    case "paused":
+      return clock.paused_remaining_ms !== null;
+    case "finished":
+      return true;
+  }
+}
