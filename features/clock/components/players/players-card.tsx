@@ -74,6 +74,11 @@ function PlayersCard({ clock, players, members }: Props) {
   const addBlockedReason = addPlayersBlocked(clock, entrants);
   const note = buttonsNote(clock, left, entrants.length);
   const canEdit = clock.status !== "finished";
+  // The drawer closes if its player is removed or the clock finishes.
+  const openId =
+    canEdit && entrants.some(({ id }) => id === editingId) ? editingId : null;
+  const editHandler = (id: string) =>
+    canEdit ? () => setEditingId(id) : undefined;
   const buttonProps = { clock, entrants, run, isPending };
 
   return (
@@ -116,9 +121,7 @@ function PlayersCard({ clock, players, members }: Props) {
               <PlayerRow
                 key={player.entrant.id}
                 player={player}
-                onEdit={
-                  canEdit ? () => setEditingId(player.entrant.id) : undefined
-                }
+                onEdit={editHandler(player.entrant.id)}
               >
                 <InPlayerButtons
                   {...buttonProps}
@@ -144,11 +147,7 @@ function PlayersCard({ clock, players, members }: Props) {
                     key={player.entrant.id}
                     player={player}
                     knockedOutBy={knocker ? names.get(knocker) : null}
-                    onEdit={
-                      canEdit
-                        ? () => setEditingId(player.entrant.id)
-                        : undefined
-                    }
+                    onEdit={editHandler(player.entrant.id)}
                   >
                     <OutPlayerButtons {...buttonProps} player={player} />
                   </PlayerRow>
@@ -164,7 +163,7 @@ function PlayersCard({ clock, players, members }: Props) {
         entrants={entrants}
         knockouts={knockouts}
         names={names}
-        entrantId={editingId}
+        entrantId={openId}
         onClose={() => setEditingId(null)}
         run={run}
         isPending={isPending}

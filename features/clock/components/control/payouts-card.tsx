@@ -116,7 +116,7 @@ function EditPayoutsDrawer(props: Props) {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="outline" aria-label="Edit payouts">
           <Pencil size={14} /> Edit
         </Button>
       </DrawerTrigger>

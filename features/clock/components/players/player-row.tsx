@@ -1,6 +1,7 @@
-import { Badge } from "@/components/ui/badge";
+import { badgeVariants } from "@/components/ui/badge";
 import { ordinal, plural } from "@/features/clock/lib/format";
 import type { PlayerRow as PlayerRowData } from "@/features/clock/lib/players";
+import { cn } from "@/lib/utils";
 import type React from "react";
 
 type Props = {
@@ -22,27 +23,38 @@ function PlayerRow({ player, knockedOutBy, onEdit, children }: Props) {
     knockedOutBy ? `KO by ${knockedOutBy}` : null,
   ].filter(Boolean);
 
+  // Spans only, so it is valid inside the edit button.
   const info = (
     <>
-      <div className="flex items-center gap-1.5 font-medium">
+      <span className="flex items-center gap-1.5 font-medium">
+        {onEdit && <span className="sr-only">Edit </span>}
         <span className="truncate">{name}</span>
         {isGuest && (
-          <Badge variant="outline" className="shrink-0 px-1.5 py-0 text-xs">
+          <span
+            className={cn(
+              badgeVariants({ variant: "outline" }),
+              "shrink-0 px-1.5 py-0 text-xs",
+            )}
+          >
             Guest
-          </Badge>
+          </span>
         )}
         {knockouts > 0 && (
-          <Badge
-            variant="secondary"
-            className="shrink-0 px-1.5 py-0 text-xs tabular-nums"
+          <span
+            className={cn(
+              badgeVariants({ variant: "secondary" }),
+              "shrink-0 px-1.5 py-0 text-xs tabular-nums",
+            )}
             title={`${plural(knockouts, "knockout")}`}
           >
             {knockouts} KO
-          </Badge>
+          </span>
         )}
-      </div>
+      </span>
       {details.length > 0 && (
-        <p className="truncate text-xs text-muted">{details.join(" · ")}</p>
+        <span className="block truncate text-xs text-muted">
+          {details.join(" · ")}
+        </span>
       )}
     </>
   );
@@ -57,9 +69,8 @@ function PlayerRow({ player, knockedOutBy, onEdit, children }: Props) {
       {onEdit ? (
         <button
           type="button"
-          aria-label={`Edit ${name}`}
           onClick={onEdit}
-          className="min-w-0 flex-1 rounded-sm text-left hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-w-0 flex-1 flex-col justify-center self-stretch rounded-sm text-left hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
         >
           {info}
         </button>

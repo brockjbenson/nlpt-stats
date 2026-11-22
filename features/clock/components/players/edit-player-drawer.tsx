@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -34,7 +35,7 @@ import type {
   ClockKnockout,
   TournamentClock,
 } from "@/features/clock/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // Select items can't have an empty value, so "not recorded" gets its own.
 const NOT_RECORDED = "none";
@@ -69,6 +70,8 @@ function EditPlayerForm({
   const currentKnocker = latestKnockouts(knockouts).get(id)?.knocked_out_by;
   const current = currentKnocker ?? NOT_RECORDED;
   const [knocker, setKnocker] = useState(current);
+  // Which button was pressed, so only that one shows the spinner.
+  const [pressed, setPressed] = useState<"rebuy" | "knocker" | null>(null);
   const choices = knockerChoices(entrants, id);
   const isOut = entrant.busted_at !== null;
   const canTakeAway = planTakeAwayRebuy(clock, entrants, id).ok;
@@ -85,13 +88,18 @@ function EditPlayerForm({
               size="sm"
               variant="outline"
               disabled={isPending}
-              onClick={() =>
+              onClick={() => {
+                setPressed("rebuy");
                 run("Couldn't take away the rebuy", () =>
                   takeAwayRebuyAction(clock.id, id),
-                )
-              }
+                );
+              }}
             >
-              Take away a rebuy
+              {isPending && pressed === "rebuy" ? (
+                <Spinner />
+              ) : (
+                "Take away a rebuy"
+              )}
             </Button>
           )}
         </div>
@@ -114,11 +122,12 @@ function EditPlayerForm({
           </div>
         )}
       </div>
-      {isOut && (
-        <DrawerFooter>
+      <DrawerFooter>
+        {isOut && (
           <Button
             disabled={knocker === current || isPending}
-            onClick={() =>
+            onClick={() => {
+              setPressed("knocker");
               run(
                 "Couldn't change the knockout",
                 () =>
@@ -128,32 +137,34 @@ function EditPlayerForm({
                     knocker === NOT_RECORDED ? null : knocker,
                   ),
                 onClose,
-              )
-            }
+              );
+            }}
           >
-            {isPending ? <Spinner /> : "Save"}
+            {isPending && pressed === "knocker" ? <Spinner /> : "Save"}
           </Button>
-        </DrawerFooter>
-      )}
+        )}
+        <DrawerClose asChild>
+          <Button variant="outline">{isOut ? "Cancel" : "Done"}</Button>
+        </DrawerClose>
+      </DrawerFooter>
     </>
   );
 }
 
 // Fixes a player's rebuys (take one away) and who knocked them out.
-// Reads the live player, so it updates as saves land, and closes if the
-// player is removed.
+// Reads the live player, so it updates as saves land; the parent passes a
+// null id when the player is gone.
 function EditPlayerDrawer({ entrantId, ...props }: Props) {
-  const { entrants, names, onClose } = props;
+  const { entrants, knockouts, names, onClose } = props;
   const entrant = entrants.find(({ id }) => id === entrantId);
-  const isGone = entrantId !== null && !entrant;
-
-  useEffect(() => {
-    if (isGone) onClose();
-  }, [isGone, onClose]);
+  const current = entrant
+    ? (latestKnockouts(knockouts).get(entrant.id)?.knocked_out_by ??
+      NOT_RECORDED)
+    : NOT_RECORDED;
 
   return (
     <Drawer
-      open={entrantId !== null}
+      open={entrant !== undefined}
       onOpenChange={(open) => {
         if (!open) onClose();
       }}
@@ -164,7 +175,11 @@ function EditPlayerDrawer({ entrantId, ...props }: Props) {
           <DrawerDescription>Fix their rebuys or knockout.</DrawerDescription>
         </DrawerHeader>
         {entrant && (
-          <EditPlayerForm key={entrant.id} {...props} entrant={entrant} />
+          <EditPlayerForm
+            key={`${entrant.id}:${current}`}
+            {...props}
+            entrant={entrant}
+          />
         )}
       </DrawerContent>
     </Drawer>
