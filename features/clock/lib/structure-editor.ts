@@ -31,9 +31,15 @@ export type SettingsAction =
   | { type: "setPlacesPaid"; value: number }
   | { type: "setPayoutPct"; index: number; value: number };
 
+// The part of a draft the level editor works on: the rows and the lengths of
+// new rows. Templates (StructureDraft) and running clocks both have it.
+export type LevelsDraft = Pick<
+  StructureDraft,
+  "levels" | "new_level_seconds" | "new_break_seconds"
+>;
+
 // New rows bring their own key so the reducer stays pure.
-export type StructureEditorAction =
-  | SettingsAction
+export type LevelsAction =
   | {
       type: "setField";
       field: "new_level_seconds" | "new_break_seconds";
@@ -45,6 +51,8 @@ export type StructureEditorAction =
   // A drag and drop: the row at `from` ends up at `to`.
   | { type: "reorderLevel"; from: number; to: number }
   | { type: "removeLevel"; index: number };
+
+export type StructureEditorAction = SettingsAction | LevelsAction;
 
 // The next round big blind above bigBlind (30,000 → 40,000, 350 → 400).
 export function nextBigBlind(bigBlind: number): number {
@@ -63,13 +71,13 @@ function isLength(seconds: number): boolean {
 }
 
 // The new level length setting, or the default while it's empty or invalid.
-function newLevelSeconds(draft: StructureDraft): number {
+function newLevelSeconds(draft: LevelsDraft): number {
   const seconds = draft.new_level_seconds;
   return isLength(seconds) ? seconds : DEFAULT_LEVEL_SECONDS;
 }
 
 // The new break length setting, or the default while it's empty or invalid.
-function newBreakSeconds(draft: StructureDraft): number {
+function newBreakSeconds(draft: LevelsDraft): number {
   const seconds = draft.new_break_seconds;
   return isLength(seconds) ? seconds : DEFAULT_BREAK_SECONDS;
 }
@@ -116,7 +124,7 @@ function resizePayouts(current: number[], places: number): number[] {
 // Switching a row's kind resets it: a break loses its blinds, a new level
 // gets blinds suggested from the levels above it.
 function changeLevel(
-  draft: StructureDraft,
+  draft: LevelsDraft,
   index: number,
   change: Partial<BlindLevel>,
 ): DraftLevel {
@@ -146,10 +154,7 @@ function isRowIndex(levels: DraftLevel[], index: number): boolean {
   return Number.isInteger(index) && index >= 0 && index < levels.length;
 }
 
-function setLevels(
-  draft: StructureDraft,
-  levels: DraftLevel[],
-): StructureDraft {
+function setLevels<T extends LevelsDraft>(draft: T, levels: DraftLevel[]): T {
   return { ...draft, levels };
 }
 
@@ -180,17 +185,16 @@ export function settingsReducer<T extends SettingsFields>(
   }
 }
 
-export function structureEditorReducer(
-  draft: StructureDraft,
-  action: StructureEditorAction,
-): StructureDraft {
+// Applies a level edit to anything with levels (a template draft or a running
+// clock's levels), keeping every other field as it is. Knows nothing about
+// locked rows: the editor stops those edits before they get here.
+export function levelsReducer<T extends LevelsDraft>(
+  draft: T,
+  action: LevelsAction,
+): T {
   switch (action.type) {
     case "setField":
       return { ...draft, [action.field]: action.value };
-
-    case "setPlacesPaid":
-    case "setPayoutPct":
-      return settingsReducer(draft, action);
 
     case "addLevel":
       return setLevels(draft, [
@@ -233,5 +237,29 @@ export function structureEditorReducer(
         draft,
         draft.levels.filter((_, index) => index !== action.index),
       );
+  }
+}
+
+export function structureEditorReducer(
+  draft: StructureDraft,
+  action: StructureEditorAction,
+): StructureDraft {
+  switch (action.type) {
+    case "setField":
+      return action.field === "new_level_seconds" ||
+        action.field === "new_break_seconds"
+        ? levelsReducer(draft, action)
+        : { ...draft, [action.field]: action.value };
+
+    case "setPlacesPaid":
+    case "setPayoutPct":
+      return settingsReducer(draft, action);
+
+    case "addLevel":
+    case "addBreak":
+    case "updateLevel":
+    case "reorderLevel":
+    case "removeLevel":
+      return levelsReducer(draft, action);
   }
 }
