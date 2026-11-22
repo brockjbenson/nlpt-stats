@@ -1,3 +1,5 @@
+import DesktopPageHeader from "@/components/page-header/desktop-page-header";
+import PageHeader from "@/components/page-header/page-header";
 import TournamentSessionsForm from "@/features/tournaments/components/tournament-sessions-form";
 import { createClient } from "@/utils/supabase/server";
 import React from "react";
@@ -22,9 +24,10 @@ async function Page({ params }: Props) {
   if (membersError) return <p>Error fetching members {membersError.message}</p>;
   return (
     <div className="pb-12">
-      <h2 className="text-center w-full mb-4">
-        Add Sessions for {tournament.name}
-      </h2>
+      <PageHeader title="Add Sessions" showBackButton />
+      <DesktopPageHeader title={`Add Sessions for ${tournament.name}`} />
+      {/* The phone header says "Add Sessions"; the tournament goes under it. */}
+      <h2 className="text-center w-full mb-4 md:hidden">{tournament.name}</h2>
       <TournamentSessionsForm members={members} tournament={tournament} />
     </div>
   );

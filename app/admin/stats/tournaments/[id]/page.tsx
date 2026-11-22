@@ -1,4 +1,6 @@
 import ErrorHandler from "@/components/error-handler";
+import DesktopPageHeader from "@/components/page-header/desktop-page-header";
+import PageHeader from "@/components/page-header/page-header";
 import TournamentInfo from "@/features/tournaments/components/tournament-info-card";
 import TournamentSessions from "@/features/tournaments/components/tournament-sessions";
 import { createClient } from "@/utils/supabase/server";
@@ -15,7 +17,7 @@ async function Page({ params }: Props) {
     "get_major_data",
     {
       target_tournament_id: id,
-    }
+    },
   );
 
   if (majorError) {
@@ -29,15 +31,20 @@ async function Page({ params }: Props) {
   }
 
   return (
-    <div className="w-full max-w-(--breakpoint-xl) mx-auto px-2">
+    <>
+      <PageHeader title="Tournament" showBackButton />
+      <DesktopPageHeader title={majorData.name} />
       <div className="w-full max-w-(--breakpoint-xl) mx-auto px-2">
-        <h2 className="text-2xl w-full flex items-center justify-center mb-8">
-          {majorData.name}
-        </h2>
-        <TournamentInfo isAdmin data={majorData} />
-        <TournamentSessions isAdmin data={majorData} />
+        <div className="w-full max-w-(--breakpoint-xl) mx-auto px-2">
+          {/* The phone header says "Tournament"; the name goes under it. */}
+          <h2 className="text-2xl w-full flex items-center justify-center mb-8 md:hidden">
+            {majorData.name}
+          </h2>
+          <TournamentInfo isAdmin data={majorData} />
+          <TournamentSessions isAdmin data={majorData} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
